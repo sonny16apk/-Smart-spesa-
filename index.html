@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa - Tracker Intelligente</title>
+  <title>SmartSpesa - Personal Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <script src="https://unpkg.com/tesseract.js@v4.0.2/dist/tesseract.min.js"></script>
+  <!-- OCR Engine Tesseract.js v4 -->
+  <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
@@ -56,16 +57,16 @@
       <p class="text-xs text-slate-400 mb-3">Inquadra lo scontrino con buona luce e scatta. L'app cercherà di estrarre il prezzo in autonomia.</p>
       
       <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="processReceipt(event)">
-      <button onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
+      <button type="button" onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
         <i class="fa-solid fa-wand-magic-sparkles"></i> Scatta foto scontrino
       </button>
-      <div id="ocrStatus" class="text-xs text-indigo-400 mt-2 text-center"></div>
+      <div id="ocrStatus" class="text-xs text-indigo-400 mt-2 text-center font-medium"></div>
     </section>
 
     <!-- Inserimento Manuale Prodotto -->
     <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
       <h2 class="text-sm font-semibold mb-3 text-slate-300">Aggiungi / Configura Prodotto</h2>
-      <form id="itemForm" class="space-y-3">
+      <form id="itemForm" class="space-y-3" onsubmit="handleFormSubmit(event)">
         <input type="text" id="itemName" placeholder="Es. Caffè, Latte, Pane..." required 
                class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
         
@@ -107,7 +108,7 @@
     <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-sm font-semibold text-slate-300">Tutti i Prodotti Salvati</h2>
-        <button onclick="clearDatabase()" class="text-xs text-rose-400 hover:underline cursor-pointer">Svuota tutto</button>
+        <button type="button" onclick="clearDatabase()" class="text-xs text-rose-400 hover:underline cursor-pointer">Svuota tutto</button>
       </div>
       <ul id="archiveList" class="space-y-2">
         <!-- Popolato via JS -->
@@ -122,7 +123,7 @@
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
           <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
         </h2>
-        <button onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
+        <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
@@ -156,7 +157,7 @@
         <p class="text-xs font-bold text-indigo-400 mt-0.5">Bortot Sonny</p>
       </div>
 
-      <button onclick="toggleInfoModal(false)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-xl text-xs transition-colors cursor-pointer">
+      <button type="button" onclick="toggleInfoModal(false)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-xl text-xs transition-colors cursor-pointer">
         Ho capito, torna all'app
       </button>
     </div>
@@ -165,9 +166,6 @@
   <script>
     let products = JSON.parse(localStorage.getItem('smartspesa_products')) || [];
 
-    const form = document.getElementById('itemForm');
-    const archiveList = document.getElementById('archiveList');
-    const weeklyList = document.getElementById('weeklyList');
     const customMarketInput = document.getElementById('customMarketInput');
 
     function switchTab(tab) {
@@ -211,6 +209,7 @@
     }
 
     function renderArchive() {
+      const archiveList = document.getElementById('archiveList');
       archiveList.innerHTML = '';
       if (products.length === 0) {
         archiveList.innerHTML = `<li class="text-xs text-slate-500 text-center py-4">Nessun prodotto nell'archivio.</li>`;
@@ -230,7 +229,7 @@
           </div>
           <div class="flex items-center gap-3">
             <span class="font-bold text-indigo-300">€${parseFloat(item.price).toFixed(2)}</span>
-            <button onclick="removeProduct(${index})" class="text-slate-500 hover:text-rose-400 text-xs cursor-pointer">
+            <button type="button" onclick="removeProduct(${index})" class="text-slate-500 hover:text-rose-400 text-xs cursor-pointer">
               <i class="fa-solid fa-trash"></i>
             </button>
           </div>
@@ -240,6 +239,7 @@
     }
 
     function generateWeeklyList() {
+      const weeklyList = document.getElementById('weeklyList');
       weeklyList.innerHTML = '';
       const now = new Date().getTime();
       
@@ -285,12 +285,12 @@
       saveAndRender();
     }
 
-    form.addEventListener('submit', (e) => {
+    function handleFormSubmit(e) {
       e.preventDefault();
       const name = document.getElementById('itemName').value.trim();
       const selectedMarket = document.getElementById('itemMarket').value;
       const price = document.getElementById('itemPrice').value;
-      const frequency = document.getElementById('itemFrequency'].value;
+      const frequency = document.getElementById('itemFrequency').value;
 
       let finalMarket = selectedMarket;
       if (selectedMarket === 'CUSTOM') {
@@ -307,11 +307,11 @@
           lastBought: new Date().getTime()
         });
         saveAndRender();
-        form.reset();
+        document.getElementById('itemForm').reset();
         toggleCustomMarket('');
         switchTab('weekly'); 
       }
-    });
+    }
 
     function removeProduct(index) {
       products.splice(index, 1);
@@ -325,40 +325,51 @@
       }
     }
 
-    // OCR Scontrino aggiornato e potenziato per estrazione prezzi italiani
+    // OCR Scontrino ottimizzato per Tesseract v4
     async function processReceipt(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       const statusDiv = document.getElementById('ocrStatus');
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Analisi foto scontrino...`;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Lettura scontrino in corso...`;
 
       try {
-        const worker = await Tesseract.createWorker('ita');
-        const ret = await worker.recognize(file);
-        await worker.terminate();
+        const result = await Tesseract.recognize(
+          file,
+          'ita',
+          {
+            logger: m => {
+              if (m.status === 'recognizing text') {
+                statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Elaborazione: ${Math.round(m.progress * 100)}%`;
+              }
+            }
+          }
+        );
 
-        const text = ret.data.text;
-        console.log("TESTO OCR:", text);
-
-        // Cerca i prezzi sia con la virgola che con il punto (es. 1,19 oppure 11.54)
+        const text = result.data.text;
+        // Identifica numeri decimali con virgola o punto (es: 1,19 o 11.54)
         const matches = text.match(/\d+[\.,]\d{2}/g);
 
         if (matches && matches.length > 0) {
-          // Prende l'ultimo prezzo valido trovato nello scontrino (di solito il totale o l'ultimo articolo)
           const foundPrice = matches[matches.length - 1].replace(',', '.');
           document.getElementById('itemPrice').value = foundPrice;
-          document.getElementById('itemName').value = "Spesa Scontrino";
-          statusDiv.innerHTML = `<span class="text-emerald-400 font-bold">Prezzo trovato: €${foundPrice}! Controlla e salva.</span>`;
+          if (!document.getElementById('itemName').value) {
+            document.getElementById('itemName').value = "Spesa Scontrino";
+          }
+          statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Prezzo estratto: €${foundPrice}</span>`;
         } else {
-          statusDiv.innerHTML = `<span class="text-amber-400">Prezzo non rilevato chiaramente. Inseriscilo a mano sotto.</span>`;
+          statusDiv.innerHTML = `<span class="text-amber-400"><i class="fa-solid fa-triangle-exclamation"></i> Nessun prezzo trovato. Inseriscilo a mano sotto.</span>`;
         }
       } catch (err) {
-        console.error(err);
-        statusDiv.innerHTML = `<span class="text-rose-400">Errore di scansione. Riprova con una foto più luminosa.</span>`;
+        console.error("Errore OCR:", err);
+        statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. Riprova con più luce.</span>`;
+      } finally {
+        // Reset dell'input file per permettere di ricaricare lo stesso file se necessario
+        event.target.value = '';
       }
     }
 
+    // Inizializzazione
     renderArchive();
     generateWeeklyList();
   </script>
