@@ -8,7 +8,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tesseract.js@v4.0.2/dist/tesseract.min.js"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12">
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
   <!-- Header -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
@@ -18,17 +18,17 @@
       </h1>
       <p class="text-[10px] text-slate-400">Sviluppato da <span class="text-indigo-300 font-semibold">Bortot Sonny</span></p>
     </div>
-    <button onclick="switchTab('info')" id="tabInfoBtn" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1">
+    <button onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
       <i class="fa-solid fa-circle-info"></i> Info
     </button>
   </header>
 
   <!-- Navigazione a Schede (Tab) -->
-  <div id="mainTabs" class="grid grid-cols-2 gap-2 mb-6 bg-slate-800 p-1 rounded-xl border border-slate-700">
-    <button onclick="switchTab('weekly')" id="tabWeekly" class="py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition-all">
+  <div class="grid grid-cols-2 gap-2 mb-6 bg-slate-800 p-1 rounded-xl border border-slate-700">
+    <button onclick="switchTab('weekly')" id="tabWeekly" class="py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer">
       <i class="fa-solid fa-list-check mr-1"></i> Lista Settimanale
     </button>
-    <button onclick="switchTab('archive')" id="tabArchive" class="py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">
+    <button onclick="switchTab('archive')" id="tabArchive" class="py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer">
       <i class="fa-solid fa-box-archive mr-1"></i> Archivio & Prezzi
     </button>
   </div>
@@ -38,7 +38,7 @@
     <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
       <h2 class="text-sm font-semibold text-slate-300 mb-3 flex items-center justify-between">
         <span>Da Comprare Questa Settimana</span>
-        <button onclick="generateWeeklyList()" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded-md text-indigo-300">
+        <button onclick="generateWeeklyList()" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded-md text-indigo-300 cursor-pointer">
           <i class="fa-solid fa-rotate mr-1"></i> Aggiorna
         </button>
       </h2>
@@ -59,7 +59,7 @@
       <p class="text-xs text-slate-400 mb-3">Scatta una foto chiara e ravvicinata allo scontrino per catturare automaticamente il prezzo.</p>
       
       <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="processReceipt(event)">
-      <button onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2">
+      <button onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
         <i class="fa-solid fa-wand-magic-sparkles"></i> Scatta foto scontrino
       </button>
       <div id="ocrStatus" class="text-xs text-indigo-400 mt-2 text-center"></div>
@@ -100,7 +100,7 @@
           </select>
         </div>
 
-        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold text-sm py-2.5 rounded-lg transition-colors">
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold text-sm py-2.5 rounded-lg transition-colors cursor-pointer">
           Salva in Archivio
         </button>
       </form>
@@ -110,7 +110,7 @@
     <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-sm font-semibold text-slate-300">Tutti i Prodotti Salvati</h2>
-        <button onclick="clearDatabase()" class="text-xs text-rose-400 hover:underline">Svuota tutto</button>
+        <button onclick="clearDatabase()" class="text-xs text-rose-400 hover:underline cursor-pointer">Svuota tutto</button>
       </div>
       <ul id="archiveList" class="space-y-2">
         <!-- Popolato via JS -->
@@ -118,45 +118,51 @@
     </section>
   </div>
 
-  <!-- SEZIONE 3: INFO & FILOSOFIA DELL'APP -->
-  <div id="viewInfo" class="space-y-4 hidden">
-    <section class="bg-slate-800 p-5 rounded-xl shadow-lg border border-slate-700 space-y-4 text-sm">
-      <div class="border-b border-slate-700 pb-3">
+  <!-- FINESTRA MODALE INFO (A SCOMPARSA) -->
+  <div id="infoModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
           <i class="fa-solid fa-heart-pulse"></i> Cos'è SmartSpesa?
         </h2>
-        <p class="text-xs text-slate-400 mt-1">Versione 2.0 Pro • 100% Locale e Privata</p>
+        <button onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
 
-      <div class="space-y-3 text-slate-300">
+      <div class="space-y-3 text-slate-300 text-xs">
         <p>
           Questa app è nata con uno scopo chiaro e umano: <strong class="text-indigo-300">aiutare chiunque ne abbia bisogno</strong> a gestire la spesa quotidiana senza ansia, dimenticanze o confusione mentale.
         </p>
 
         <div class="bg-indigo-950/50 p-3 rounded-lg border border-indigo-900/50">
-          <h3 class="font-semibold text-indigo-300 text-xs uppercase tracking-wider mb-1">🧠 Pensata per la neurodivergenza</h3>
-          <p class="text-xs text-slate-300">
+          <h3 class="font-semibold text-indigo-300 uppercase tracking-wider mb-1">🧠 Pensata per la neurodivergenza</h3>
+          <p class="text-slate-300">
             SmartSpesa è progettata con cura per venire incontro a un cervello neurodivergente (riducendo il sovraccarico visivo, automatizzando le scadenze e suddividendo le schermate in modo logico), ma è uno strumento pulito e funzionale che <strong>va benissimo per chiunque</strong> voglia ottimizzare il tempo e il denaro.
           </p>
         </div>
 
         <div>
-          <h3 class="font-semibold text-slate-200 text-xs uppercase tracking-wider mb-1">✨ Cosa ti offre:</h3>
-          <ul class="list-disc list-inside text-xs space-y-1 text-slate-400">
-            <li><strong>Lista Settimanale Intelligente:</strong> Mostra solo ciò che serve davvero in base ai giorni trascorsi.</li>
+          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">✨ Cosa ti offre:</h3>
+          <ul class="list-disc list-inside space-y-1 text-slate-400">
+            <li><strong>Lista Settimanale Intelligente:</strong> Mostra ciò che serve davvero in base ai giorni trascorsi.</li>
             <li><strong>Archivio Prezzi e Supermercati:</strong> Tieni traccia di dove costi meno ogni articolo (Conad, Coop, Lidl, Eurospin, Esselunga, Prix o negozi personalizzati).</li>
-            <li><strong>Automazione delle scadenze:</strong> Imposta la frequenza (es. caffè ogni 15 giorni) e l'app penserà a rimetterlo in lista al momento giusto.</li>
+            <li><strong>Automazione delle scadenze:</strong> Imposta la frequenza e l'app penserà a rimetterlo in lista al momento giusto.</li>
             <li><strong>Scanner Scontrini OCR:</strong> Cattura i prezzi al volo tramite fotocamera.</li>
-            <li><strong>Privacy Totale:</strong> Nessun tracciamento, nessun server esterno; i tuoi dati restano esclusivamente sul tuo dispositivo (Local-First).</li>
+            <li><strong>Privacy Totale:</strong> Nessun tracciamento; i dati restano solo sul tuo dispositivo.</li>
           </ul>
         </div>
       </div>
 
       <div class="border-t border-slate-700 pt-3 text-center">
-        <p class="text-xs text-slate-400">Progetto indipendente ideato e sviluppato da</p>
-        <p class="text-sm font-bold text-indigo-400 mt-0.5">Bortot Sonny</p>
+        <p class="text-[10px] text-slate-400">Progetto indipendente ideato e sviluppato da</p>
+        <p class="text-xs font-bold text-indigo-400 mt-0.5">Bortot Sonny</p>
       </div>
-    </section>
+
+      <button onclick="toggleInfoModal(false)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-xl text-xs transition-colors cursor-pointer">
+        Ho capito, torna all'app
+      </button>
+    </div>
   </div>
 
   <script>
@@ -169,24 +175,193 @@
 
     function switchTab(tab) {
       const isWeekly = tab === 'weekly';
-      const isArchive = tab === 'archive';
-      const isInfo = tab === 'info';
-
-      document.getElementById('viewWeekly').classList.toggle('hidden', !isWeekly);
-      document.getElementById('viewArchive').classList.toggle('hidden', !isArchive);
-      document.getElementById('viewInfo').classList.toggle('hidden', !isInfo);
       
-      const mainTabs = document.getElementById('mainTabs');
-      mainTabs.classList.toggle('hidden', isInfo);
-
+      document.getElementById('viewWeekly').classList.toggle('hidden', !isWeekly);
+      document.getElementById('viewArchive').classList.toggle('hidden', isWeekly);
+      
       document.getElementById('tabWeekly').className = isWeekly 
-        ? 'py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition-all' 
-        : 'py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all';
+        ? 'py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer' 
+        : 'py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer';
         
-      document.getElementById('tabArchive').className = isArchive 
-        ? 'py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition-all' 
-        : 'py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all';
+      document.getElementById('tabArchive').className = !isWeekly 
+        ? 'py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer' 
+        : 'py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer';
 
-      document.getElementById('tabInfoBtn').className = isInfo
-        ? 'text-xs bg-indigo-600 text-white border border-indigo-500 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1'
-        : 'text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300
+      if (isWeekly) generateWeeklyList();
+    }
+
+    function toggleInfoModal(show) {
+      const modal = document.getElementById('infoModal');
+      modal.classList.toggle('hidden', !show);
+    }
+
+    function toggleCustomMarket(val) {
+      if (val === 'CUSTOM') {
+        customMarketInput.classList.remove('hidden');
+        customMarketInput.required = true;
+        customMarketInput.focus();
+      } else {
+        customMarketInput.classList.add('hidden');
+        customMarketInput.required = false;
+        customMarketInput.value = '';
+      }
+    }
+
+    function saveAndRender() {
+      localStorage.setItem('smartspesa_products', JSON.stringify(products));
+      renderArchive();
+      generateWeeklyList();
+    }
+
+    function renderArchive() {
+      archiveList.innerHTML = '';
+      if (products.length === 0) {
+        archiveList.innerHTML = `<li class="text-xs text-slate-500 text-center py-4">Nessun prodotto nell'archivio.</li>`;
+        return;
+      }
+
+      products.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.className = 'flex justify-between items-center bg-slate-900 p-3 rounded-lg border border-slate-700/50 text-sm';
+        li.innerHTML = `
+          <div>
+            <div class="font-medium text-slate-200">${item.name}</div>
+            <div class="text-xs text-slate-400">
+              <i class="fa-solid fa-store mr-1"></i>${item.market} | 
+              <i class="fa-solid fa-clock mr-1"></i>Ogni ${item.frequency} giorni
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="font-bold text-indigo-300">€${parseFloat(item.price).toFixed(2)}</span>
+            <button onclick="removeProduct(${index})" class="text-slate-500 hover:text-rose-400 text-xs cursor-pointer">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        `;
+        archiveList.appendChild(li);
+      });
+    }
+
+    function generateWeeklyList() {
+      weeklyList.innerHTML = '';
+      const now = new Date().getTime();
+      
+      let dueProducts = products.filter(item => {
+        const lastBought = item.lastBought || item.createdAt || now;
+        const daysPassed = (now - lastBought) / (1000 * 60 * 60 * 24);
+        return daysPassed >= parseInt(item.frequency);
+      });
+
+      if (dueProducts.length === 0 && products.length > 0) {
+        dueProducts = products; 
+      }
+
+      if (dueProducts.length === 0) {
+        weeklyList.innerHTML = `<li class="text-xs text-slate-500 text-center py-6">Tutto tranquillo! Nessuna spesa programmata per oggi.</li>`;
+        return;
+      }
+
+      dueProducts.forEach((item) => {
+        const li = document.createElement('li');
+        li.className = 'flex justify-between items-center bg-slate-900 p-3 rounded-lg border border-slate-700 text-sm';
+        li.innerHTML = `
+          <div class="flex items-center gap-3">
+            <input type="checkbox" onchange="markAsBought('${item.name}')" class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
+            <div>
+              <div class="font-medium text-slate-200">${item.name}</div>
+              <div class="text-xs text-slate-400"><i class="fa-solid fa-store mr-1"></i>${item.market} - Frequenza: ${item.frequency}gg</div>
+            </div>
+          </div>
+          <span class="font-bold text-indigo-300">€${parseFloat(item.price).toFixed(2)}</span>
+        `;
+        weeklyList.appendChild(li);
+      });
+    }
+
+    function markAsBought(name) {
+      products = products.map(p => {
+        if (p.name === name) {
+          p.lastBought = new Date().getTime();
+        }
+        return p;
+      });
+      saveAndRender();
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('itemName').value.trim();
+      const selectedMarket = document.getElementById('itemMarket').value;
+      const price = document.getElementById('itemPrice').value;
+      const frequency = document.getElementById('itemFrequency').value;
+
+      let finalMarket = selectedMarket;
+      if (selectedMarket === 'CUSTOM') {
+        finalMarket = customMarketInput.value.trim() || 'Altro';
+      }
+
+      if (name && price) {
+        products.unshift({
+          name,
+          market: finalMarket,
+          price,
+          frequency,
+          createdAt: new Date().getTime(),
+          lastBought: new Date().getTime()
+        });
+        saveAndRender();
+        form.reset();
+        toggleCustomMarket('');
+        switchTab('weekly'); 
+      }
+    });
+
+    function removeProduct(index) {
+      products.splice(index, 1);
+      saveAndRender();
+    }
+
+    function clearDatabase() {
+      if (confirm('Vuoi cancellare tutto l archivio?')) {
+        products = [];
+        saveAndRender();
+      }
+    }
+
+    async function processReceipt(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const statusDiv = document.getElementById('ocrStatus');
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Analisi dello scontrino...`;
+
+      try {
+        const result = await Tesseract.recognize(file, 'ita', {
+          logger: m => {
+            if (m.status === 'recognizing text') {
+              statusDiv.innerText = `Lettura in corso: ${Math.round(m.progress * 100)}%`;
+            }
+          }
+        });
+
+        const text = result.data.text;
+        const rawPrices = text.match(/\d+[\.,]\d{2}/g);
+        
+        if (rawPrices && rawPrices.length > 0) {
+          const bestPrice = rawPrices[rawPrices.length - 1].replace(',', '.');
+          document.getElementById('itemPrice').value = bestPrice;
+          document.getElementById('itemName').value = "Spesa Scontrino";
+          statusDiv.innerHTML = `<span class="text-emerald-400 font-bold">Prezzo rilevato: €${bestPrice}! Controlla e salva.</span>`;
+        } else {
+          statusDiv.innerHTML = `<span class="text-amber-400">Nessun prezzo chiaro. Inseriscilo a mano sotto.</span>`;
+        }
+      } catch (err) {
+        statusDiv.innerHTML = `<span class="text-rose-400">Errore di lettura. Riprova con più luce.</span>`;
+      }
+    }
+
+    renderArchive();
+    generateWeeklyList();
+  </script>
+</body>
+</html>
