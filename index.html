@@ -12,12 +12,9 @@
 
   <!-- Header -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
-    <div>
-      <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
-        <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
-      </h1>
-      <p class="text-[10px] text-slate-400">Sviluppato da <span class="text-indigo-300 font-semibold">Bortot Sonny</span></p>
-    </div>
+    <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
+      <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
+    </h1>
     <button onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
       <i class="fa-solid fa-circle-info"></i> Info
     </button>
@@ -56,7 +53,7 @@
       <h2 class="text-sm font-semibold mb-2 text-indigo-300 flex items-center gap-2">
         <i class="fa-solid fa-camera"></i> Scansiona Scontrino (OCR)
       </h2>
-      <p class="text-xs text-slate-400 mb-3">Scatta una foto chiara e ravvicinata allo scontrino per catturare automaticamente il prezzo.</p>
+      <p class="text-xs text-slate-400 mb-3">Inquadra lo scontrino con buona luce e scatta. L'app cercherà di estrarre il prezzo in autonomia.</p>
       
       <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="processReceipt(event)">
       <button onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
@@ -123,7 +120,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-heart-pulse"></i> Cos'è SmartSpesa?
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
         </h2>
         <button onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -293,7 +290,7 @@
       const name = document.getElementById('itemName').value.trim();
       const selectedMarket = document.getElementById('itemMarket').value;
       const price = document.getElementById('itemPrice').value;
-      const frequency = document.getElementById('itemFrequency').value;
+      const frequency = document.getElementById('itemFrequency'].value;
 
       let finalMarket = selectedMarket;
       if (selectedMarket === 'CUSTOM') {
@@ -328,35 +325,37 @@
       }
     }
 
+    // OCR Scontrino aggiornato e potenziato per estrazione prezzi italiani
     async function processReceipt(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       const statusDiv = document.getElementById('ocrStatus');
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Analisi dello scontrino...`;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Analisi foto scontrino...`;
 
       try {
-        const result = await Tesseract.recognize(file, 'ita', {
-          logger: m => {
-            if (m.status === 'recognizing text') {
-              statusDiv.innerText = `Lettura in corso: ${Math.round(m.progress * 100)}%`;
-            }
-          }
-        });
+        const worker = await Tesseract.createWorker('ita');
+        const ret = await worker.recognize(file);
+        await worker.terminate();
 
-        const text = result.data.text;
-        const rawPrices = text.match(/\d+[\.,]\d{2}/g);
-        
-        if (rawPrices && rawPrices.length > 0) {
-          const bestPrice = rawPrices[rawPrices.length - 1].replace(',', '.');
-          document.getElementById('itemPrice').value = bestPrice;
+        const text = ret.data.text;
+        console.log("TESTO OCR:", text);
+
+        // Cerca i prezzi sia con la virgola che con il punto (es. 1,19 oppure 11.54)
+        const matches = text.match(/\d+[\.,]\d{2}/g);
+
+        if (matches && matches.length > 0) {
+          // Prende l'ultimo prezzo valido trovato nello scontrino (di solito il totale o l'ultimo articolo)
+          const foundPrice = matches[matches.length - 1].replace(',', '.');
+          document.getElementById('itemPrice').value = foundPrice;
           document.getElementById('itemName').value = "Spesa Scontrino";
-          statusDiv.innerHTML = `<span class="text-emerald-400 font-bold">Prezzo rilevato: €${bestPrice}! Controlla e salva.</span>`;
+          statusDiv.innerHTML = `<span class="text-emerald-400 font-bold">Prezzo trovato: €${foundPrice}! Controlla e salva.</span>`;
         } else {
-          statusDiv.innerHTML = `<span class="text-amber-400">Nessun prezzo chiaro. Inseriscilo a mano sotto.</span>`;
+          statusDiv.innerHTML = `<span class="text-amber-400">Prezzo non rilevato chiaramente. Inseriscilo a mano sotto.</span>`;
         }
       } catch (err) {
-        statusDiv.innerHTML = `<span class="text-rose-400">Errore di lettura. Riprova con più luce.</span>`;
+        console.error(err);
+        statusDiv.innerHTML = `<span class="text-rose-400">Errore di scansione. Riprova con una foto più luminosa.</span>`;
       }
     }
 
