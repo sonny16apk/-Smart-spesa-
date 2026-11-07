@@ -3,30 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa - Personal Tracker</title>
+  <title>SmartSpesa v2.1 Pro</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <!-- OCR Engine Tesseract.js v4 -->
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header -->
+  <!-- Header con Versione v2.1 Pro -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
-    <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
-      <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
-    </h1>
-    <button onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
+    <div class="flex items-center gap-2">
+      <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
+        <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
+      </h1>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.1 Pro</span>
+    </div>
+    <button type="button" onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
       <i class="fa-solid fa-circle-info"></i> Info
     </button>
   </header>
 
   <!-- Navigazione a Schede (Tab) -->
   <div class="grid grid-cols-2 gap-2 mb-6 bg-slate-800 p-1 rounded-xl border border-slate-700">
-    <button onclick="switchTab('weekly')" id="tabWeekly" class="py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer">
+    <button type="button" onclick="switchTab('weekly')" id="tabWeekly" class="py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer">
       <i class="fa-solid fa-list-check mr-1"></i> Lista Settimanale
     </button>
-    <button onclick="switchTab('archive')" id="tabArchive" class="py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer">
+    <button type="button" onclick="switchTab('archive')" id="tabArchive" class="py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer">
       <i class="fa-solid fa-box-archive mr-1"></i> Archivio & Prezzi
     </button>
   </div>
@@ -36,13 +38,11 @@
     <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
       <h2 class="text-sm font-semibold text-slate-300 mb-3 flex items-center justify-between">
         <span>Da Comprare Questa Settimana</span>
-        <button onclick="generateWeeklyList()" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded-md text-indigo-300 cursor-pointer">
+        <button type="button" onclick="generateWeeklyList()" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded-md text-indigo-300 cursor-pointer">
           <i class="fa-solid fa-rotate mr-1"></i> Aggiorna
         </button>
       </h2>
-      <ul id="weeklyList" class="space-y-2">
-        <!-- Popolato via JS -->
-      </ul>
+      <ul id="weeklyList" class="space-y-2"></ul>
     </div>
   </div>
 
@@ -54,13 +54,20 @@
       <h2 class="text-sm font-semibold mb-2 text-indigo-300 flex items-center gap-2">
         <i class="fa-solid fa-camera"></i> Scansiona Scontrino (OCR)
       </h2>
-      <p class="text-xs text-slate-400 mb-3">Inquadra lo scontrino con buona luce e scatta. L'app cercherà di estrarre il prezzo in autonomia.</p>
+      <p class="text-xs text-slate-400 mb-3">Scatta una foto chiara allo scontrino. L'app estrarrà il prezzo e ti mostrerà il testo letto.</p>
       
       <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="processReceipt(event)">
       <button type="button" onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
         <i class="fa-solid fa-wand-magic-sparkles"></i> Scatta foto scontrino
       </button>
+      
       <div id="ocrStatus" class="text-xs text-indigo-400 mt-2 text-center font-medium"></div>
+
+      <!-- Box di Trasparenza Testo OCR -->
+      <div id="ocrRawTextContainer" class="mt-3 hidden">
+        <label class="block text-[11px] text-slate-400 mb-1">Testo rilevato nello scontrino (per controllo):</label>
+        <textarea id="ocrRawTextContent" readonly rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-300 focus:outline-none"></textarea>
+      </div>
     </section>
 
     <!-- Inserimento Manuale Prodotto -->
@@ -70,7 +77,6 @@
         <input type="text" id="itemName" placeholder="Es. Caffè, Latte, Pane..." required 
                class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
         
-        <!-- Supermercato -->
         <div class="space-y-2">
           <select id="itemMarket" onchange="toggleCustomMarket(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
             <option value="Conad">Conad</option>
@@ -89,7 +95,6 @@
           <input type="number" step="0.01" id="itemPrice" placeholder="Prezzo (€)" required 
                  class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
           
-          <!-- Scadenza / Frequenza giorni -->
           <select id="itemFrequency" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
             <option value="7">Ogni 7 giorni</option>
             <option value="14" selected>Ogni 14 giorni</option>
@@ -110,13 +115,11 @@
         <h2 class="text-sm font-semibold text-slate-300">Tutti i Prodotti Salvati</h2>
         <button type="button" onclick="clearDatabase()" class="text-xs text-rose-400 hover:underline cursor-pointer">Svuota tutto</button>
       </div>
-      <ul id="archiveList" class="space-y-2">
-        <!-- Popolato via JS -->
-      </ul>
+      <ul id="archiveList" class="space-y-2"></ul>
     </section>
   </div>
 
-  <!-- FINESTRA MODALE INFO (A SCOMPARSA) -->
+  <!-- FINESTRA MODALE INFO -->
   <div id="infoModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
@@ -165,12 +168,10 @@
 
   <script>
     let products = JSON.parse(localStorage.getItem('smartspesa_products')) || [];
-
     const customMarketInput = document.getElementById('customMarketInput');
 
     function switchTab(tab) {
       const isWeekly = tab === 'weekly';
-      
       document.getElementById('viewWeekly').classList.toggle('hidden', !isWeekly);
       document.getElementById('viewArchive').classList.toggle('hidden', isWeekly);
       
@@ -186,8 +187,7 @@
     }
 
     function toggleInfoModal(show) {
-      const modal = document.getElementById('infoModal');
-      modal.classList.toggle('hidden', !show);
+      document.getElementById('infoModal').classList.toggle('hidden', !show);
     }
 
     function toggleCustomMarket(val) {
@@ -263,7 +263,7 @@
         li.className = 'flex justify-between items-center bg-slate-900 p-3 rounded-lg border border-slate-700 text-sm';
         li.innerHTML = `
           <div class="flex items-center gap-3">
-            <input type="checkbox" onchange="markAsBought('${item.name}')" class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
+            <input type="checkbox" onchange="markAsBought('${item.name.replace(/'/g, "\\'")}')" class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
             <div>
               <div class="font-medium text-slate-200">${item.name}</div>
               <div class="text-xs text-slate-400"><i class="fa-solid fa-store mr-1"></i>${item.market} - Frequenza: ${item.frequency}gg</div>
@@ -325,13 +325,17 @@
       }
     }
 
-    // OCR Scontrino ottimizzato per Tesseract v4
     async function processReceipt(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       const statusDiv = document.getElementById('ocrStatus');
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Lettura scontrino in corso...`;
+      const rawTextBox = document.getElementById('ocrRawTextContainer');
+      const rawTextContent = document.getElementById('ocrRawTextContent');
+
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Analisi scontrino in corso...`;
+      rawTextBox.classList.add('hidden');
+      rawTextContent.value = '';
 
       try {
         const result = await Tesseract.recognize(
@@ -340,14 +344,16 @@
           {
             logger: m => {
               if (m.status === 'recognizing text') {
-                statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Elaborazione: ${Math.round(m.progress * 100)}%`;
+                statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Lettura: ${Math.round(m.progress * 100)}%`;
               }
             }
           }
         );
 
         const text = result.data.text;
-        // Identifica numeri decimali con virgola o punto (es: 1,19 o 11.54)
+        rawTextContent.value = text;
+        rawTextBox.classList.remove('hidden');
+
         const matches = text.match(/\d+[\.,]\d{2}/g);
 
         if (matches && matches.length > 0) {
@@ -356,20 +362,18 @@
           if (!document.getElementById('itemName').value) {
             document.getElementById('itemName').value = "Spesa Scontrino";
           }
-          statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Prezzo estratto: €${foundPrice}</span>`;
+          statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Prezzo estratto: €${foundPrice}! Controlla sotto.</span>`;
         } else {
-          statusDiv.innerHTML = `<span class="text-amber-400"><i class="fa-solid fa-triangle-exclamation"></i> Nessun prezzo trovato. Inseriscilo a mano sotto.</span>`;
+          statusDiv.innerHTML = `<span class="text-amber-400"><i class="fa-solid fa-triangle-exclamation"></i> Prezzo automatico non trovato. Leggi il testo nel box sottostante e inseriscilo a mano.</span>`;
         }
       } catch (err) {
         console.error("Errore OCR:", err);
         statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. Riprova con più luce.</span>`;
       } finally {
-        // Reset dell'input file per permettere di ricaricare lo stesso file se necessario
         event.target.value = '';
       }
     }
 
-    // Inizializzazione
     renderArchive();
     generateWeeklyList();
   </script>
