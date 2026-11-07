@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartSpesa - Personal Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto">
+
+    <!-- Header -->
+    <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-6">
+        <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
+            <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
+        </h1>
+        <span class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-1 rounded-md">v1.0 Local</span>
+    </header>
+
+    <!-- Inserimento Prodotto -->
+    <section class="bg-slate-800 p-4 rounded-xl mb-6 shadow-lg border border-slate-700">
+        <h2 class="text-sm font-semibold mb-3 text-slate-300">Aggiungi Prodotto</h2>
+        <form id="itemForm" class="space-y-3">
+            <input type="text" id="itemName" placeholder="Es. Pane, Latte, Caffè..." required 
+                   class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
+            
+            <div class="flex gap-2">
+                <select id="itemMarket" class="w-1/2 bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
+                    <option value="Conad">Conad</option>
+                    <option value="Coop">Coop</option>
+                    <option value="Lidl">Lidl</option>
+                    <option value="Eurospin">Eurospin</option>
+                    <option value="Esselunga">Esselunga</option>
+                </select>
+                <input type="number" step="0.01" id="itemPrice" placeholder="Prezzo (€)" required 
+                       class="w-1/2 bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
+            </div>
+
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold text-sm py-2.5 rounded-lg transition">
+                Salva nello Storico
+            </button>
+        </form>
+    </section>
+
+    <!-- Lista Spesa / Storico -->
+    <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-sm font-semibold text-slate-300">Storico Prezzi Registrati</h2>
+            <button onclick="clearDatabase()" class="text-xs text-rose-400 hover:underline">Svuota tutto</button>
+        </div>
+        <ul id="pricesList" class="space-y-2">
+            <!-- Popolato via JS -->
+        </ul>
+    </section>
+
+    <script>
+        // Carica dati da LocalStorage
+        let historyData = JSON.parse(localStorage.getItem('smartspesa_history')) || [];
+
+        const form = document.getElementById('itemForm');
+        const list = document.getElementById('pricesList');
+
+        function saveAndRender() {
+            localStorage.setItem('smartspesa_history', JSON.stringify(historyData));
+            renderList();
+        }
+
+        function renderList() {
+            if (historyData.length === 0) {
+                list.innerHTML = `<li class="text-xs text-slate-500 text-center py-4">Nessun prezzo salvato. Inizia ad aggiungere prodotti!</li>`;
+                return;
+            }
+            list.innerHTML = historyData.map((item, index) => `
+                <li class="flex justify-between items-center bg-slate-900 p-3 rounded-lg border border-slate-700/50">
+                    <div>
+                        <div class="font-medium text-sm text-slate-200">${item.name}</div>
+                        <div class="text-[11px] text-slate-400">${item.market} • <span class="text-slate-500">${item.date}</span></div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="font-bold text-indigo-400 text-sm">€ ${parseFloat(item.price).toFixed(2)}</span>
+                        <button onclick="deleteItem(${index})" class="text-slate-500 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('itemName').value;
+            const market = document.getElementById('itemMarket').value;
+            const price = document.getElementById('itemPrice').value;
+
+            const newEntry = {
+                name: name,
+                market: market,
+                price: price,
+                date: new Date().toLocaleDateString('it-IT')
+            };
+
+            historyData.unshift(newEntry);
+            saveAndRender();
+
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemPrice').value = '';
+        });
+
+        function deleteItem(index) {
+            historyData.splice(index, 1);
+            saveAndRender();
+        }
+
+        function clearDatabase() {
+            if(confirm("Vuoi davvero cancellare tutto lo storico?")) {
+                historyData = [];
+                saveAndRender();
+            }
+        }
+
+        // Inizializza
+        renderList();
+    </script>
+</body>
+</html>
