@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v2.3 Pro</title>
+  <title>SmartSpesa v2.4 Pro</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v2.3 Pro -->
+  <!-- Header con Versione v2.4 Pro -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
         <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
       </h1>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.3 Pro</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.4 Pro</span>
     </div>
     <button type="button" onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
       <i class="fa-solid fa-circle-info"></i> Info
@@ -70,7 +70,7 @@
     <!-- Box Scanner Scontrino con Ritaglio -->
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Ritaglio (v2.3)
+        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Ritaglio (v2.4)
       </h2>
       <p class="text-xs text-slate-400">Scatta la foto, ritaglia la zona dei prezzi e avvia l'estrazione intelligente.</p>
       
@@ -87,7 +87,7 @@
         </div>
         <div class="grid grid-cols-2 gap-2 pt-1">
           <button type="button" onclick="processCroppedReceipt()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2 rounded-lg transition-colors cursor-pointer">
-            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Estrai Prezzo Ritagliato
+            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Estrai Prezzo
           </button>
           <button type="button" onclick="cancelCrop()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold text-xs py-2 rounded-lg transition-colors cursor-pointer">
             Annulla
@@ -165,7 +165,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v2.3 Pro
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v2.4 Pro
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -185,7 +185,7 @@
         </div>
 
         <div>
-          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">✨ Cosa ti offre la v2.3:</h3>
+          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">✨ Cosa ti offre la v2.4:</h3>
           <ul class="list-disc list-inside space-y-1 text-slate-400">
             <li><strong>Budget Mensile Dinamico:</strong> Imposta il budget e guarda il residuo scalarsi automaticamente a ogni spesa.</li>
             <li><strong>Scanner con Ritaglio Foto:</strong> Inquadra lo scontrino e ritaglia la zona desiderata per una precisione OCR assoluta.</li>
@@ -210,18 +210,59 @@
     let products = JSON.parse(localStorage.getItem('smartspesa_products')) || [];
     let monthlyBudget = parseFloat(localStorage.getItem('smartspesa_budget')) || 0;
     
-    const customMarketInput = document.getElementById('customMarketInput');
-    
-    // Imposta la data odierna di default nel form
-    const dateInput = document.getElementById('itemDate');
-    if (dateInput) {
-      dateInput.valueAsDate = new Date();
-    }
+    let customMarketInput, cropCanvas, ctx;
+    let loadedImage = null;
+    let startX = 0, startY = 0, endX = 0, endY = 0;
+    let isDragging = false;
 
-    if (monthlyBudget === 0) {
-      setTimeout(editBudget, 500);
-    }
-    updateBudgetDisplay();
+    window.addEventListener('DOMContentLoaded', () => {
+      customMarketInput = document.getElementById('customMarketInput');
+      cropCanvas = document.getElementById('cropCanvas');
+      if (cropCanvas) {
+        ctx = cropCanvas.getContext('2d');
+        
+        cropCanvas.addEventListener('mousedown', (e) => {
+          let pos = getCanvasPos(e);
+          startX = pos.x; startY = pos.y;
+          isDragging = true;
+        });
+
+        cropCanvas.addEventListener('touchstart', (e) => {
+          let pos = getCanvasPos(e);
+          startX = pos.x; startY = pos.y;
+          isDragging = true;
+          e.preventDefault();
+        }, { passive: false });
+
+        cropCanvas.addEventListener('mousemove', (e) => {
+          if (!isDragging) return;
+          let pos = getCanvasPos(e);
+          endX = pos.x; endY = pos.y;
+          drawCropBox();
+        });
+
+        cropCanvas.addEventListener('touchmove', (e) => {
+          if (!isDragging) return;
+          let pos = getCanvasPos(e);
+          endX = pos.x; endY = pos.y;
+          drawCropBox();
+          e.preventDefault();
+        }, { passive: false });
+      }
+
+      const dateInput = document.getElementById('itemDate');
+      if (dateInput) {
+        dateInput.valueAsDate = new Date();
+      }
+
+      if (monthlyBudget === 0) {
+        setTimeout(editBudget, 500);
+      }
+      
+      updateBudgetDisplay();
+      renderArchive();
+      generateWeeklyList();
+    });
 
     function editBudget() {
       let input = prompt("Inserisci il tuo Budget Mensile (€):", monthlyBudget > 0 ? monthlyBudget : "300");
@@ -255,33 +296,45 @@
     function updateBudgetDisplay() {
       let spent = calculateSpentTotal();
       let remaining = monthlyBudget - spent;
-      document.getElementById('budgetTotal').innerText = `€${monthlyBudget.toFixed(2)}`;
-      let remElem = document.getElementById('budgetRemaining');
-      remElem.innerText = `€${remaining.toFixed(2)}`;
-      remElem.className = remaining >= 0 ? "text-base font-bold text-emerald-400" : "text-base font-bold text-rose-400";
+      const totalEl = document.getElementById('budgetTotal');
+      const remEl = document.getElementById('budgetRemaining');
+      if (totalEl) totalEl.innerText = `€${monthlyBudget.toFixed(2)}`;
+      if (remEl) {
+        remEl.innerText = `€${remaining.toFixed(2)}`;
+        remEl.className = remaining >= 0 ? "text-base font-bold text-emerald-400" : "text-base font-bold text-rose-400";
+      }
     }
 
     function switchTab(tab) {
       const isWeekly = tab === 'weekly';
-      document.getElementById('viewWeekly').classList.toggle('hidden', !isWeekly);
-      document.getElementById('viewArchive').classList.toggle('hidden', isWeekly);
+      const viewWeekly = document.getElementById('viewWeekly');
+      const viewArchive = document.getElementById('viewArchive');
+      if (viewWeekly) viewWeekly.classList.toggle('hidden', !isWeekly);
+      if (viewArchive) viewArchive.classList.toggle('hidden', isWeekly);
       
-      document.getElementById('tabWeekly').className = isWeekly 
-        ? 'py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer' 
-        : 'py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer';
-        
-      document.getElementById('tabArchive').className = !isWeekly 
-        ? 'py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer' 
-        : 'py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer';
+      const tabWeekly = document.getElementById('tabWeekly');
+      const tabArchive = document.getElementById('tabArchive');
+      if (tabWeekly) {
+        tabWeekly.className = isWeekly 
+          ? 'py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer' 
+          : 'py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer';
+      }
+      if (tabArchive) {
+        tabArchive.className = !isWeekly 
+          ? 'py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer' 
+          : 'py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer';
+      }
 
       if (isWeekly) generateWeeklyList();
     }
 
     function toggleInfoModal(show) {
-      document.getElementById('infoModal').classList.toggle('hidden', !show);
+      const modal = document.getElementById('infoModal');
+      if (modal) modal.classList.toggle('hidden', !show);
     }
 
     function toggleCustomMarket(val) {
+      if (!customMarketInput) customMarketInput = document.getElementById('customMarketInput');
       if (val === 'CUSTOM') {
         customMarketInput.classList.remove('hidden');
         customMarketInput.required = true;
@@ -302,6 +355,7 @@
 
     function renderArchive() {
       const archiveList = document.getElementById('archiveList');
+      if (!archiveList) return;
       archiveList.innerHTML = '';
       if (products.length === 0) {
         archiveList.innerHTML = `<li class="text-xs text-slate-500 text-center py-4">Nessun prodotto nell'archivio.</li>`;
@@ -332,6 +386,7 @@
 
     function generateWeeklyList() {
       const weeklyList = document.getElementById('weeklyList');
+      if (!weeklyList) return;
       weeklyList.innerHTML = '';
       const now = new Date().getTime();
       
@@ -421,13 +476,6 @@
       }
     }
 
-    // GESTIONE RITAGLIO IMMAGINE E OCR ROBUSTA
-    let loadedImage = null;
-    let cropCanvas = document.getElementById('cropCanvas');
-    let ctx = cropCanvas.getContext('2d');
-    let startX = 0, startY = 0, endX = 0, endY = 0;
-    let isDragging = false;
-
     function loadCropImage(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -436,6 +484,9 @@
       reader.onload = function(e) {
         loadedImage = new Image();
         loadedImage.onload = function() {
+          if (!cropCanvas) cropCanvas = document.getElementById('cropCanvas');
+          if (!ctx && cropCanvas) ctx = cropCanvas.getContext('2d');
+
           let maxWidth = 320;
           let scale = maxWidth / loadedImage.width;
           cropCanvas.width = maxWidth;
@@ -447,7 +498,7 @@
           drawCropBox();
 
           document.getElementById('cropAreaContainer').classList.remove('hidden');
-          document.getElementById('ocrStatus'].innerText = "Ritaglia l'area dello scontrino e premi Estrai.";
+          document.getElementById('ocrStatus').innerText = "Ritaglia l'area dello scontrino e premi Estrai.";
         }
         loadedImage.src = e.target.result;
       }
@@ -456,6 +507,7 @@
     }
 
     function drawCropBox() {
+      if (!ctx || !loadedImage || !cropCanvas) return;
       ctx.drawImage(loadedImage, 0, 0, cropCanvas.width, cropCanvas.height);
       ctx.strokeStyle = '#6366f1';
       ctx.lineWidth = 2;
@@ -464,7 +516,6 @@
       ctx.fillRect(startX, startY, endX - startX, endY - startY);
     }
 
-    // Supporto Mouse e Touch per dispositivi mobili
     function getCanvasPos(e) {
       let rect = cropCanvas.getBoundingClientRect();
       let clientX = e.clientX || (e.touches && e.touches[0].clientX);
@@ -474,34 +525,6 @@
         y: clientY - rect.top
       };
     }
-
-    cropCanvas.addEventListener('mousedown', (e) => {
-      let pos = getCanvasPos(e);
-      startX = pos.x; startY = pos.y;
-      isDragging = true;
-    });
-
-    cropCanvas.addEventListener('touchstart', (e) => {
-      let pos = getCanvasPos(e);
-      startX = pos.x; startY = pos.y;
-      isDragging = true;
-      e.preventDefault();
-    });
-
-    cropCanvas.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      let pos = getCanvasPos(e);
-      endX = pos.x; endY = pos.y;
-      drawCropBox();
-    });
-
-    cropCanvas.addEventListener('touchmove', (e) => {
-      if (!isDragging) return;
-      let pos = getCanvasPos(e);
-      endX = pos.x; endY = pos.y;
-      drawCropBox();
-      e.preventDefault();
-    });
 
     window.addEventListener('mouseup', () => { isDragging = false; });
     window.addEventListener('touchend', () => { isDragging = false; });
@@ -569,14 +592,10 @@
           statusDiv.innerHTML = `<span class="text-amber-400"><i class="fa-solid fa-triangle-exclamation"></i> Prezzo non trovato nel ritaglio. Leggi il testo nel box sotto e scrivilo a mano.</span>`;
         }
       } catch (err) {
-        console.error("Errore OCR v2.3:", err);
+        console.error("Errore OCR v2.4:", err);
         statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. Riprova.</span>`;
       }
     }
-
-    // Avvio iniziale
-    renderArchive();
-    generateWeeklyList();
   </script>
 </body>
 </html>
