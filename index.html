@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v2.5 Pro</title>
+  <title>SmartSpesa v2.5.2</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v2.5 Pro -->
+  <!-- Header con Versione v2.5.2 -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
         <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
       </h1>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.5 Pro</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.5.2</span>
     </div>
     <button type="button" onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
       <i class="fa-solid fa-circle-info"></i> Info
@@ -69,15 +69,15 @@
     </div>
   </div>
 
-  <!-- SEZIONE 2: ARCHIVIO & INSERIMENTO PRODOTTI + OCR CON RITAGLIO REALE -->
+  <!-- SEZIONE 2: ARCHIVIO & INSERIMENTO PRODOTTI + OCR STABILE -->
   <div id="viewArchive" class="space-y-6 hidden">
     
-    <!-- Box Scanner Scontrino con Ritaglio Avanzato -->
+    <!-- Box Scanner Scontrino con Ritaglio e Memoria Pulita -->
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Ritaglio (v2.5)
+        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Ritaglio (v2.5.2)
       </h2>
-      <p class="text-xs text-slate-400">Scatta la foto, trascina il dito sul display per ritagliare solo l'area dei prezzi ed estrai.</p>
+      <p class="text-xs text-slate-400">Scatta la foto, trascina il dito sul display per ritagliare l'area dei prezzi ed estrai quante volte vuoi.</p>
       
       <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="loadCropImage(event)">
       <button type="button" onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
@@ -170,7 +170,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v2.5 Pro
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v2.5.2
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -190,10 +190,10 @@
         </div>
 
         <div>
-          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">✨ Cosa ti offre la v2.5:</h3>
+          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">✨ Cosa ti offre la v2.5.2:</h3>
           <ul class="list-disc list-inside space-y-1 text-slate-400">
             <li><strong>Budget Mensile & Spese Manuali:</strong> Gestisci il budget e scala o aggiungi importi al volo.</li>
-            <li><strong>Scanner con Ritaglio Reale:</strong> Seleziona con precisione millimetrica l'area dello scontrino da leggere.</li>
+            <li><strong>Scanner con Ritaglio Reale Stabile:</strong> Istanzia e chiude la memoria OCR a ogni foto, azzerando i crash.</li>
             <li><strong>Date e Frequenze:</strong> Tieni traccia di tutto in modo semplice e ordinato.</li>
             <li><strong>Privacy Totale:</strong> I dati restano solo sul tuo dispositivo.</li>
           </ul>
@@ -505,8 +505,9 @@
       reader.onload = function(e) {
         loadedImage = new Image();
         loadedImage.onload = function() {
-          if (!cropCanvas) cropCanvas = document.getElementById('cropCanvas');
-          if (!ctx && cropCanvas) ctx = cropCanvas.getContext('2d');
+          cropCanvas = document.getElementById('cropCanvas');
+          if (!cropCanvas) return;
+          ctx = cropCanvas.getContext('2d');
 
           let maxWidth = 300;
           let scale = maxWidth / loadedImage.width;
@@ -515,11 +516,10 @@
 
           ctx.drawImage(loadedImage, 0, 0, cropCanvas.width, cropCanvas.height);
           
-          // Inizializza un riquadro centrale di ritaglio scontrino
           startX = cropCanvas.width * 0.1;
-          startY = cropCanvas.height * 0.4;
+          startY = cropCanvas.height * 0.6;
           endX = cropCanvas.width * 0.9;
-          endY = cropCanvas.height * 0.8;
+          endY = cropCanvas.height * 0.95;
           drawCropBox();
 
           document.getElementById('cropAreaContainer').classList.remove('hidden');
@@ -540,15 +540,12 @@
       let w = Math.abs(endX - startX);
       let h = Math.abs(endY - startY);
 
-      // Ombra esterna scura
       ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
       ctx.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
 
-      // Ritaglio chiaro trasparente
       ctx.clearRect(x, y, w, h);
       ctx.drawImage(loadedImage, x, y, w, h, x, y, w, h);
 
-      // Bordo del box di ritaglio
       ctx.strokeStyle = '#6366f1';
       ctx.lineWidth = 2;
       ctx.strokeRect(x, y, w, h);
@@ -609,6 +606,7 @@
       document.getElementById('ocrStatus').innerText = "";
     }
 
+    // OCR ROBUSTO CON CHIusura WORKER SICURA (Anti-Crash)
     async function processCroppedReceipt() {
       document.getElementById('cropAreaContainer').classList.add('hidden');
       const statusDiv = document.getElementById('ocrStatus');
@@ -617,6 +615,7 @@
 
       statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Lettura ritaglio in corso...`;
 
+      let worker = null;
       try {
         let x = Math.min(startX, endX);
         let y = Math.min(startY, endY);
@@ -639,27 +638,19 @@
 
         let croppedDataUrl = tempCanvas.toDataURL('image/jpeg');
 
-        const result = await Tesseract.recognize(
-          croppedDataUrl,
-          'ita',
-          {
-            logger: m => {
-              if (m.status === 'recognizing text') {
-                statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Elaborazione: ${Math.round(m.progress * 100)}%`;
-              }
-            }
-          }
-        );
+        // Crea un worker pulito per questa specifica scansione
+        worker = await Tesseract.createWorker('ita');
+        const ret = await worker.recognize(croppedDataUrl);
+        await worker.terminate();
+        worker = null;
 
-        const text = result.data.text;
+        const text = ret.data.text;
         rawTextContent.value = text;
         rawTextBox.classList.remove('hidden');
 
-        // Filtro anti-sballo cifre: Cerca solo numeri con la virgola o punto seguiti da esatti 2 decimali (es. 1,19 o 12.50)
         let matches = text.match(/\b\d+[\.,]\d{2}\b/g);
 
         if (matches && matches.length > 0) {
-          // Prende l'ultimo prezzo valido (solitamente il totale o l'ultimo importo in basso nel ritaglio)
           let foundPrice = matches[matches.length - 1].replace(',', '.');
           document.getElementById('itemPrice').value = foundPrice;
           if (!document.getElementById('itemName').value) {
@@ -667,10 +658,13 @@
           }
           statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Prezzo trovato: €${foundPrice}! Controlla sotto.</span>`;
         } else {
-          statusDiv.innerHTML = `<span class="text-amber-400"><i class="fa-solid fa-triangle-exclamation"></i> Nessun prezzo chiaro trovato nel ritaglio. Leggi il testo sotto e inseriscilo a mano.</span>`;
+          statusDiv.innerHTML = `<span class="text-amber-400"><i class="fa-solid fa-triangle-exclamation"></i> Nessun prezzo trovato. Leggi il testo sotto e scrivilo a mano.</span>`;
         }
       } catch (err) {
-        console.error("Errore OCR v2.5:", err);
+        console.error("Errore OCR v2.5.2:", err);
+        if (worker) {
+          await worker.terminate().catch(() => {});
+        }
         statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. Riprova.</span>`;
       }
     }
