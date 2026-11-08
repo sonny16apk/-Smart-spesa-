@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v2.5.4</title>
+  <title>SmartSpesa v2.5.5</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v2.5.4 -->
+  <!-- Header con Versione v2.5.5 -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
         <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
       </h1>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.5.4</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.5.5</span>
     </div>
     <button type="button" onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
       <i class="fa-solid fa-circle-info"></i> Info
@@ -46,7 +46,7 @@
     </div>
     <div class="flex justify-end">
       <button type="button" onclick="resetMonthExpenses()" class="text-[10px] text-rose-400 hover:underline cursor-pointer">
-        <i class="fa-solid fa-rotate-left mr-1"></i> Azzera extra mese
+        <i class="fa-solid fa-rotate-left mr-1"></i> Azzera extra a 0
       </button>
     </div>
   </section>
@@ -74,13 +74,13 @@
     </div>
   </div>
 
-  <!-- SEZIONE 2: ARCHIVIO & INSERIMENTO PRODOTTI + OCR -->
+  <!-- SEZIONE 2: ARCHIVIO & INSERIMENTO PRODOTTI + OCR STABILE -->
   <div id="viewArchive" class="space-y-6 hidden">
     
-    <!-- Box Scanner Scontrino con Ritaglio Pulito -->
+    <!-- Box Scanner Scontrino con Ritaglio -->
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Ritaglio (v2.5.4)
+        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Ritaglio (v2.5.5)
       </h2>
       <p class="text-xs text-slate-400">Scatta la foto, trascina il dito sul display per evidenziare la zona dei prezzi ed estrai.</p>
       
@@ -175,7 +175,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v2.5.4
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v2.5.5
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -195,10 +195,10 @@
         </div>
 
         <div>
-          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">✨ Cosa ti offre la v2.5.4:</h3>
+          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">✨ Cosa ti offre la v2.5.5:</h3>
           <ul class="list-disc list-inside space-y-1 text-slate-400">
-            <li><strong>Budget Mensile Blindato:</strong> Gestione sicura del budget per evitare errori a zero o negativi.</li>
-            <li><strong>Scanner con Ritaglio Trasparente Pulito:</strong> Anteprima a colori reali dello scontrino con box di selezione nitido.</li>
+            <li><strong>Budget Mensile Blindato:</strong> Gestione sicura del budget con reset pulito a zero.</li>
+            <li><strong>Scanner OCR Affidabile:</strong> Riconoscimento rapido e stabile del testo con ritaglio pulito a colori.</li>
             <li><strong>Date e Frequenze:</strong> Tieni traccia di tutto in modo semplice e ordinato.</li>
             <li><strong>Privacy Totale:</strong> I dati restano solo sul tuo dispositivo.</li>
           </ul>
@@ -306,7 +306,7 @@
     }
 
     function resetMonthExpenses() {
-      if (confirm("Vuoi azzerare le spese extra manuali registrate questo mese?")) {
+      if (confirm("Vuoi azzerare le spese extra manuali portandole a 0?")) {
         manualExpenses = 0;
         localStorage.setItem('smartspesa_manual_expenses', manualExpenses);
         updateBudgetDisplay();
@@ -550,7 +550,6 @@
 
     function drawCropBox() {
       if (!ctx || !loadedImage || !cropCanvas) return;
-      // Ridisegna l'immagine a colori pulita
       ctx.drawImage(loadedImage, 0, 0, cropCanvas.width, cropCanvas.height);
       
       let x = Math.min(startX, endX);
@@ -558,12 +557,10 @@
       let w = Math.abs(endX - startX);
       let h = Math.abs(endY - startY);
 
-      // Disegna un bordo netto attorno all'area selezionata senza coprire con veli opachi
-      ctx.strokeStyle = '#a855f7'; // Viola acceso
+      ctx.strokeStyle = '#a855f7';
       ctx.lineWidth = 3;
       ctx.strokeRect(x, y, w, h);
       
-      // Sfumatura leggera trasparente interna per vedere la selezione
       ctx.fillStyle = 'rgba(168, 85, 247, 0.15)';
       ctx.fillRect(x, y, w, h);
     }
@@ -623,6 +620,7 @@
       document.getElementById('ocrStatus').innerText = "";
     }
 
+    // Scanner OCR stabile con Tesseract standard v4
     async function processCroppedReceipt() {
       document.getElementById('cropAreaContainer').classList.add('hidden');
       const statusDiv = document.getElementById('ocrStatus');
@@ -631,7 +629,6 @@
 
       statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Lettura ritaglio in corso...`;
 
-      let worker = null;
       try {
         let x = Math.min(startX, endX);
         let y = Math.min(startY, endY);
@@ -654,12 +651,19 @@
 
         let croppedDataUrl = tempCanvas.toDataURL('image/jpeg');
 
-        worker = await Tesseract.createWorker('ita');
-        const ret = await worker.recognize(croppedDataUrl);
-        await worker.terminate();
-        worker = null;
+        const result = await Tesseract.recognize(
+          croppedDataUrl,
+          'ita',
+          {
+            logger: m => {
+              if (m.status === 'recognizing text') {
+                statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Elaborazione: ${Math.round(m.progress * 100)}%`;
+              }
+            }
+          }
+        );
 
-        const text = ret.data.text;
+        const text = result.data.text;
         rawTextContent.value = text;
         rawTextBox.classList.remove('hidden');
 
@@ -676,10 +680,7 @@
           statusDiv.innerHTML = `<span class="text-amber-400"><i class="fa-solid fa-triangle-exclamation"></i> Nessun prezzo trovato. Leggi il testo sotto e scrivilo a mano.</span>`;
         }
       } catch (err) {
-        console.error("Errore OCR v2.5.4:", err);
-        if (worker) {
-          await worker.terminate().catch(() => {});
-        }
+        console.error("Errore OCR v2.5.5:", err);
         statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. Riprova.</span>`;
       }
     }
