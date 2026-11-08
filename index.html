@@ -3,52 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v2.6</title>
+  <title>SmartSpesa v2.7</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v2.6 -->
+  <!-- Header con Versione v2.7 -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
         <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
       </h1>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.6</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.7</span>
     </div>
     <button type="button" onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
       <i class="fa-solid fa-circle-info"></i> Info
     </button>
   </header>
 
-  <!-- WIDGET BUDGET MENSILE & GESTIONE AVANZI -->
+  <!-- WIDGET BUDGET PULITO E CENTRATO -->
   <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 mb-4 space-y-3">
     <div class="flex justify-between items-center">
-      <span class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-wallet text-indigo-400 mr-1"></i> Budget Mensile</span>
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-wallet text-indigo-400 mr-1"></i> Budget Mensile</span>
+        <span id="budgetTotal" class="text-xs font-mono text-indigo-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">€0.00</span>
+      </div>
       <div class="flex gap-2">
         <button type="button" onclick="addManualAdjustment()" class="text-[11px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-1 rounded hover:bg-indigo-900 cursor-pointer">
-          <i class="fa-solid fa-plus-minus mr-1"></i> Conguaglio/Avanzo
+          <i class="fa-solid fa-plus-minus mr-1"></i> Avanzi/Extra
         </button>
         <button type="button" onclick="editBudget()" class="text-[11px] text-indigo-400 hover:underline cursor-pointer">Modifica</button>
       </div>
     </div>
-    <div class="grid grid-cols-2 gap-2 text-center">
-      <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-700/60">
-        <div class="text-[10px] text-slate-400 uppercase tracking-wider">Disponibile</div>
-        <div id="budgetRemaining" class="text-base font-bold text-emerald-400">€0.00</div>
-      </div>
-      <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-700/60">
-        <div class="text-[10px] text-slate-400 uppercase tracking-wider">Totale Budget</div>
-        <div id="budgetTotal" class="text-base font-bold text-indigo-300">€0.00</div>
-      </div>
-    </div>
-    <div class="flex justify-between items-center text-[10px] text-slate-400 pt-1">
-      <span id="adjustmentInfo">Nessun conguaglio applicato</span>
-      <button type="button" onclick="resetMonthExpenses()" class="text-rose-400 hover:underline cursor-pointer">
-        <i class="fa-solid fa-rotate-left mr-1"></i> Azzera extra/avanzi
-      </button>
+
+    <!-- Disponibile in evidenza assoluta -->
+    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700/80 text-center space-y-1">
+      <div class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">Disponibile Reale</div>
+      <div id="budgetRemaining" class="text-3xl font-extrabold text-emerald-400">€0.00</div>
+      <div id="adjustmentInfo" class="text-[10px] text-slate-400 pt-0.5">Nessun conguaglio applicato</div>
     </div>
   </section>
 
@@ -65,14 +59,24 @@
     </button>
   </div>
 
-  <!-- SEZIONE 1: LISTA SETTIMANALE -->
+  <!-- SEZIONE 1: LISTA SETTIMANALE + INSERIMENTO RAPIDO -->
   <div id="viewWeekly" class="space-y-4">
+    <!-- Box Inserimento Rapido in Home -->
+    <div class="bg-slate-800 p-3 rounded-xl shadow-lg border border-slate-700">
+      <h2 class="text-xs font-semibold text-slate-300 mb-2 flex items-center gap-1">
+        <i class="fa-solid fa-plus text-indigo-400"></i> Aggiungi al volo
+      </h2>
+      <form onsubmit="handleQuickSubmit(event)" class="grid grid-cols-12 gap-2">
+        <input type="text" id="quickName" placeholder="Prodotto..." required class="col-span-5 bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+        <input type="number" step="0.01" id="quickPrice" placeholder="€" required class="col-span-3 bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+        <button type="submit" class="col-span-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2 rounded-lg cursor-pointer">Salva</button>
+      </form>
+    </div>
+
+    <!-- Lista Spesa -->
     <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
       <h2 class="text-sm font-semibold text-slate-300 mb-3 flex items-center justify-between">
         <span>Da Comprare Questa Settimana</span>
-        <button type="button" onclick="generateWeeklyList()" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded-md text-indigo-300 cursor-pointer">
-          <i class="fa-solid fa-rotate mr-1"></i> Aggiorna
-        </button>
       </h2>
       <ul id="weeklyList" class="space-y-2"></ul>
     </div>
@@ -84,9 +88,9 @@
     <!-- Box Scanner Scontrino con Ritaglio -->
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Revisione (v2.6)
+        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Revisione (v2.7)
       </h2>
-      <p class="text-xs text-slate-400">Scatta la foto, ritaglia l'area dello scontrino e rivedi gli articoli rilevati prima di salvarli.</p>
+      <p class="text-xs text-slate-400">Scatta la foto, ritaglia l'area e rivedi gli articoli rilevati prima di salvarli.</p>
       
       <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="loadCropImage(event)">
       <button type="button" onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
@@ -100,10 +104,10 @@
           <canvas id="cropCanvas" class="max-w-full cursor-crosshair touch-none"></canvas>
         </div>
         <div class="grid grid-cols-2 gap-2 pt-1">
-          <button type="button" onclick="processCroppedReceipt()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2 rounded-lg transition-colors cursor-pointer">
+          <button type="button" onclick="processCroppedReceipt()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2 rounded-lg cursor-pointer">
             <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Leggi Articoli
           </button>
-          <button type="button" onclick="cancelCrop()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold text-xs py-2 rounded-lg transition-colors cursor-pointer">
+          <button type="button" onclick="cancelCrop()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold text-xs py-2 rounded-lg cursor-pointer">
             Annulla
           </button>
         </div>
@@ -130,12 +134,12 @@
         
         <div class="space-y-2">
           <select id="itemMarket" onchange="toggleCustomMarket(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
-            <option value="Conad">Conad</option>
-            <option value="Coop">Coop</option>
+            <option value="Prix">Prix</option>
             <option value="Lidl">Lidl</option>
+            <option value="Coop">Coop</option>
+            <option value="Conad">Conad</option>
             <option value="Eurospin">Eurospin</option>
             <option value="Esselunga">Esselunga</option>
-            <option value="Prix">Prix</option>
             <option value="CUSTOM">+ Aggiungi supermercato a mano</option>
           </select>
           <input type="text" id="customMarketInput" placeholder="Nome supermercato..." 
@@ -187,12 +191,12 @@
     </div>
   </div>
 
-  <!-- FINESTRA MODALE INFO -->
+  <!-- FINESTRA MODALE INFO RIORGANIZZATA -->
   <div id="infoModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v2.6
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v2.7
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -200,25 +204,25 @@
       </div>
 
       <div class="space-y-3 text-slate-300 text-xs">
-        <p>SmartSpesa è nata per aiutarti a gestire la spesa quotidiana senza ansia e con totale controllo finanziario.</p>
         <div>
-          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">✨ Funzionalità v2.6:</h3>
-          <ul class="list-disc list-inside space-y-1 text-slate-400">
-            <li><strong>Budget Personalizzato & Conguagli:</strong> Imposta il budget e scala o aggiungi avanzi/spese (es. i 50€ del mese precedente).</li>
-            <li><strong>Scanner Scontrino con Revisione:</strong> Leggi lo scontrino, visualizza e modifica al volo ogni singolo articolo, prezzo (€) e supermercato prima di salvarlo.</li>
-            <li><strong>Divisione per Supermercato:</strong> Visualizza l'archivio raggruppato per negozio (Prix, Lidl, Coop, ecc.) con modifiche istantanee.</li>
-            <li><strong>Privacy Totale:</strong> I dati restano solo sul tuo dispositivo.</li>
+          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">📘 Funzionalità Principali:</h3>
+          <ul class="list-disc list-inside space-y-1.5 text-slate-400">
+            <li><strong>Budget e Conguagli:</strong> Imposta il budget mensile e gestisci avanzi o spese extra (es. i 50€ del mese precedente).</li>
+            <li><strong>Scanner Scontrino Inteligente:</strong> Fotografa, ritaglia e rivedi ogni articolo e prezzo estratto prima di salvarlo.</li>
+            <li><strong>Lista Rapida & Settimanale:</strong> Inserisci articoli al volo dalla home e segui le scadenze automatiche.</li>
+            <li><strong>Gestione per Supermercato:</strong> Visualizza e modifica i prodotti divisi per negozio (Prix, Lidl, Coop, ecc.).</li>
+            <li><strong>Privacy Totale:</strong> I dati restano protetti sul tuo dispositivo (Local-First).</li>
           </ul>
         </div>
       </div>
 
-      <div class="border-t border-slate-700 pt-3 text-center">
-        <p class="text-[10px] text-slate-400">Progetto indipendente ideato e sviluppato da</p>
-        <p class="text-xs font-bold text-indigo-400 mt-0.5">Bortot Sonny</p>
+      <!-- Firma minimal -->
+      <div class="border-t border-slate-700/60 pt-2 text-right">
+        <p class="text-[9px] text-slate-500 font-mono">dev. Bortot Sonny</p>
       </div>
 
       <button type="button" onclick="toggleInfoModal(false)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-xl text-xs transition-colors cursor-pointer">
-        Ho capito, torna all'app
+        Ho capito, chiudi
       </button>
     </div>
   </div>
@@ -300,7 +304,7 @@
     }
 
     function addManualAdjustment() {
-      let input = prompt("Inserisci importo da scalare o conguagliare (es. 50 per avanzato/rimanenza o -20 per extra):", "50");
+      let input = prompt("Inserisci importo da conguagliare (es. 50 per avanzato/rimanenza o -20 per extra):", "50");
       if (input !== null) {
         let val = parseFloat(input.replace(',', '.'));
         if (!isNaN(val)) {
@@ -308,14 +312,6 @@
           localStorage.setItem('smartspesa_manual_adjustment', manualAdjustment);
           updateBudgetDisplay();
         }
-      }
-    }
-
-    function resetMonthExpenses() {
-      if (confirm("Vuoi azzerare i conguagli/avanzi registrati?")) {
-        manualAdjustment = 0;
-        localStorage.setItem('smartspesa_manual_adjustment', manualAdjustment);
-        updateBudgetDisplay();
       }
     }
 
@@ -346,10 +342,10 @@
       if (totalEl) totalEl.innerText = `€${monthlyBudget.toFixed(2)}`;
       if (remEl) {
         remEl.innerText = `€${remaining.toFixed(2)}`;
-        remEl.className = remaining >= 0 ? "text-base font-bold text-emerald-400" : "text-base font-bold text-rose-400";
+        remEl.className = remaining >= 0 ? "text-3xl font-extrabold text-emerald-400" : "text-3xl font-extrabold text-rose-400";
       }
       if (infoEl) {
-        infoEl.innerText = manualAdjustment !== 0 ? `Conguaglio/Avanzo: €${manualAdjustment.toFixed(2)}` : "Nessun conguaglio applicato";
+        infoEl.innerText = manualAdjustment !== 0 ? `Conguaglio/Avanzo applicato: €${manualAdjustment.toFixed(2)}` : "Nessun conguaglio applicato";
       }
     }
 
@@ -396,6 +392,28 @@
       updateBudgetDisplay();
     }
 
+    function handleQuickSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('quickName').value.trim();
+      const price = document.getElementById('quickPrice').value;
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      if (name && price) {
+        products.unshift({
+          name: name,
+          market: 'Prix',
+          price: parseFloat(price).toFixed(2),
+          frequency: "14",
+          date: todayStr,
+          createdAt: new Date().getTime(),
+          lastBought: new Date().getTime()
+        });
+        saveAndRender();
+        document.getElementById('quickName').value = '';
+        document.getElementById('quickPrice').value = '';
+      }
+    }
+
     function renderArchive() {
       const archiveList = document.getElementById('archiveList');
       if (!archiveList) return;
@@ -437,7 +455,6 @@
         return;
       }
 
-      // Raggruppa per supermercato
       let marketsMap = {};
       products.forEach((item, idx) => {
         let m = item.market || 'Altro';
@@ -690,7 +707,6 @@
       document.getElementById('ocrStatus').innerText = "";
     }
 
-    // OCR AVANZATO PER ETRARRE PIÙ ARTICOLI E PREZZI DA RIVEDERE
     async function processCroppedReceipt() {
       document.getElementById('cropAreaContainer').classList.add('hidden');
       const statusDiv = document.getElementById('ocrStatus');
@@ -733,7 +749,6 @@
         const lines = text.split('\n');
         tempScannedItems = [];
 
-        // Analizza le righe per estrarre coppie Nome + Prezzo
         lines.forEach(line => {
           let cleanLine = line.trim();
           if (cleanLine.length < 3) return;
@@ -747,20 +762,19 @@
             tempScannedItems.push({
               name: name,
               price: price,
-              market: "Coop"
+              market: "Prix"
             });
           }
         });
 
         if (tempScannedItems.length === 0) {
-          // Fallivo? Aggiungi una riga vuota modificabile dall'utente
-          tempScannedItems.push({ name: "Prodotto Scontrino", price: "1.00", market: "Coop" });
+          tempScannedItems.push({ name: "Prodotto Scontrino", price: "1.00", market: "Prix" });
         }
 
         renderScannedItemsReview();
         statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Scansione completata! Rivedi e modifica sotto.</span>`;
       } catch (err) {
-        console.error("Errore OCR v2.6:", err);
+        console.error("Errore OCR v2.7:", err);
         statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. Riprova.</span>`;
       }
     }
@@ -810,7 +824,7 @@
         if (item.name && item.price) {
           products.unshift({
             name: item.name,
-            market: item.market || 'Coop',
+            market: item.market || 'Prix',
             price: parseFloat(item.price).toFixed(2),
             frequency: "14",
             date: todayStr,
