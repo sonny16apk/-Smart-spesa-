@@ -3,33 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v2.5.5</title>
+  <title>SmartSpesa v2.6</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v2.5.5 -->
+  <!-- Header con Versione v2.6 -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
         <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
       </h1>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.5.5</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.6</span>
     </div>
     <button type="button" onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
       <i class="fa-solid fa-circle-info"></i> Info
     </button>
   </header>
 
-  <!-- WIDGET BUDGET MENSILE & SPESA MANUALE -->
+  <!-- WIDGET BUDGET MENSILE & GESTIONE AVANZI -->
   <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 mb-4 space-y-3">
     <div class="flex justify-between items-center">
       <span class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-wallet text-indigo-400 mr-1"></i> Budget Mensile</span>
       <div class="flex gap-2">
-        <button type="button" onclick="addManualExpense()" class="text-[11px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-1 rounded hover:bg-indigo-900 cursor-pointer">
-          <i class="fa-solid fa-plus-minus mr-1"></i> Spesa extra
+        <button type="button" onclick="addManualAdjustment()" class="text-[11px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-1 rounded hover:bg-indigo-900 cursor-pointer">
+          <i class="fa-solid fa-plus-minus mr-1"></i> Conguaglio/Avanzo
         </button>
         <button type="button" onclick="editBudget()" class="text-[11px] text-indigo-400 hover:underline cursor-pointer">Modifica</button>
       </div>
@@ -44,20 +44,24 @@
         <div id="budgetTotal" class="text-base font-bold text-indigo-300">€0.00</div>
       </div>
     </div>
-    <div class="flex justify-end">
-      <button type="button" onclick="resetMonthExpenses()" class="text-[10px] text-rose-400 hover:underline cursor-pointer">
-        <i class="fa-solid fa-rotate-left mr-1"></i> Azzera extra a 0
+    <div class="flex justify-between items-center text-[10px] text-slate-400 pt-1">
+      <span id="adjustmentInfo">Nessun conguaglio applicato</span>
+      <button type="button" onclick="resetMonthExpenses()" class="text-rose-400 hover:underline cursor-pointer">
+        <i class="fa-solid fa-rotate-left mr-1"></i> Azzera extra/avanzi
       </button>
     </div>
   </section>
 
   <!-- Navigazione a Schede (Tab) -->
-  <div class="grid grid-cols-2 gap-2 mb-6 bg-slate-800 p-1 rounded-xl border border-slate-700">
-    <button type="button" onclick="switchTab('weekly')" id="tabWeekly" class="py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer">
-      <i class="fa-solid fa-list-check mr-1"></i> Lista Settimanale
+  <div class="grid grid-cols-3 gap-1 mb-6 bg-slate-800 p-1 rounded-xl border border-slate-700 text-center">
+    <button type="button" onclick="switchTab('weekly')" id="tabWeekly" class="py-2 text-[11px] font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer">
+      <i class="fa-solid fa-list-check mr-1"></i> Lista
     </button>
-    <button type="button" onclick="switchTab('archive')" id="tabArchive" class="py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer">
-      <i class="fa-solid fa-box-archive mr-1"></i> Archivio & Prezzi
+    <button type="button" onclick="switchTab('archive')" id="tabArchive" class="py-2 text-[11px] font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer">
+      <i class="fa-solid fa-camera mr-1"></i> Scanner & Inserisci
+    </button>
+    <button type="button" onclick="switchTab('markets')" id="tabMarkets" class="py-2 text-[11px] font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer">
+      <i class="fa-solid fa-store mr-1"></i> Per Supermercato
     </button>
   </div>
 
@@ -74,30 +78,30 @@
     </div>
   </div>
 
-  <!-- SEZIONE 2: ARCHIVIO & INSERIMENTO PRODOTTI + OCR STABILE -->
+  <!-- SEZIONE 2: SCANNER SCONTRINO & ARCHIVIO -->
   <div id="viewArchive" class="space-y-6 hidden">
     
     <!-- Box Scanner Scontrino con Ritaglio -->
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Ritaglio (v2.5.5)
+        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Revisione (v2.6)
       </h2>
-      <p class="text-xs text-slate-400">Scatta la foto, trascina il dito sul display per evidenziare la zona dei prezzi ed estrai.</p>
+      <p class="text-xs text-slate-400">Scatta la foto, ritaglia l'area dello scontrino e rivedi gli articoli rilevati prima di salvarli.</p>
       
       <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="loadCropImage(event)">
       <button type="button" onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
         <i class="fa-solid fa-crop"></i> Seleziona / Scatta foto scontrino
       </button>
 
-      <!-- Area Anteprima e Ritaglio Pulito -->
+      <!-- Area Anteprima e Ritaglio -->
       <div id="cropAreaContainer" class="hidden space-y-2 bg-slate-900 p-3 rounded-xl border border-indigo-900">
-        <div class="text-[11px] text-indigo-300 font-medium text-center">Trascina il rettangolo sui prezzi:</div>
+        <div class="text-[11px] text-indigo-300 font-medium text-center">Trascina il rettangolo sullo scontrino:</div>
         <div class="overflow-hidden rounded-lg flex justify-center bg-black max-h-72 relative">
           <canvas id="cropCanvas" class="max-w-full cursor-crosshair touch-none"></canvas>
         </div>
         <div class="grid grid-cols-2 gap-2 pt-1">
           <button type="button" onclick="processCroppedReceipt()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2 rounded-lg transition-colors cursor-pointer">
-            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Estrai Prezzo
+            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Leggi Articoli
           </button>
           <button type="button" onclick="cancelCrop()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold text-xs py-2 rounded-lg transition-colors cursor-pointer">
             Annulla
@@ -107,16 +111,19 @@
       
       <div id="ocrStatus" class="text-xs text-indigo-400 text-center font-medium"></div>
 
-      <!-- Box Testo Trasparente OCR -->
-      <div id="ocrRawTextContainer" class="mt-2 hidden">
-        <label class="block text-[11px] text-slate-400 mb-1">Testo rilevato nel ritaglio:</label>
-        <textarea id="ocrRawTextContent" readonly rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-300 focus:outline-none"></textarea>
+      <!-- Schermata di Revisione Articoli Scansionati -->
+      <div id="ocrReviewContainer" class="hidden space-y-3 bg-slate-900 p-3 rounded-xl border border-indigo-900">
+        <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Modifica e Salva Articoli Rilevati:</h3>
+        <div id="scannedItemsList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+        <button type="button" onclick="saveAllScannedItems()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2 rounded-lg cursor-pointer">
+          Conferma e Salva Tutti in Archivio
+        </button>
       </div>
     </section>
 
-    <!-- Inserimento Manuale Prodotto con Data -->
+    <!-- Inserimento Manuale Prodotto -->
     <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
-      <h2 class="text-sm font-semibold mb-3 text-slate-300">Aggiungi / Configura Prodotto</h2>
+      <h2 class="text-sm font-semibold mb-3 text-slate-300">Aggiungi / Configura Prodotto Manuale</h2>
       <form id="itemForm" class="space-y-3" onsubmit="handleFormSubmit(event)">
         <input type="text" id="itemName" placeholder="Es. Caffè, Latte, Pane..." required 
                class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
@@ -147,7 +154,6 @@
           </select>
         </div>
 
-        <!-- Campo Data Spesa -->
         <div>
           <label class="block text-[11px] text-slate-400 mb-1">Data acquisto:</label>
           <input type="date" id="itemDate" required 
@@ -160,7 +166,7 @@
       </form>
     </section>
 
-    <!-- Storico Archivio -->
+    <!-- Storico Archivio Generale -->
     <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-sm font-semibold text-slate-300">Tutti i Prodotti Salvati</h2>
@@ -170,12 +176,23 @@
     </section>
   </div>
 
+  <!-- SEZIONE 3: PRODOTTI DIVISI PER SUPERMERCATO -->
+  <div id="viewMarkets" class="space-y-4 hidden">
+    <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
+      <h2 class="text-sm font-semibold text-slate-300 mb-3 flex items-center justify-between">
+        <span>Archivio per Supermercato</span>
+        <span class="text-[11px] text-indigo-400">Modifica o elimina al volo</span>
+      </h2>
+      <div id="marketsContainer" class="space-y-4"></div>
+    </div>
+  </div>
+
   <!-- FINESTRA MODALE INFO -->
   <div id="infoModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v2.5.5
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v2.6
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -183,23 +200,13 @@
       </div>
 
       <div class="space-y-3 text-slate-300 text-xs">
-        <p>
-          SmartSpesa è nata per aiutarti a gestire la spesa quotidiana senza ansia, dimenticanze o confusione mentale.
-        </p>
-
-        <div class="bg-indigo-950/50 p-3 rounded-lg border border-indigo-900/50">
-          <h3 class="font-semibold text-indigo-300 uppercase tracking-wider mb-1">🧠 Pensata per la neurodivergenza</h3>
-          <p class="text-slate-300">
-            SmartSpesa è progettata con cura per venire incontro a un cervello neurodivergente (riducendo il sovraccarico visivo, automatizzando le scadenze e suddividendo le schermate in modo logico), ma è uno strumento pulito e funzionale che <strong>va benissimo per chiunque</strong> voglia ottimizzare il tempo e il denaro.
-          </p>
-        </div>
-
+        <p>SmartSpesa è nata per aiutarti a gestire la spesa quotidiana senza ansia e con totale controllo finanziario.</p>
         <div>
-          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">✨ Cosa ti offre la v2.5.5:</h3>
+          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">✨ Funzionalità v2.6:</h3>
           <ul class="list-disc list-inside space-y-1 text-slate-400">
-            <li><strong>Budget Mensile Blindato:</strong> Gestione sicura del budget con reset pulito a zero.</li>
-            <li><strong>Scanner OCR Affidabile:</strong> Riconoscimento rapido e stabile del testo con ritaglio pulito a colori.</li>
-            <li><strong>Date e Frequenze:</strong> Tieni traccia di tutto in modo semplice e ordinato.</li>
+            <li><strong>Budget Personalizzato & Conguagli:</strong> Imposta il budget e scala o aggiungi avanzi/spese (es. i 50€ del mese precedente).</li>
+            <li><strong>Scanner Scontrino con Revisione:</strong> Leggi lo scontrino, visualizza e modifica al volo ogni singolo articolo, prezzo (€) e supermercato prima di salvarlo.</li>
+            <li><strong>Divisione per Supermercato:</strong> Visualizza l'archivio raggruppato per negozio (Prix, Lidl, Coop, ecc.) con modifiche istantanee.</li>
             <li><strong>Privacy Totale:</strong> I dati restano solo sul tuo dispositivo.</li>
           </ul>
         </div>
@@ -218,23 +225,19 @@
 
   <script>
     let products = JSON.parse(localStorage.getItem('smartspesa_products')) || [];
-    let monthlyBudget = parseFloat(localStorage.getItem('smartspesa_budget')) || 300;
-    let manualExpenses = parseFloat(localStorage.getItem('smartspesa_manual_expenses')) || 0;
+    let monthlyBudget = parseFloat(localStorage.getItem('smartspesa_budget')) || 0;
+    let manualAdjustment = parseFloat(localStorage.getItem('smartspesa_manual_adjustment')) || 0;
     
     let customMarketInput, cropCanvas, ctx;
     let loadedImage = null;
     let startX = 0, startY = 0, endX = 0, endY = 0;
     let isDragging = false;
+    let tempScannedItems = [];
 
     window.addEventListener('DOMContentLoaded', () => {
       customMarketInput = document.getElementById('customMarketInput');
       cropCanvas = document.getElementById('cropCanvas');
       
-      if (monthlyBudget <= 0) {
-        monthlyBudget = 300;
-        localStorage.setItem('smartspesa_budget', monthlyBudget);
-      }
-
       if (cropCanvas) {
         ctx = cropCanvas.getContext('2d');
         
@@ -273,42 +276,45 @@
       if (dateInput) {
         dateInput.valueAsDate = new Date();
       }
+
+      if (monthlyBudget === 0 && products.length === 0 && manualAdjustment === 0) {
+        setTimeout(editBudget, 400);
+      }
       
       updateBudgetDisplay();
       renderArchive();
+      renderMarketsView();
       generateWeeklyList();
     });
 
     function editBudget() {
-      let input = prompt("Inserisci il tuo Budget Mensile Totale (€):", monthlyBudget);
+      let input = prompt("Inserisci il tuo Budget Mensile (€):", monthlyBudget > 0 ? monthlyBudget : "300");
       if (input !== null) {
         let val = parseFloat(input.replace(',', '.'));
-        if (!isNaN(val) && val > 0) {
+        if (!isNaN(val) && val >= 0) {
           monthlyBudget = val;
           localStorage.setItem('smartspesa_budget', monthlyBudget);
           updateBudgetDisplay();
-        } else {
-          alert("Inserisci un valore valido maggiore di zero.");
         }
       }
     }
 
-    function addManualExpense() {
-      let input = prompt("Inserisci importo spesa extra o da scalare (es. 15.50 o -5 per rimborsare):", "10.00");
+    function addManualAdjustment() {
+      let input = prompt("Inserisci importo da scalare o conguagliare (es. 50 per avanzato/rimanenza o -20 per extra):", "50");
       if (input !== null) {
         let val = parseFloat(input.replace(',', '.'));
         if (!isNaN(val)) {
-          manualExpenses += val;
-          localStorage.setItem('smartspesa_manual_expenses', manualExpenses);
+          manualAdjustment += val;
+          localStorage.setItem('smartspesa_manual_adjustment', manualAdjustment);
           updateBudgetDisplay();
         }
       }
     }
 
     function resetMonthExpenses() {
-      if (confirm("Vuoi azzerare le spese extra manuali portandole a 0?")) {
-        manualExpenses = 0;
-        localStorage.setItem('smartspesa_manual_expenses', manualExpenses);
+      if (confirm("Vuoi azzerare i conguagli/avanzi registrati?")) {
+        manualAdjustment = 0;
+        localStorage.setItem('smartspesa_manual_adjustment', manualAdjustment);
         updateBudgetDisplay();
       }
     }
@@ -318,7 +324,7 @@
       let currentMonth = now.getMonth();
       let currentYear = now.getFullYear();
 
-      let totalSpent = manualExpenses;
+      let totalSpent = -manualAdjustment; 
       products.forEach(item => {
         if (item.date) {
           let d = new Date(item.date);
@@ -331,39 +337,37 @@
     }
 
     function updateBudgetDisplay() {
-      if (monthlyBudget <= 0) monthlyBudget = 300;
       let spent = calculateSpentTotal();
       let remaining = monthlyBudget - spent;
       const totalEl = document.getElementById('budgetTotal');
       const remEl = document.getElementById('budgetRemaining');
+      const infoEl = document.getElementById('adjustmentInfo');
+
       if (totalEl) totalEl.innerText = `€${monthlyBudget.toFixed(2)}`;
       if (remEl) {
         remEl.innerText = `€${remaining.toFixed(2)}`;
         remEl.className = remaining >= 0 ? "text-base font-bold text-emerald-400" : "text-base font-bold text-rose-400";
       }
+      if (infoEl) {
+        infoEl.innerText = manualAdjustment !== 0 ? `Conguaglio/Avanzo: €${manualAdjustment.toFixed(2)}` : "Nessun conguaglio applicato";
+      }
     }
 
     function switchTab(tab) {
       const isWeekly = tab === 'weekly';
-      const viewWeekly = document.getElementById('viewWeekly');
-      const viewArchive = document.getElementById('viewArchive');
-      if (viewWeekly) viewWeekly.classList.toggle('hidden', !isWeekly);
-      if (viewArchive) viewArchive.classList.toggle('hidden', isWeekly);
+      const isArchive = tab === 'archive';
+      const isMarkets = tab === 'markets';
+
+      document.getElementById('viewWeekly').classList.toggle('hidden', !isWeekly);
+      document.getElementById('viewArchive').classList.toggle('hidden', !isArchive);
+      document.getElementById('viewMarkets').classList.toggle('hidden', !isMarkets);
       
-      const tabWeekly = document.getElementById('tabWeekly');
-      const tabArchive = document.getElementById('tabArchive');
-      if (tabWeekly) {
-        tabWeekly.className = isWeekly 
-          ? 'py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer' 
-          : 'py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer';
-      }
-      if (tabArchive) {
-        tabArchive.className = !isWeekly 
-          ? 'py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer' 
-          : 'py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer';
-      }
+      document.getElementById('tabWeekly').className = isWeekly ? 'py-2 text-[11px] font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer' : 'py-2 text-[11px] font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer';
+      document.getElementById('tabArchive').className = isArchive ? 'py-2 text-[11px] font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer' : 'py-2 text-[11px] font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer';
+      document.getElementById('tabMarkets').className = isMarkets ? 'py-2 text-[11px] font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer' : 'py-2 text-[11px] font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer';
 
       if (isWeekly) generateWeeklyList();
+      if (isMarkets) renderMarketsView();
     }
 
     function toggleInfoModal(show) {
@@ -387,6 +391,7 @@
     function saveAndRender() {
       localStorage.setItem('smartspesa_products', JSON.stringify(products));
       renderArchive();
+      renderMarketsView();
       generateWeeklyList();
       updateBudgetDisplay();
     }
@@ -422,6 +427,72 @@
       });
     }
 
+    function renderMarketsView() {
+      const container = document.getElementById('marketsContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (products.length === 0) {
+        container.innerHTML = `<div class="text-xs text-slate-500 text-center py-6">Nessun supermercato o prodotto registrato.</div>`;
+        return;
+      }
+
+      // Raggruppa per supermercato
+      let marketsMap = {};
+      products.forEach((item, idx) => {
+        let m = item.market || 'Altro';
+        if (!marketsMap[m]) marketsMap[m] = [];
+        marketsMap[m].push({ ...item, originalIndex: idx });
+      });
+
+      for (let marketName in marketsMap) {
+        let marketDiv = document.createElement('div');
+        marketDiv.className = 'bg-slate-900 p-3 rounded-xl border border-slate-700/80 space-y-2';
+        
+        let headerHTML = `<div class="flex justify-between items-center border-b border-slate-800 pb-2">
+          <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-wider"><i class="fa-solid fa-store mr-1"></i> ${marketName}</h3>
+          <span class="text-[10px] text-slate-400">${marketsMap[marketName].length} articoli</span>
+        </div>`;
+        
+        let ulHTML = '<ul class="space-y-2">';
+        marketsMap[marketName].forEach((item) => {
+          ulHTML += `
+            <li class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-700 text-xs">
+              <div>
+                <input type="text" value="${item.name}" onchange="updateMarketItemName(${item.originalIndex}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-slate-200 font-medium w-36 focus:outline-none focus:border-indigo-500">
+                <div class="text-[10px] text-slate-400 mt-1"><i class="fa-solid fa-calendar mr-1"></i>${item.date || 'N/D'}</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-indigo-300 font-bold">€</span>
+                <input type="number" step="0.01" value="${parseFloat(item.price).toFixed(2)}" onchange="updateMarketItemPrice(${item.originalIndex}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-slate-200 font-bold w-16 text-right focus:outline-none focus:border-indigo-500">
+                <button type="button" onclick="removeProduct(${item.originalIndex})" class="text-slate-500 hover:text-rose-400 p-1 cursor-pointer">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </li>
+          `;
+        });
+        ulHTML += '</ul>';
+        marketDiv.innerHTML = headerHTML + ulHTML;
+        container.appendChild(marketDiv);
+      }
+    }
+
+    function updateMarketItemName(index, newName) {
+      if (products[index]) {
+        products[index].name = newName.trim();
+        saveAndRender();
+      }
+    }
+
+    function updateMarketItemPrice(index, newPrice) {
+      let val = parseFloat(newPrice);
+      if (!isNaN(val) && products[index]) {
+        products[index].price = val.toFixed(2);
+        saveAndRender();
+      }
+    }
+
     function generateWeeklyList() {
       const weeklyList = document.getElementById('weeklyList');
       if (!weeklyList) return;
@@ -431,7 +502,7 @@
       let dueProducts = products.filter(item => {
         const lastBought = item.lastBought || item.createdAt || now;
         const daysPassed = (now - lastBought) / (1000 * 60 * 60 * 24);
-        return daysPassed >= parseInt(item.frequency);
+        return daysPassed >= parseInt(item.frequency || 14);
       });
 
       if (dueProducts.length === 0 && products.length > 0) {
@@ -451,7 +522,7 @@
             <input type="checkbox" onchange="markAsBought('${item.name.replace(/'/g, "\\'")}')" class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
             <div>
               <div class="font-medium text-slate-200">${item.name}</div>
-              <div class="text-xs text-slate-400"><i class="fa-solid fa-store mr-1"></i>${item.market} - Frequenza: ${item.frequency}gg</div>
+              <div class="text-xs text-slate-400"><i class="fa-solid fa-store mr-1"></i>${item.market} - Frequenza: ${item.frequency || 14}gg</div>
             </div>
           </div>
           <span class="font-bold text-indigo-300">€${parseFloat(item.price).toFixed(2)}</span>
@@ -534,13 +605,13 @@
           ctx.drawImage(loadedImage, 0, 0, cropCanvas.width, cropCanvas.height);
           
           startX = cropCanvas.width * 0.1;
-          startY = cropCanvas.height * 0.6;
+          startY = cropCanvas.height * 0.2;
           endX = cropCanvas.width * 0.9;
           endY = cropCanvas.height * 0.95;
           drawCropBox();
 
           document.getElementById('cropAreaContainer').classList.remove('hidden');
-          document.getElementById('ocrStatus').innerText = "Trascina il rettangolo sulla zona dei prezzi.";
+          document.getElementById('ocrStatus').innerText = "Trascina il rettangolo sulla zona degli articoli/prezzi.";
         }
         loadedImage.src = e.target.result;
       }
@@ -560,7 +631,6 @@
       ctx.strokeStyle = '#a855f7';
       ctx.lineWidth = 3;
       ctx.strokeRect(x, y, w, h);
-      
       ctx.fillStyle = 'rgba(168, 85, 247, 0.15)';
       ctx.fillRect(x, y, w, h);
     }
@@ -620,14 +690,11 @@
       document.getElementById('ocrStatus').innerText = "";
     }
 
-    // Scanner OCR stabile con Tesseract standard v4
+    // OCR AVANZATO PER ETRARRE PIÙ ARTICOLI E PREZZI DA RIVEDERE
     async function processCroppedReceipt() {
       document.getElementById('cropAreaContainer').classList.add('hidden');
       const statusDiv = document.getElementById('ocrStatus');
-      const rawTextBox = document.getElementById('ocrRawTextContainer');
-      const rawTextContent = document.getElementById('ocrRawTextContent');
-
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Lettura ritaglio in corso...`;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Lettura scontrino in corso...`;
 
       try {
         let x = Math.min(startX, endX);
@@ -648,7 +715,6 @@
         let scaleY = loadedImage.height / cropCanvas.height;
 
         tCtx.drawImage(loadedImage, x * scaleX, y * scaleY, width * scaleX, height * scaleY, 0, 0, width, height);
-
         let croppedDataUrl = tempCanvas.toDataURL('image/jpeg');
 
         const result = await Tesseract.recognize(
@@ -664,25 +730,101 @@
         );
 
         const text = result.data.text;
-        rawTextContent.value = text;
-        rawTextBox.classList.remove('hidden');
+        const lines = text.split('\n');
+        tempScannedItems = [];
 
-        let matches = text.match(/\b\d+[\.,]\d{2}\b/g);
-
-        if (matches && matches.length > 0) {
-          let foundPrice = matches[matches.length - 1].replace(',', '.');
-          document.getElementById('itemPrice').value = foundPrice;
-          if (!document.getElementById('itemName').value) {
-            document.getElementById('itemName').value = "Spesa Scontrino";
+        // Analizza le righe per estrarre coppie Nome + Prezzo
+        lines.forEach(line => {
+          let cleanLine = line.trim();
+          if (cleanLine.length < 3) return;
+          
+          let priceMatch = cleanLine.match(/\b\d+[\.,]\d{2}\b/g);
+          if (priceMatch && priceMatch.length > 0) {
+            let price = priceMatch[priceMatch.length - 1].replace(',', '.');
+            let name = cleanLine.replace(priceMatch[priceMatch.length - 1], '').replace(/[\.,€]/g, '').trim();
+            if (!name) name = "Prodotto Scontrino";
+            
+            tempScannedItems.push({
+              name: name,
+              price: price,
+              market: "Coop"
+            });
           }
-          statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Prezzo trovato: €${foundPrice}! Controlla sotto.</span>`;
-        } else {
-          statusDiv.innerHTML = `<span class="text-amber-400"><i class="fa-solid fa-triangle-exclamation"></i> Nessun prezzo trovato. Leggi il testo sotto e scrivilo a mano.</span>`;
+        });
+
+        if (tempScannedItems.length === 0) {
+          // Fallivo? Aggiungi una riga vuota modificabile dall'utente
+          tempScannedItems.push({ name: "Prodotto Scontrino", price: "1.00", market: "Coop" });
         }
+
+        renderScannedItemsReview();
+        statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Scansione completata! Rivedi e modifica sotto.</span>`;
       } catch (err) {
-        console.error("Errore OCR v2.5.5:", err);
+        console.error("Errore OCR v2.6:", err);
         statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. Riprova.</span>`;
       }
+    }
+
+    function renderScannedItemsReview() {
+      const reviewContainer = document.getElementById('ocrReviewContainer');
+      const listContainer = document.getElementById('scannedItemsList');
+      listContainer.innerHTML = '';
+
+      tempScannedItems.forEach((item, idx) => {
+        let div = document.createElement('div');
+        div.className = 'bg-slate-800 p-2.5 rounded-lg border border-slate-700 space-y-2 text-xs';
+        div.innerHTML = `
+          <div class="grid grid-cols-1 gap-1.5">
+            <input type="text" value="${item.name}" onchange="updateTempItem(${idx}, 'name', this.value)" placeholder="Nome prodotto" class="bg-slate-900 border border-slate-700 rounded p-1.5 text-slate-200 focus:outline-none focus:border-indigo-500">
+            <div class="grid grid-cols-2 gap-2">
+              <div class="flex items-center gap-1">
+                <span class="text-indigo-300 font-bold">€</span>
+                <input type="number" step="0.01" value="${item.price}" onchange="updateTempItem(${idx}, 'price', this.value)" placeholder="Prezzo" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-slate-200 focus:outline-none focus:border-indigo-500">
+              </div>
+              <select onchange="updateTempItem(${idx}, 'market', this.value)" class="bg-slate-900 border border-slate-700 rounded p-1.5 text-slate-200 focus:outline-none focus:border-indigo-500">
+                <option value="Prix" ${item.market==='Prix'?'selected':''}>Prix</option>
+                <option value="Lidl" ${item.market==='Lidl'?'selected':''}>Lidl</option>
+                <option value="Coop" ${item.market==='Coop'?'selected':''}>Coop</option>
+                <option value="Conad" ${item.market==='Conad'?'selected':''}>Conad</option>
+                <option value="Eurospin" ${item.market==='Eurospin'?'selected':''}>Eurospin</option>
+                <option value="Esselunga" ${item.market==='Esselunga'?'selected':''}>Esselunga</option>
+              </select>
+            </div>
+          </div>
+        `;
+        listContainer.appendChild(div);
+      });
+
+      reviewContainer.classList.remove('hidden');
+    }
+
+    function updateTempItem(index, field, value) {
+      if (tempScannedItems[index]) {
+        tempScannedItems[index][field] = value.trim();
+      }
+    }
+
+    function saveAllScannedItems() {
+      let todayStr = new Date().toISOString().split('T')[0];
+      tempScannedItems.forEach(item => {
+        if (item.name && item.price) {
+          products.unshift({
+            name: item.name,
+            market: item.market || 'Coop',
+            price: parseFloat(item.price).toFixed(2),
+            frequency: "14",
+            date: todayStr,
+            createdAt: new Date().getTime(),
+            lastBought: new Date().getTime()
+          });
+        }
+      });
+
+      document.getElementById('ocrReviewContainer').classList.add('hidden');
+      document.getElementById('ocrStatus').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Tutti gli articoli salvati in archivio e budget aggiornato!</span>`;
+      tempScannedItems = [];
+      saveAndRender();
+      switchTab('markets');
     }
   </script>
 </body>
