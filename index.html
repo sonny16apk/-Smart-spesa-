@@ -3,39 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v2.7</title>
+  <title>SmartSpesa v2.8</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v2.7 -->
+  <!-- Header con Versione v2.8 -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
         <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
       </h1>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.7</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.8</span>
     </div>
     <button type="button" onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
       <i class="fa-solid fa-circle-info"></i> Info
     </button>
   </header>
 
-  <!-- WIDGET BUDGET PULITO E CENTRATO -->
+  <!-- WIDGET BUDGET PULITO E UNICO -->
   <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 mb-4 space-y-3">
     <div class="flex justify-between items-center">
       <div class="flex items-center gap-2">
         <span class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-wallet text-indigo-400 mr-1"></i> Budget Mensile</span>
         <span id="budgetTotal" class="text-xs font-mono text-indigo-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">€0.00</span>
       </div>
-      <div class="flex gap-2">
-        <button type="button" onclick="addManualAdjustment()" class="text-[11px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-1 rounded hover:bg-indigo-900 cursor-pointer">
-          <i class="fa-solid fa-plus-minus mr-1"></i> Avanzi/Extra
-        </button>
-        <button type="button" onclick="editBudget()" class="text-[11px] text-indigo-400 hover:underline cursor-pointer">Modifica</button>
-      </div>
+      <button type="button" onclick="openBudgetModal()" class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800 px-3 py-1.5 rounded-lg hover:bg-indigo-900 transition-all cursor-pointer">
+        <i class="fa-solid fa-pen-to-square mr-1"></i> Modifica
+      </button>
     </div>
 
     <!-- Disponibile in evidenza assoluta -->
@@ -59,17 +56,29 @@
     </button>
   </div>
 
-  <!-- SEZIONE 1: LISTA SETTIMANALE + INSERIMENTO RAPIDO -->
+  <!-- SEZIONE 1: LISTA SETTIMANALE + INSERIMENTO RAPIDO CON SUPERMERCATO -->
   <div id="viewWeekly" class="space-y-4">
-    <!-- Box Inserimento Rapido in Home -->
-    <div class="bg-slate-800 p-3 rounded-xl shadow-lg border border-slate-700">
-      <h2 class="text-xs font-semibold text-slate-300 mb-2 flex items-center gap-1">
+    <!-- Box Inserimento Rapido in Home con Selezione Supermercato -->
+    <div class="bg-slate-800 p-3 rounded-xl shadow-lg border border-slate-700 space-y-2">
+      <h2 class="text-xs font-semibold text-slate-300 flex items-center gap-1">
         <i class="fa-solid fa-plus text-indigo-400"></i> Aggiungi al volo
       </h2>
-      <form onsubmit="handleQuickSubmit(event)" class="grid grid-cols-12 gap-2">
-        <input type="text" id="quickName" placeholder="Prodotto..." required class="col-span-5 bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
-        <input type="number" step="0.01" id="quickPrice" placeholder="€" required class="col-span-3 bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
-        <button type="submit" class="col-span-4 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2 rounded-lg cursor-pointer">Salva</button>
+      <form onsubmit="handleQuickSubmit(event)" class="space-y-2">
+        <div class="grid grid-cols-12 gap-2">
+          <input type="text" id="quickName" placeholder="Prodotto..." required class="col-span-8 bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+          <input type="number" step="0.01" id="quickPrice" placeholder="Prezzo (€)" required class="col-span-4 bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+        </div>
+        <div class="flex gap-2">
+          <select id="quickMarket" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+            <option value="Prix">Prix</option>
+            <option value="Lidl">Lidl</option>
+            <option value="Coop">Coop</option>
+            <option value="Conad">Conad</option>
+            <option value="Eurospin">Eurospin</option>
+            <option value="Esselunga">Esselunga</option>
+          </select>
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-5 py-2 rounded-lg cursor-pointer">Salva</button>
+        </div>
       </form>
     </div>
 
@@ -88,7 +97,7 @@
     <!-- Box Scanner Scontrino con Ritaglio -->
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Revisione (v2.7)
+        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Revisione (v2.8)
       </h2>
       <p class="text-xs text-slate-400">Scatta la foto, ritaglia l'area e rivedi gli articoli rilevati prima di salvarli.</p>
       
@@ -185,18 +194,18 @@
     <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
       <h2 class="text-sm font-semibold text-slate-300 mb-3 flex items-center justify-between">
         <span>Archivio per Supermercato</span>
-        <span class="text-[11px] text-indigo-400">Modifica o elimina al volo</span>
+        <span class="text-[11px] text-indigo-400">Modifica o elimina</span>
       </h2>
       <div id="marketsContainer" class="space-y-4"></div>
     </div>
   </div>
 
-  <!-- FINESTRA MODALE INFO RIORGANIZZATA -->
+  <!-- FINESTRA MODALE INFO -->
   <div id="infoModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v2.7
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v2.8
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -207,18 +216,18 @@
         <div>
           <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">📘 Funzionalità Principali:</h3>
           <ul class="list-disc list-inside space-y-1.5 text-slate-400">
-            <li><strong>Budget e Conguagli:</strong> Imposta il budget mensile e gestisci avanzi o spese extra (es. i 50€ del mese precedente).</li>
-            <li><strong>Scanner Scontrino Inteligente:</strong> Fotografa, ritaglia e rivedi ogni articolo e prezzo estratto prima di salvarlo.</li>
-            <li><strong>Lista Rapida & Settimanale:</strong> Inserisci articoli al volo dalla home e segui le scadenze automatiche.</li>
-            <li><strong>Gestione per Supermercato:</strong> Visualizza e modifica i prodotti divisi per negozio (Prix, Lidl, Coop, ecc.).</li>
+            <li><strong>Budget e Conguagli:</strong> Imposta il budget mensile e gestisci avanzi o spese extra dal tasto Modifica.</li>
+            <li><strong>Scanner Scontrino Intelligente:</strong> Fotografa, ritaglia e rivedi ogni articolo e prezzo estratto prima di salvarlo.</li>
+            <li><strong>Lista Rapida & Settimanale:</strong> Inserisci articoli al volo selezionando il supermercato e segui le scadenze automatiche.</li>
+            <li><strong>Gestione per Supermercato:</strong> Visualizza e modifica i prodotti divisi automaticamente per negozio (Prix, Lidl, Coop, ecc.).</li>
             <li><strong>Privacy Totale:</strong> I dati restano protetti sul tuo dispositivo (Local-First).</li>
           </ul>
         </div>
       </div>
 
-      <!-- Firma minimal -->
+      <!-- Firma minimal B_16_ -->
       <div class="border-t border-slate-700/60 pt-2 text-right">
-        <p class="text-[9px] text-slate-500 font-mono">dev. Bortot Sonny</p>
+        <p class="text-[10px] text-slate-400 font-mono tracking-wider">B_16_</p>
       </div>
 
       <button type="button" onclick="toggleInfoModal(false)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-xl text-xs transition-colors cursor-pointer">
@@ -282,7 +291,7 @@
       }
 
       if (monthlyBudget === 0 && products.length === 0 && manualAdjustment === 0) {
-        setTimeout(editBudget, 400);
+        setTimeout(openBudgetModal, 400);
       }
       
       updateBudgetDisplay();
@@ -291,25 +300,22 @@
       generateWeeklyList();
     });
 
-    function editBudget() {
-      let input = prompt("Inserisci il tuo Budget Mensile (€):", monthlyBudget > 0 ? monthlyBudget : "300");
-      if (input !== null) {
-        let val = parseFloat(input.replace(',', '.'));
-        if (!isNaN(val) && val >= 0) {
-          monthlyBudget = val;
+    function openBudgetModal() {
+      let bInput = prompt("Inserisci il tuo Budget Mensile Totale (€):", monthlyBudget > 0 ? monthlyBudget : "300");
+      if (bInput !== null) {
+        let bVal = parseFloat(bInput.replace(',', '.'));
+        if (!isNaN(bVal) && bVal >= 0) {
+          monthlyBudget = bVal;
           localStorage.setItem('smartspesa_budget', monthlyBudget);
-          updateBudgetDisplay();
-        }
-      }
-    }
-
-    function addManualAdjustment() {
-      let input = prompt("Inserisci importo da conguagliare (es. 50 per avanzato/rimanenza o -20 per extra):", "50");
-      if (input !== null) {
-        let val = parseFloat(input.replace(',', '.'));
-        if (!isNaN(val)) {
-          manualAdjustment += val;
-          localStorage.setItem('smartspesa_manual_adjustment', manualAdjustment);
+          
+          let aInput = prompt("Inserisci eventuale conguaglio (es. 50 per avanzi mese precedente o -20 per extra):", manualAdjustment);
+          if (aInput !== null) {
+            let aVal = parseFloat(aInput.replace(',', '.'));
+            if (!isNaN(aVal)) {
+              manualAdjustment = aVal;
+              localStorage.setItem('smartspesa_manual_adjustment', manualAdjustment);
+            }
+          }
           updateBudgetDisplay();
         }
       }
@@ -396,12 +402,13 @@
       e.preventDefault();
       const name = document.getElementById('quickName').value.trim();
       const price = document.getElementById('quickPrice').value;
+      const market = document.getElementById('quickMarket').value;
       const todayStr = new Date().toISOString().split('T')[0];
 
       if (name && price) {
         products.unshift({
           name: name,
-          market: 'Prix',
+          market: market,
           price: parseFloat(price).toFixed(2),
           frequency: "14",
           date: todayStr,
@@ -774,7 +781,7 @@
         renderScannedItemsReview();
         statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Scansione completata! Rivedi e modifica sotto.</span>`;
       } catch (err) {
-        console.error("Errore OCR v2.7:", err);
+        console.error("Errore OCR v2.8:", err);
         statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. Riprova.</span>`;
       }
     }
