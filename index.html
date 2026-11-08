@@ -3,25 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v2.1 Pro</title>
+  <title>SmartSpesa v2.3 Pro</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v2.1 Pro -->
+  <!-- Header con Versione v2.3 Pro -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
         <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
       </h1>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.1 Pro</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.3 Pro</span>
     </div>
     <button type="button" onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
       <i class="fa-solid fa-circle-info"></i> Info
     </button>
   </header>
+
+  <!-- WIDGET BUDGET MENSILE -->
+  <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 mb-4">
+    <div class="flex justify-between items-center mb-2">
+      <span class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-wallet text-indigo-400 mr-1"></i> Budget Mensile</span>
+      <button type="button" onclick="editBudget()" class="text-[11px] text-indigo-400 hover:underline cursor-pointer">Modifica</button>
+    </div>
+    <div class="grid grid-cols-2 gap-2 text-center">
+      <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-700/60">
+        <div class="text-[10px] text-slate-400 uppercase tracking-wider">Disponibile</div>
+        <div id="budgetRemaining" class="text-base font-bold text-emerald-400">€0.00</div>
+      </div>
+      <div class="bg-slate-900 p-2.5 rounded-lg border border-slate-700/60">
+        <div class="text-[10px] text-slate-400 uppercase tracking-wider">Totale Budget</div>
+        <div id="budgetTotal" class="text-base font-bold text-indigo-300">€0.00</div>
+      </div>
+    </div>
+  </section>
 
   <!-- Navigazione a Schede (Tab) -->
   <div class="grid grid-cols-2 gap-2 mb-6 bg-slate-800 p-1 rounded-xl border border-slate-700">
@@ -46,31 +64,47 @@
     </div>
   </div>
 
-  <!-- SEZIONE 2: ARCHIVIO & INSERIMENTO PRODOTTI + OCR -->
+  <!-- SEZIONE 2: ARCHIVIO & INSERIMENTO PRODOTTI + OCR CON RITAGLIO -->
   <div id="viewArchive" class="space-y-6 hidden">
     
-    <!-- Box Scanner Scontrino OCR -->
-    <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60">
-      <h2 class="text-sm font-semibold mb-2 text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-camera"></i> Scansiona Scontrino (OCR)
+    <!-- Box Scanner Scontrino con Ritaglio -->
+    <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
+      <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
+        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Ritaglio (v2.3)
       </h2>
-      <p class="text-xs text-slate-400 mb-3">Scatta una foto chiara allo scontrino. L'app estrarrà il prezzo e ti mostrerà il testo letto.</p>
+      <p class="text-xs text-slate-400">Scatta la foto, ritaglia la zona dei prezzi e avvia l'estrazione intelligente.</p>
       
-      <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="processReceipt(event)">
+      <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="loadCropImage(event)">
       <button type="button" onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
-        <i class="fa-solid fa-wand-magic-sparkles"></i> Scatta foto scontrino
+        <i class="fa-solid fa-crop"></i> Seleziona / Scatta foto scontrino
       </button>
-      
-      <div id="ocrStatus" class="text-xs text-indigo-400 mt-2 text-center font-medium"></div>
 
-      <!-- Box di Trasparenza Testo OCR -->
-      <div id="ocrRawTextContainer" class="mt-3 hidden">
-        <label class="block text-[11px] text-slate-400 mb-1">Testo rilevato nello scontrino (per controllo):</label>
-        <textarea id="ocrRawTextContent" readonly rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-300 focus:outline-none"></textarea>
+      <!-- Area Anteprima e Ritaglio -->
+      <div id="cropAreaContainer" class="hidden space-y-2 bg-slate-900 p-3 rounded-xl border border-indigo-900">
+        <div class="text-[11px] text-indigo-300 font-medium text-center">Trascina o ridimensiona l'area sul testo desiderato:</div>
+        <div class="overflow-hidden rounded-lg flex justify-center bg-black/40 max-h-60 relative">
+          <canvas id="cropCanvas" class="max-w-full cursor-crosshair touch-none"></canvas>
+        </div>
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button type="button" onclick="processCroppedReceipt()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2 rounded-lg transition-colors cursor-pointer">
+            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Estrai Prezzo Ritagliato
+          </button>
+          <button type="button" onclick="cancelCrop()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold text-xs py-2 rounded-lg transition-colors cursor-pointer">
+            Annulla
+          </button>
+        </div>
+      </div>
+      
+      <div id="ocrStatus" class="text-xs text-indigo-400 text-center font-medium"></div>
+
+      <!-- Box Testo Trasparente OCR -->
+      <div id="ocrRawTextContainer" class="mt-2 hidden">
+        <label class="block text-[11px] text-slate-400 mb-1">Testo rilevato nello scontrino:</label>
+        <textarea id="ocrRawTextContent" readonly rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-300 focus:outline-none"></textarea>
       </div>
     </section>
 
-    <!-- Inserimento Manuale Prodotto -->
+    <!-- Inserimento Manuale Prodotto con Data -->
     <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
       <h2 class="text-sm font-semibold mb-3 text-slate-300">Aggiungi / Configura Prodotto</h2>
       <form id="itemForm" class="space-y-3" onsubmit="handleFormSubmit(event)">
@@ -103,8 +137,15 @@
           </select>
         </div>
 
+        <!-- Campo Data Spesa -->
+        <div>
+          <label class="block text-[11px] text-slate-400 mb-1">Data acquisto:</label>
+          <input type="date" id="itemDate" required 
+                 class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500 text-slate-200">
+        </div>
+
         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold text-sm py-2.5 rounded-lg transition-colors cursor-pointer">
-          Salva in Archivio
+          Salva in Archivio e Scala Budget
         </button>
       </form>
     </section>
@@ -124,7 +165,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v2.3 Pro
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -144,13 +185,12 @@
         </div>
 
         <div>
-          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">✨ Cosa ti offre:</h3>
+          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">✨ Cosa ti offre la v2.3:</h3>
           <ul class="list-disc list-inside space-y-1 text-slate-400">
-            <li><strong>Lista Settimanale Intelligente:</strong> Mostra ciò che serve davvero in base ai giorni trascorsi.</li>
-            <li><strong>Archivio Prezzi e Supermercati:</strong> Tieni traccia di dove costi meno ogni articolo (Conad, Coop, Lidl, Eurospin, Esselunga, Prix o negozi personalizzati).</li>
-            <li><strong>Automazione delle scadenze:</strong> Imposta la frequenza e l'app penserà a rimetterlo in lista al momento giusto.</li>
-            <li><strong>Scanner Scontrini OCR:</strong> Cattura i prezzi al volo tramite fotocamera.</li>
-            <li><strong>Privacy Totale:</strong> Nessun tracciamento; i dati restano solo sul tuo dispositivo.</li>
+            <li><strong>Budget Mensile Dinamico:</strong> Imposta il budget e guarda il residuo scalarsi automaticamente a ogni spesa.</li>
+            <li><strong>Scanner con Ritaglio Foto:</strong> Inquadra lo scontrino e ritaglia la zona desiderata per una precisione OCR assoluta.</li>
+            <li><strong>Date e Scadenze:</strong> Traccia ogni articolo con giorno, mese, anno e frequenza di riacquisto.</li>
+            <li><strong>Privacy Totale:</strong> Nessun tracciamento; i dati restano solo sul tuo dispositivo (Local-First).</li>
           </ul>
         </div>
       </div>
@@ -168,7 +208,58 @@
 
   <script>
     let products = JSON.parse(localStorage.getItem('smartspesa_products')) || [];
+    let monthlyBudget = parseFloat(localStorage.getItem('smartspesa_budget')) || 0;
+    
     const customMarketInput = document.getElementById('customMarketInput');
+    
+    // Imposta la data odierna di default nel form
+    const dateInput = document.getElementById('itemDate');
+    if (dateInput) {
+      dateInput.valueAsDate = new Date();
+    }
+
+    if (monthlyBudget === 0) {
+      setTimeout(editBudget, 500);
+    }
+    updateBudgetDisplay();
+
+    function editBudget() {
+      let input = prompt("Inserisci il tuo Budget Mensile (€):", monthlyBudget > 0 ? monthlyBudget : "300");
+      if (input !== null) {
+        let val = parseFloat(input.replace(',', '.'));
+        if (!isNaN(val) && val >= 0) {
+          monthlyBudget = val;
+          localStorage.setItem('smartspesa_budget', monthlyBudget);
+          updateBudgetDisplay();
+        }
+      }
+    }
+
+    function calculateSpentTotal() {
+      let now = new Date();
+      let currentMonth = now.getMonth();
+      let currentYear = now.getFullYear();
+
+      let totalSpent = 0;
+      products.forEach(item => {
+        if (item.date) {
+          let d = new Date(item.date);
+          if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+            totalSpent += parseFloat(item.price) || 0;
+          }
+        }
+      });
+      return totalSpent;
+    }
+
+    function updateBudgetDisplay() {
+      let spent = calculateSpentTotal();
+      let remaining = monthlyBudget - spent;
+      document.getElementById('budgetTotal').innerText = `€${monthlyBudget.toFixed(2)}`;
+      let remElem = document.getElementById('budgetRemaining');
+      remElem.innerText = `€${remaining.toFixed(2)}`;
+      remElem.className = remaining >= 0 ? "text-base font-bold text-emerald-400" : "text-base font-bold text-rose-400";
+    }
 
     function switchTab(tab) {
       const isWeekly = tab === 'weekly';
@@ -206,6 +297,7 @@
       localStorage.setItem('smartspesa_products', JSON.stringify(products));
       renderArchive();
       generateWeeklyList();
+      updateBudgetDisplay();
     }
 
     function renderArchive() {
@@ -224,7 +316,7 @@
             <div class="font-medium text-slate-200">${item.name}</div>
             <div class="text-xs text-slate-400">
               <i class="fa-solid fa-store mr-1"></i>${item.market} | 
-              <i class="fa-solid fa-clock mr-1"></i>Ogni ${item.frequency} giorni
+              <i class="fa-solid fa-calendar mr-1"></i>${item.date || 'N/D'}
             </div>
           </div>
           <div class="flex items-center gap-3">
@@ -279,6 +371,7 @@
       products = products.map(p => {
         if (p.name === name) {
           p.lastBought = new Date().getTime();
+          p.date = new Date().toISOString().split('T')[0];
         }
         return p;
       });
@@ -291,6 +384,7 @@
       const selectedMarket = document.getElementById('itemMarket').value;
       const price = document.getElementById('itemPrice').value;
       const frequency = document.getElementById('itemFrequency').value;
+      const date = document.getElementById('itemDate').value;
 
       let finalMarket = selectedMarket;
       if (selectedMarket === 'CUSTOM') {
@@ -303,11 +397,13 @@
           market: finalMarket,
           price,
           frequency,
+          date,
           createdAt: new Date().getTime(),
           lastBought: new Date().getTime()
         });
         saveAndRender();
         document.getElementById('itemForm').reset();
+        document.getElementById('itemDate').valueAsDate = new Date();
         toggleCustomMarket('');
         switchTab('weekly'); 
       }
@@ -325,21 +421,127 @@
       }
     }
 
-    async function processReceipt(event) {
+    // GESTIONE RITAGLIO IMMAGINE E OCR ROBUSTA
+    let loadedImage = null;
+    let cropCanvas = document.getElementById('cropCanvas');
+    let ctx = cropCanvas.getContext('2d');
+    let startX = 0, startY = 0, endX = 0, endY = 0;
+    let isDragging = false;
+
+    function loadCropImage(event) {
       const file = event.target.files[0];
       if (!file) return;
 
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        loadedImage = new Image();
+        loadedImage.onload = function() {
+          let maxWidth = 320;
+          let scale = maxWidth / loadedImage.width;
+          cropCanvas.width = maxWidth;
+          cropCanvas.height = loadedImage.height * scale;
+
+          ctx.drawImage(loadedImage, 0, 0, cropCanvas.width, cropCanvas.height);
+          
+          startX = 0; startY = 0; endX = cropCanvas.width; endY = cropCanvas.height;
+          drawCropBox();
+
+          document.getElementById('cropAreaContainer').classList.remove('hidden');
+          document.getElementById('ocrStatus'].innerText = "Ritaglia l'area dello scontrino e premi Estrai.";
+        }
+        loadedImage.src = e.target.result;
+      }
+      reader.readAsDataURL(file);
+      event.target.value = '';
+    }
+
+    function drawCropBox() {
+      ctx.drawImage(loadedImage, 0, 0, cropCanvas.width, cropCanvas.height);
+      ctx.strokeStyle = '#6366f1';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(startX, startY, endX - startX, endY - startY);
+      ctx.fillStyle = 'rgba(99, 102, 241, 0.1)';
+      ctx.fillRect(startX, startY, endX - startX, endY - startY);
+    }
+
+    // Supporto Mouse e Touch per dispositivi mobili
+    function getCanvasPos(e) {
+      let rect = cropCanvas.getBoundingClientRect();
+      let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+
+    cropCanvas.addEventListener('mousedown', (e) => {
+      let pos = getCanvasPos(e);
+      startX = pos.x; startY = pos.y;
+      isDragging = true;
+    });
+
+    cropCanvas.addEventListener('touchstart', (e) => {
+      let pos = getCanvasPos(e);
+      startX = pos.x; startY = pos.y;
+      isDragging = true;
+      e.preventDefault();
+    });
+
+    cropCanvas.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      let pos = getCanvasPos(e);
+      endX = pos.x; endY = pos.y;
+      drawCropBox();
+    });
+
+    cropCanvas.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      let pos = getCanvasPos(e);
+      endX = pos.x; endY = pos.y;
+      drawCropBox();
+      e.preventDefault();
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+    window.addEventListener('touchend', () => { isDragging = false; });
+
+    function cancelCrop() {
+      document.getElementById('cropAreaContainer').classList.add('hidden');
+      document.getElementById('ocrStatus').innerText = "";
+    }
+
+    async function processCroppedReceipt() {
+      document.getElementById('cropAreaContainer').classList.add('hidden');
       const statusDiv = document.getElementById('ocrStatus');
       const rawTextBox = document.getElementById('ocrRawTextContainer');
       const rawTextContent = document.getElementById('ocrRawTextContent');
 
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Analisi scontrino in corso...`;
-      rawTextBox.classList.add('hidden');
-      rawTextContent.value = '';
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Elaborazione ritaglio in corso...`;
 
       try {
+        let width = Math.abs(endX - startX);
+        let height = Math.abs(endY - startY);
+        if (width < 20 || height < 20) {
+          width = cropCanvas.width;
+          height = cropCanvas.height;
+          startX = 0; startY = 0;
+        }
+
+        let tempCanvas = document.createElement('canvas');
+        let tCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+
+        let scaleX = loadedImage.width / cropCanvas.width;
+        let scaleY = loadedImage.height / cropCanvas.height;
+
+        tCtx.drawImage(loadedImage, startX * scaleX, startY * scaleY, width * scaleX, height * scaleY, 0, 0, width, height);
+
+        let croppedDataUrl = tempCanvas.toDataURL('image/jpeg');
+
         const result = await Tesseract.recognize(
-          file,
+          croppedDataUrl,
           'ita',
           {
             logger: m => {
@@ -354,7 +556,7 @@
         rawTextContent.value = text;
         rawTextBox.classList.remove('hidden');
 
-        const matches = text.match(/\d+[\.,]\d{2}/g);
+        const matches = text.match(/\b\d+[\.,]\d{2}\b/g);
 
         if (matches && matches.length > 0) {
           const foundPrice = matches[matches.length - 1].replace(',', '.');
@@ -364,16 +566,15 @@
           }
           statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Prezzo estratto: €${foundPrice}! Controlla sotto.</span>`;
         } else {
-          statusDiv.innerHTML = `<span class="text-amber-400"><i class="fa-solid fa-triangle-exclamation"></i> Prezzo automatico non trovato. Leggi il testo nel box sottostante e inseriscilo a mano.</span>`;
+          statusDiv.innerHTML = `<span class="text-amber-400"><i class="fa-solid fa-triangle-exclamation"></i> Prezzo non trovato nel ritaglio. Leggi il testo nel box sotto e scrivilo a mano.</span>`;
         }
       } catch (err) {
-        console.error("Errore OCR:", err);
-        statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. Riprova con più luce.</span>`;
-      } finally {
-        event.target.value = '';
+        console.error("Errore OCR v2.3:", err);
+        statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. Riprova.</span>`;
       }
     }
 
+    // Avvio iniziale
     renderArchive();
     generateWeeklyList();
   </script>
