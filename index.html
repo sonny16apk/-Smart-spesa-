@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v2.5.2</title>
+  <title>SmartSpesa v2.5.4</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v2.5.2 -->
+  <!-- Header con Versione v2.5.4 -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
         <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
       </h1>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.5.2</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.5.4</span>
     </div>
     <button type="button" onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
       <i class="fa-solid fa-circle-info"></i> Info
@@ -44,6 +44,11 @@
         <div id="budgetTotal" class="text-base font-bold text-indigo-300">€0.00</div>
       </div>
     </div>
+    <div class="flex justify-end">
+      <button type="button" onclick="resetMonthExpenses()" class="text-[10px] text-rose-400 hover:underline cursor-pointer">
+        <i class="fa-solid fa-rotate-left mr-1"></i> Azzera extra mese
+      </button>
+    </div>
   </section>
 
   <!-- Navigazione a Schede (Tab) -->
@@ -69,25 +74,25 @@
     </div>
   </div>
 
-  <!-- SEZIONE 2: ARCHIVIO & INSERIMENTO PRODOTTI + OCR STABILE -->
+  <!-- SEZIONE 2: ARCHIVIO & INSERIMENTO PRODOTTI + OCR -->
   <div id="viewArchive" class="space-y-6 hidden">
     
-    <!-- Box Scanner Scontrino con Ritaglio e Memoria Pulita -->
+    <!-- Box Scanner Scontrino con Ritaglio Pulito -->
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Ritaglio (v2.5.2)
+        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Ritaglio (v2.5.4)
       </h2>
-      <p class="text-xs text-slate-400">Scatta la foto, trascina il dito sul display per ritagliare l'area dei prezzi ed estrai quante volte vuoi.</p>
+      <p class="text-xs text-slate-400">Scatta la foto, trascina il dito sul display per evidenziare la zona dei prezzi ed estrai.</p>
       
       <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="loadCropImage(event)">
       <button type="button" onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
         <i class="fa-solid fa-crop"></i> Seleziona / Scatta foto scontrino
       </button>
 
-      <!-- Area Anteprima e Ritaglio Interattivo -->
+      <!-- Area Anteprima e Ritaglio Pulito -->
       <div id="cropAreaContainer" class="hidden space-y-2 bg-slate-900 p-3 rounded-xl border border-indigo-900">
-        <div class="text-[11px] text-indigo-300 font-medium text-center">Trascina il dito per selezionare l'area esatta:</div>
-        <div class="overflow-hidden rounded-lg flex justify-center bg-black/60 max-h-72 relative">
+        <div class="text-[11px] text-indigo-300 font-medium text-center">Trascina il rettangolo sui prezzi:</div>
+        <div class="overflow-hidden rounded-lg flex justify-center bg-black max-h-72 relative">
           <canvas id="cropCanvas" class="max-w-full cursor-crosshair touch-none"></canvas>
         </div>
         <div class="grid grid-cols-2 gap-2 pt-1">
@@ -170,7 +175,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v2.5.2
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v2.5.4
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -190,10 +195,10 @@
         </div>
 
         <div>
-          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">✨ Cosa ti offre la v2.5.2:</h3>
+          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">✨ Cosa ti offre la v2.5.4:</h3>
           <ul class="list-disc list-inside space-y-1 text-slate-400">
-            <li><strong>Budget Mensile & Spese Manuali:</strong> Gestisci il budget e scala o aggiungi importi al volo.</li>
-            <li><strong>Scanner con Ritaglio Reale Stabile:</strong> Istanzia e chiude la memoria OCR a ogni foto, azzerando i crash.</li>
+            <li><strong>Budget Mensile Blindato:</strong> Gestione sicura del budget per evitare errori a zero o negativi.</li>
+            <li><strong>Scanner con Ritaglio Trasparente Pulito:</strong> Anteprima a colori reali dello scontrino con box di selezione nitido.</li>
             <li><strong>Date e Frequenze:</strong> Tieni traccia di tutto in modo semplice e ordinato.</li>
             <li><strong>Privacy Totale:</strong> I dati restano solo sul tuo dispositivo.</li>
           </ul>
@@ -213,7 +218,7 @@
 
   <script>
     let products = JSON.parse(localStorage.getItem('smartspesa_products')) || [];
-    let monthlyBudget = parseFloat(localStorage.getItem('smartspesa_budget')) || 0;
+    let monthlyBudget = parseFloat(localStorage.getItem('smartspesa_budget')) || 300;
     let manualExpenses = parseFloat(localStorage.getItem('smartspesa_manual_expenses')) || 0;
     
     let customMarketInput, cropCanvas, ctx;
@@ -225,6 +230,11 @@
       customMarketInput = document.getElementById('customMarketInput');
       cropCanvas = document.getElementById('cropCanvas');
       
+      if (monthlyBudget <= 0) {
+        monthlyBudget = 300;
+        localStorage.setItem('smartspesa_budget', monthlyBudget);
+      }
+
       if (cropCanvas) {
         ctx = cropCanvas.getContext('2d');
         
@@ -263,10 +273,6 @@
       if (dateInput) {
         dateInput.valueAsDate = new Date();
       }
-
-      if (monthlyBudget === 0) {
-        setTimeout(editBudget, 500);
-      }
       
       updateBudgetDisplay();
       renderArchive();
@@ -274,13 +280,15 @@
     });
 
     function editBudget() {
-      let input = prompt("Inserisci il tuo Budget Mensile Totale (€):", monthlyBudget > 0 ? monthlyBudget : "300");
+      let input = prompt("Inserisci il tuo Budget Mensile Totale (€):", monthlyBudget);
       if (input !== null) {
         let val = parseFloat(input.replace(',', '.'));
-        if (!isNaN(val) && val >= 0) {
+        if (!isNaN(val) && val > 0) {
           monthlyBudget = val;
           localStorage.setItem('smartspesa_budget', monthlyBudget);
           updateBudgetDisplay();
+        } else {
+          alert("Inserisci un valore valido maggiore di zero.");
         }
       }
     }
@@ -294,6 +302,14 @@
           localStorage.setItem('smartspesa_manual_expenses', manualExpenses);
           updateBudgetDisplay();
         }
+      }
+    }
+
+    function resetMonthExpenses() {
+      if (confirm("Vuoi azzerare le spese extra manuali registrate questo mese?")) {
+        manualExpenses = 0;
+        localStorage.setItem('smartspesa_manual_expenses', manualExpenses);
+        updateBudgetDisplay();
       }
     }
 
@@ -315,6 +331,7 @@
     }
 
     function updateBudgetDisplay() {
+      if (monthlyBudget <= 0) monthlyBudget = 300;
       let spent = calculateSpentTotal();
       let remaining = monthlyBudget - spent;
       const totalEl = document.getElementById('budgetTotal');
@@ -533,6 +550,7 @@
 
     function drawCropBox() {
       if (!ctx || !loadedImage || !cropCanvas) return;
+      // Ridisegna l'immagine a colori pulita
       ctx.drawImage(loadedImage, 0, 0, cropCanvas.width, cropCanvas.height);
       
       let x = Math.min(startX, endX);
@@ -540,15 +558,14 @@
       let w = Math.abs(endX - startX);
       let h = Math.abs(endY - startY);
 
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-      ctx.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
-
-      ctx.clearRect(x, y, w, h);
-      ctx.drawImage(loadedImage, x, y, w, h, x, y, w, h);
-
-      ctx.strokeStyle = '#6366f1';
-      ctx.lineWidth = 2;
+      // Disegna un bordo netto attorno all'area selezionata senza coprire con veli opachi
+      ctx.strokeStyle = '#a855f7'; // Viola acceso
+      ctx.lineWidth = 3;
       ctx.strokeRect(x, y, w, h);
+      
+      // Sfumatura leggera trasparente interna per vedere la selezione
+      ctx.fillStyle = 'rgba(168, 85, 247, 0.15)';
+      ctx.fillRect(x, y, w, h);
     }
 
     function getCanvasPos(e) {
@@ -606,7 +623,6 @@
       document.getElementById('ocrStatus').innerText = "";
     }
 
-    // OCR ROBUSTO CON CHIusura WORKER SICURA (Anti-Crash)
     async function processCroppedReceipt() {
       document.getElementById('cropAreaContainer').classList.add('hidden');
       const statusDiv = document.getElementById('ocrStatus');
@@ -638,7 +654,6 @@
 
         let croppedDataUrl = tempCanvas.toDataURL('image/jpeg');
 
-        // Crea un worker pulito per questa specifica scansione
         worker = await Tesseract.createWorker('ita');
         const ret = await worker.recognize(croppedDataUrl);
         await worker.terminate();
@@ -661,7 +676,7 @@
           statusDiv.innerHTML = `<span class="text-amber-400"><i class="fa-solid fa-triangle-exclamation"></i> Nessun prezzo trovato. Leggi il testo sotto e scrivilo a mano.</span>`;
         }
       } catch (err) {
-        console.error("Errore OCR v2.5.2:", err);
+        console.error("Errore OCR v2.5.4:", err);
         if (worker) {
           await worker.terminate().catch(() => {});
         }
