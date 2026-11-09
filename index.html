@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v3.0</title>
+  <title>SmartSpesa v3.1</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v3.0 e Data Odierna -->
+  <!-- Header con Versione v3.1 e Data Odierna -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <div>
@@ -19,14 +19,14 @@
         </h1>
         <div id="currentDateHeader" class="text-[10px] text-slate-400 font-mono mt-0.5"></div>
       </div>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v3.0</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v3.1</span>
     </div>
     <button type="button" onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
       <i class="fa-solid fa-circle-info"></i> Info
     </button>
   </header>
 
-  <!-- WIDGET BUDGET CON - e + LIBERI -->
+  <!-- WIDGET BUDGET CON - e + FUNZIONANTI -->
   <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 mb-4 space-y-3">
     <div class="flex justify-between items-center">
       <div class="flex items-center gap-2">
@@ -34,10 +34,10 @@
         <span id="budgetTotal" class="text-xs font-mono text-indigo-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">€0.00</span>
       </div>
       
-      <!-- Pulsanti rapidi - e + con importo libero e Modifica -->
+      <!-- Pulsanti rapidi - e + corretti e Modifica -->
       <div class="flex items-center gap-1.5">
-        <button type="button" onclick="promptAdjustBudget(-)" class="w-7 h-7 bg-slate-900 hover:bg-slate-700 text-rose-400 border border-slate-700 rounded-lg font-bold text-xs flex items-center justify-center cursor-pointer" title="Scala importo">-</button>
-        <button type="button" onclick="promptAdjustBudget(+)" class="w-7 h-7 bg-slate-900 hover:bg-slate-700 text-emerald-400 border border-slate-700 rounded-lg font-bold text-xs flex items-center justify-center cursor-pointer" title="Aggiungi importo">+</button>
+        <button type="button" onclick="promptAdjustBudget('-')" class="w-7 h-7 bg-slate-900 hover:bg-slate-700 text-rose-400 border border-slate-700 rounded-lg font-bold text-xs flex items-center justify-center cursor-pointer" title="Scala importo">-</button>
+        <button type="button" onclick="promptAdjustBudget('+')" class="w-7 h-7 bg-slate-900 hover:bg-slate-700 text-emerald-400 border border-slate-700 rounded-lg font-bold text-xs flex items-center justify-center cursor-pointer" title="Aggiungi importo">+</button>
         <button type="button" onclick="openBudgetModal()" class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800 px-2.5 py-1.5 rounded-lg hover:bg-indigo-900 transition-all cursor-pointer">
           Modifica
         </button>
@@ -64,7 +64,7 @@
     </button>
   </div>
 
-  <!-- SEZIONE 1: LISTA SETTIMANALE + INSERIMENTO RAPIDO + TOTALE SPESA -->
+  <!-- SEZIONE 1: LISTA SETTIMANALE -->
   <div id="viewWeekly" class="space-y-4">
     <!-- Box Inserimento Rapido con Supermercato -->
     <div class="bg-slate-800 p-3 rounded-xl shadow-lg border border-slate-700 space-y-2">
@@ -90,7 +90,7 @@
       </form>
     </div>
 
-    <!-- Lista Spesa con Totale e Checkbox Interattive -->
+    <!-- Lista Spesa con Totale Calcolato -->
     <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 space-y-3">
       <div class="flex justify-between items-center border-b border-slate-700 pb-2">
         <h2 class="text-sm font-semibold text-slate-300">Da Comprare Questa Settimana</h2>
@@ -105,12 +105,12 @@
   <!-- SEZIONE 2: SCANNER SCONTRINO & INSERIMENTO MANUALE -->
   <div id="viewArchive" class="space-y-6 hidden">
     
-    <!-- Box Scanner Scontrino con Annulla e Rifai Immediato -->
+    <!-- Box Scanner Scontrino Ottimizzato -->
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Revisione (v3.0)
+        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Revisione (v3.1)
       </h2>
-      <p class="text-xs text-slate-400">Scatta la foto, ritaglia l'area e rivedi gli articoli rilevati prima di salvarli nell'archivio.</p>
+      <p class="text-xs text-slate-400">Scatta la foto, ritaglia la zona dei prezzi ed estrai gli articoli.</p>
       
       <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="loadCropImage(event)">
       <button type="button" onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
@@ -120,7 +120,7 @@
       <!-- Area Anteprima e Ritaglio -->
       <div id="cropAreaContainer" class="hidden space-y-2 bg-slate-900 p-3 rounded-xl border border-indigo-900">
         <div class="text-[11px] text-indigo-300 font-medium text-center">Trascina il rettangolo sullo scontrino:</div>
-        <div class="overflow-hidden rounded-lg flex justify-center bg-black max-h-72 relative">
+        <div class="overflow-hidden rounded-lg flex justify-center bg-black max-h-80 relative">
           <canvas id="cropCanvas" class="max-w-full cursor-crosshair touch-none"></canvas>
         </div>
         <div class="grid grid-cols-2 gap-2 pt-1">
@@ -205,15 +205,15 @@
     </section>
   </div>
 
-  <!-- SEZIONE 3: ARCHIVIO SELEZIONATO PER SINGOLO SUPERMERCATO (ANTI-SOVRACCARICO) -->
+  <!-- SEZIONE 3: ARCHIVIO SELEZIONATO PER SUPERMERCATO CON FREQUENZA DI SCADENZA -->
   <div id="viewMarkets" class="space-y-4 hidden">
     <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 space-y-3">
       <div class="flex justify-between items-center border-b border-slate-700 pb-2">
         <h2 class="text-sm font-semibold text-slate-300">Archivio per Supermercato</h2>
-        <span class="text-[11px] text-indigo-400">Seleziona e gestisci</span>
+        <span class="text-[11px] text-indigo-400">Gestisci articoli e scadenze</span>
       </div>
       
-      <!-- Selettore Pulito del Supermercato -->
+      <!-- Selettore Supermercato -->
       <div>
         <label class="block text-[11px] text-slate-400 mb-1">Scegli il supermercato da visualizzare:</label>
         <select id="marketSelector" onchange="renderMarketsView()" class="w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-xs text-slate-200 font-semibold focus:outline-none">
@@ -227,9 +227,8 @@
         </select>
       </div>
 
-      <p class="text-[10px] text-slate-400">Spunta la casella "In Lista" per attivare l'articolo nella schermata principale.</p>
+      <p class="text-[10px] text-slate-400">Modifica prezzo, spunta "In Lista" e imposta la frequenza di riacquisto (scadenza).</p>
       
-      <!-- Container filtrato per un singolo supermercato alla volta -->
       <div id="marketsContainer" class="space-y-2 pt-1"></div>
     </div>
   </div>
@@ -239,7 +238,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v3.0
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v3.1
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -250,11 +249,11 @@
         <div>
           <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">📘 Funzionalità Principali:</h3>
           <ul class="list-disc list-inside space-y-1.5 text-slate-400">
-            <li><strong>Budget Flessibile:</strong> Gestisci budget fisso e conguagli con i tasti liberi `-` e `+`.</li>
-            <li><strong>Scanner Dedicato:</strong> Scatta, ritaglia e se serve annulla subito senza ricaricare la pagina.</li>
-            <li><strong>Archivio per Negozio Mirato:</strong> Seleziona un singolo supermercato alla volta per evitare confusione visiva e attivare i prodotti per la spesa.</li>
-            <li><strong>Lista Spesa Calcolata:</strong> Spunta i prodotti in tempo reale e controlla subito il totale spesa previsto.</li>
-            <li><strong>Privacy Totale:</strong> I dati restano protetti sul tuo dispositivo (Local-First).</li>
+            <li><strong>Budget Dinamico:</strong> Disponibile Reale aggiornato all'istante e tasti `-` e `+` operativi.</li>
+            <li><strong>Scanner Alta Precisione:</strong> Ritaglio canvas ad alta risoluzione e riconoscimento OCR migliorato.</li>
+            <li><strong>Frequenza & Scadenze:</strong> Imposta la frequenza di riacquisto direttamente nell'archivio per supermercato.</li>
+            <li><strong>Lista Spesa Calcolata:</strong> Calcolo in tempo reale del totale spesa previsto.</li>
+            <li><strong>Privacy Totale:</strong> Dati salvati esclusivamente sul tuo dispositivo.</li>
           </ul>
         </div>
       </div>
@@ -361,7 +360,7 @@
     }
 
     function promptAdjustBudget(op) {
-      let label = op === '+' ? "Inserisci importo da AGGIUNGERE al budget/conguaglio (€):" : "Inserisci importo da SCALARE dal budget/conguaglio (€):";
+      let label = op === '+' ? "Inserisci importo da AGGIUNGERE (€):" : "Inserisci importo da SCALARE (€):";
       let valInput = prompt(label, "10");
       if (valInput !== null) {
         let val = parseFloat(valInput.replace(',', '.'));
@@ -492,7 +491,8 @@
             <div class="font-medium text-slate-200">${item.name}</div>
             <div class="text-xs text-slate-400">
               <i class="fa-solid fa-store mr-1"></i>${item.market} | 
-              <i class="fa-solid fa-calendar mr-1"></i>${item.date || 'N/D'}
+              <i class="fa-solid fa-calendar mr-1"></i>${item.date || 'N/D'} | 
+              <i class="fa-solid fa-clock mr-1"></i>${item.frequency || 14}gg
             </div>
           </div>
           <div class="flex items-center gap-3">
@@ -527,30 +527,48 @@
         return;
       }
 
-      let ulHTML = '<ul class="space-y-2">';
+      let ulHTML = '<ul class="space-y-2.5">';
       filteredProducts.forEach((item) => {
         let checkedAttr = item.inList ? 'checked' : '';
+        let freq = item.frequency || "14";
         ulHTML += `
-          <li class="flex justify-between items-center bg-slate-900 p-2.5 rounded-lg border border-slate-700 text-xs">
-            <div class="flex items-center gap-2">
-              <input type="checkbox" ${checkedAttr} onchange="toggleItemInList(${item.originalIndex}, this.checked)" title="Attiva per la lista settimanale" class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
-              <div>
-                <input type="text" value="${item.name}" onchange="updateMarketItemName(${item.originalIndex}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-slate-200 font-medium w-32 focus:outline-none focus:border-indigo-500">
-                <div class="text-[9px] text-slate-400 mt-0.5"><i class="fa-solid fa-calendar mr-1"></i>${item.date || 'N/D'}</div>
+          <li class="bg-slate-900 p-3 rounded-lg border border-slate-700 space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <div class="flex items-center gap-2">
+                <input type="checkbox" ${checkedAttr} onchange="toggleItemInList(${item.originalIndex}, this.checked)" title="Attiva per la lista settimanale" class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
+                <input type="text" value="${item.name}" onchange="updateMarketItemName(${item.originalIndex}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-slate-200 font-medium w-36 focus:outline-none focus:border-indigo-500">
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-indigo-300 font-bold">€</span>
+                <input type="number" step="0.01" value="${parseFloat(item.price).toFixed(2)}" onchange="updateMarketItemPrice(${item.originalIndex}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-slate-200 font-bold w-16 text-right focus:outline-none focus:border-indigo-500">
+                <button type="button" onclick="removeProduct(${item.originalIndex})" class="text-slate-500 hover:text-rose-400 p-1 cursor-pointer" title="Elimina">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
               </div>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="text-indigo-300 font-bold">€</span>
-              <input type="number" step="0.01" value="${parseFloat(item.price).toFixed(2)}" onchange="updateMarketItemPrice(${item.originalIndex}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-slate-200 font-bold w-16 text-right focus:outline-none focus:border-indigo-500">
-              <button type="button" onclick="removeProduct(${item.originalIndex})" class="text-slate-500 hover:text-rose-400 p-1 cursor-pointer" title="Elimina">
-                <i class="fa-solid fa-trash"></i>
-              </button>
+            
+            <!-- Selettore Frequenza Scadenza -->
+            <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800/60">
+              <span class="flex items-center gap-1"><i class="fa-solid fa-rotate text-indigo-400"></i> Frequenza riacquisto:</span>
+              <select onchange="updateMarketItemFrequency(${item.originalIndex}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-2 py-0.5 text-slate-300 focus:outline-none">
+                <option value="7" ${freq==='7'?'selected':''}>Ogni 7 giorni</option>
+                <option value="14" ${freq==='14'?'selected':''}>Ogni 14 giorni</option>
+                <option value="30" ${freq==='30'?'selected':''}>Ogni 30 giorni</option>
+                <option value="60" ${freq==='60'?'selected':''}>Ogni 60 giorni</option>
+              </select>
             </div>
           </li>
         `;
       });
       ulHTML += '</ul>';
       container.innerHTML = ulHTML;
+    }
+
+    function updateMarketItemFrequency(index, newFreq) {
+      if (products[index]) {
+        products[index].frequency = newFreq;
+        saveAndRender();
+      }
     }
 
     function toggleItemInList(index, isChecked) {
@@ -674,17 +692,17 @@
           if (!cropCanvas) return;
           ctx = cropCanvas.getContext('2d');
 
-          let maxWidth = 300;
+          let maxWidth = 400; // Aumentata risoluzione per OCR migliore
           let scale = maxWidth / loadedImage.width;
           cropCanvas.width = maxWidth;
           cropCanvas.height = loadedImage.height * scale;
 
           ctx.drawImage(loadedImage, 0, 0, cropCanvas.width, cropCanvas.height);
           
-          startX = cropCanvas.width * 0.1;
-          startY = cropCanvas.height * 0.2;
-          endX = cropCanvas.width * 0.9;
-          endY = cropCanvas.height * 0.95;
+          startX = cropCanvas.width * 0.05;
+          startY = cropCanvas.height * 0.1;
+          endX = cropCanvas.width * 0.95;
+          endY = cropCanvas.height * 0.9;
           drawCropBox();
 
           document.getElementById('cropAreaContainer').classList.remove('hidden');
@@ -772,7 +790,7 @@
     async function processCroppedReceipt() {
       document.getElementById('cropAreaContainer').classList.add('hidden');
       const statusDiv = document.getElementById('ocrStatus');
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Lettura scontrino in corso...`;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Lettura scontrino ad alta precisione in corso...`;
 
       try {
         let x = Math.min(startX, endX);
@@ -786,14 +804,14 @@
 
         let tempCanvas = document.createElement('canvas');
         let tCtx = tempCanvas.getContext('2d');
-        tempCanvas.width = width;
-        tempCanvas.height = height;
+        tempCanvas.width = width * 2; // Supersampling per nitidezza OCR
+        tempCanvas.height = height * 2;
 
         let scaleX = loadedImage.width / cropCanvas.width;
         let scaleY = loadedImage.height / cropCanvas.height;
 
-        tCtx.drawImage(loadedImage, x * scaleX, y * scaleY, width * scaleX, height * scaleY, 0, 0, width, height);
-        let croppedDataUrl = tempCanvas.toDataURL('image/jpeg');
+        tCtx.drawImage(loadedImage, x * scaleX, y * scaleY, width * scaleX, height * scaleY, 0, 0, width * 2, height * 2);
+        let croppedDataUrl = tempCanvas.toDataURL('image/jpeg', 0.95);
 
         const result = await Tesseract.recognize(
           croppedDataUrl,
@@ -818,7 +836,7 @@
           let priceMatch = cleanLine.match(/\b\d+[\.,]\d{2}\b/g);
           if (priceMatch && priceMatch.length > 0) {
             let price = priceMatch[priceMatch.length - 1].replace(',', '.');
-            let name = cleanLine.replace(priceMatch[priceMatch.length - 1], '').replace(/[\.,€]/g, '').trim();
+            let name = cleanLine.replace(priceMatch[priceMatch.length - 1], '').replace(/[\.,€\*]/g, '').trim();
             if (!name) name = "Prodotto Scontrino";
             
             tempScannedItems.push({
@@ -836,7 +854,7 @@
         renderScannedItemsReview();
         statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Scansione completata! Rivedi e salva.</span>`;
       } catch (err) {
-        console.error("Errore OCR v3.0:", err);
+        console.error("Errore OCR v3.1:", err);
         statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. <button onclick="cancelCrop()" class="underline ml-1">Riprova</button></span>`;
       }
     }
