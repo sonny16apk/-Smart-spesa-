@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v2.9</title>
+  <title>SmartSpesa v3.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v2.9 e Data Odierna -->
+  <!-- Header con Versione v3.0 e Data Odierna -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <div>
@@ -19,14 +19,14 @@
         </h1>
         <div id="currentDateHeader" class="text-[10px] text-slate-400 font-mono mt-0.5"></div>
       </div>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v2.9</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v3.0</span>
     </div>
     <button type="button" onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
       <i class="fa-solid fa-circle-info"></i> Info
     </button>
   </header>
 
-  <!-- WIDGET BUDGET CON PULSANTI - e + -->
+  <!-- WIDGET BUDGET CON - e + LIBERI -->
   <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 mb-4 space-y-3">
     <div class="flex justify-between items-center">
       <div class="flex items-center gap-2">
@@ -34,10 +34,10 @@
         <span id="budgetTotal" class="text-xs font-mono text-indigo-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">€0.00</span>
       </div>
       
-      <!-- Pulsanti rapidi - e + e Modifica -->
+      <!-- Pulsanti rapidi - e + con importo libero e Modifica -->
       <div class="flex items-center gap-1.5">
-        <button type="button" onclick="adjustBudgetAmount(-10)" class="w-7 h-7 bg-slate-900 hover:bg-slate-700 text-rose-400 border border-slate-700 rounded-lg font-bold text-xs flex items-center justify-center cursor-pointer" title="Scala 10€">-</button>
-        <button type="button" onclick="adjustBudgetAmount(10)" class="w-7 h-7 bg-slate-900 hover:bg-slate-700 text-emerald-400 border border-slate-700 rounded-lg font-bold text-xs flex items-center justify-center cursor-pointer" title="Aggiungi 10€">+</button>
+        <button type="button" onclick="promptAdjustBudget(-)" class="w-7 h-7 bg-slate-900 hover:bg-slate-700 text-rose-400 border border-slate-700 rounded-lg font-bold text-xs flex items-center justify-center cursor-pointer" title="Scala importo">-</button>
+        <button type="button" onclick="promptAdjustBudget(+)" class="w-7 h-7 bg-slate-900 hover:bg-slate-700 text-emerald-400 border border-slate-700 rounded-lg font-bold text-xs flex items-center justify-center cursor-pointer" title="Aggiungi importo">+</button>
         <button type="button" onclick="openBudgetModal()" class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800 px-2.5 py-1.5 rounded-lg hover:bg-indigo-900 transition-all cursor-pointer">
           Modifica
         </button>
@@ -64,12 +64,12 @@
     </button>
   </div>
 
-  <!-- SEZIONE 1: LISTA SETTIMANALE + INSERIMENTO RAPIDO -->
+  <!-- SEZIONE 1: LISTA SETTIMANALE + INSERIMENTO RAPIDO + TOTALE SPESA -->
   <div id="viewWeekly" class="space-y-4">
     <!-- Box Inserimento Rapido con Supermercato -->
     <div class="bg-slate-800 p-3 rounded-xl shadow-lg border border-slate-700 space-y-2">
       <h2 class="text-xs font-semibold text-slate-300 flex items-center gap-1">
-        <i class="fa-solid fa-plus text-indigo-400"></i> Aggiungi al volo
+        <i class="fa-solid fa-plus text-indigo-400"></i> Aggiungi al volo in lista
       </h2>
       <form onsubmit="handleQuickSubmit(event)" class="space-y-2">
         <div class="grid grid-cols-12 gap-2">
@@ -90,11 +90,14 @@
       </form>
     </div>
 
-    <!-- Lista Spesa con Checkbox Interattive -->
-    <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
-      <h2 class="text-sm font-semibold text-slate-300 mb-3 flex items-center justify-between">
-        <span>Da Comprare Questa Settimana</span>
-      </h2>
+    <!-- Lista Spesa con Totale e Checkbox Interattive -->
+    <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 space-y-3">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+        <h2 class="text-sm font-semibold text-slate-300">Da Comprare Questa Settimana</h2>
+        <div class="text-xs font-bold text-indigo-300 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-700">
+          Totale: <span id="weeklyTotalSum" class="text-emerald-400 font-extrabold">€0.00</span>
+        </div>
+      </div>
       <ul id="weeklyList" class="space-y-2"></ul>
     </div>
   </div>
@@ -102,10 +105,10 @@
   <!-- SEZIONE 2: SCANNER SCONTRINO & INSERIMENTO MANUALE -->
   <div id="viewArchive" class="space-y-6 hidden">
     
-    <!-- Box Scanner Scontrino con Riprova Immediato -->
+    <!-- Box Scanner Scontrino con Annulla e Rifai Immediato -->
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Revisione (v2.9)
+        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Revisione (v3.0)
       </h2>
       <p class="text-xs text-slate-400">Scatta la foto, ritaglia l'area e rivedi gli articoli rilevati prima di salvarli nell'archivio.</p>
       
@@ -202,15 +205,32 @@
     </section>
   </div>
 
-  <!-- SEZIONE 3: PRODOTTI DIVISI PER SUPERMERCATO CON ATTIVAZIONE LISTA -->
+  <!-- SEZIONE 3: ARCHIVIO SELEZIONATO PER SINGOLO SUPERMERCATO (ANTI-SOVRACCARICO) -->
   <div id="viewMarkets" class="space-y-4 hidden">
-    <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
-      <h2 class="text-sm font-semibold text-slate-300 mb-1 flex items-center justify-between">
-        <span>Archivio per Supermercato</span>
-        <span class="text-[11px] text-indigo-400">Modifica o seleziona per la lista</span>
-      </h2>
-      <p class="text-[11px] text-slate-400 mb-3">Spunta la casella "In Lista" per attivare le scadenze e far comparire l'articolo nella schermata principale.</p>
-      <div id="marketsContainer" class="space-y-4"></div>
+    <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 space-y-3">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+        <h2 class="text-sm font-semibold text-slate-300">Archivio per Supermercato</h2>
+        <span class="text-[11px] text-indigo-400">Seleziona e gestisci</span>
+      </div>
+      
+      <!-- Selettore Pulito del Supermercato -->
+      <div>
+        <label class="block text-[11px] text-slate-400 mb-1">Scegli il supermercato da visualizzare:</label>
+        <select id="marketSelector" onchange="renderMarketsView()" class="w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-xs text-slate-200 font-semibold focus:outline-none">
+          <option value="Prix">Prix</option>
+          <option value="Lidl">Lidl</option>
+          <option value="Coop">Coop</option>
+          <option value="Conad">Conad</option>
+          <option value="Eurospin">Eurospin</option>
+          <option value="Esselunga">Esselunga</option>
+          <option value="Altro">Altro / Personalizzato</option>
+        </select>
+      </div>
+
+      <p class="text-[10px] text-slate-400">Spunta la casella "In Lista" per attivare l'articolo nella schermata principale.</p>
+      
+      <!-- Container filtrato per un singolo supermercato alla volta -->
+      <div id="marketsContainer" class="space-y-2 pt-1"></div>
     </div>
   </div>
 
@@ -219,7 +239,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v2.9
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v3.0
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -230,10 +250,10 @@
         <div>
           <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">📘 Funzionalità Principali:</h3>
           <ul class="list-disc list-inside space-y-1.5 text-slate-400">
-            <li><strong>Budget Intelligente:</strong> Gestisci budget e conguagli con i tasti rapidi `-` e `+`.</li>
-            <li><strong>Scanner con Annulla/Rifai:</strong> Scatta, ritaglia e se serve ricomincia subito senza ricaricare la pagina.</li>
-            <li><strong>Archivio per Supermercato:</strong> I prodotti salvati dallo scanner finiscono nell'archivio separato per negozio. Scegli tu quali attivare per la lista settimanale.</li>
-            <li><strong>Lista Spesa Interattiva:</strong> Spunta i prodotti in tempo reale direttamente al supermercato.</li>
+            <li><strong>Budget Flessibile:</strong> Gestisci budget fisso e conguagli con i tasti liberi `-` e `+`.</li>
+            <li><strong>Scanner Dedicato:</strong> Scatta, ritaglia e se serve annulla subito senza ricaricare la pagina.</li>
+            <li><strong>Archivio per Negozio Mirato:</strong> Seleziona un singolo supermercato alla volta per evitare confusione visiva e attivare i prodotti per la spesa.</li>
+            <li><strong>Lista Spesa Calcolata:</strong> Spunta i prodotti in tempo reale e controlla subito il totale spesa previsto.</li>
             <li><strong>Privacy Totale:</strong> I dati restano protetti sul tuo dispositivo (Local-First).</li>
           </ul>
         </div>
@@ -265,7 +285,6 @@
       customMarketInput = document.getElementById('customMarketInput');
       cropCanvas = document.getElementById('cropCanvas');
       
-      // Formatta data header
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
       const todayFormatted = new Date().toLocaleDateString('it-IT', options);
       const dateHeaderEl = document.getElementById('currentDateHeader');
@@ -341,11 +360,21 @@
       }
     }
 
-    function adjustBudgetAmount(amount) {
-      monthlyBudget += amount;
-      if (monthlyBudget < 0) monthlyBudget = 0;
-      localStorage.setItem('smartspesa_budget', monthlyBudget);
-      updateBudgetDisplay();
+    function promptAdjustBudget(op) {
+      let label = op === '+' ? "Inserisci importo da AGGIUNGERE al budget/conguaglio (€):" : "Inserisci importo da SCALARE dal budget/conguaglio (€):";
+      let valInput = prompt(label, "10");
+      if (valInput !== null) {
+        let val = parseFloat(valInput.replace(',', '.'));
+        if (!isNaN(val) && val > 0) {
+          if (op === '+') {
+            manualAdjustment += val;
+          } else {
+            manualAdjustment -= val;
+          }
+          localStorage.setItem('smartspesa_manual_adjustment', manualAdjustment);
+          updateBudgetDisplay();
+        }
+      }
     }
 
     function calculateSpentTotal() {
@@ -435,7 +464,7 @@
           price: parseFloat(price).toFixed(2),
           frequency: "14",
           date: todayStr,
-          inList: true, // Salvato al volo va direttamente in lista
+          inList: true,
           createdAt: new Date().getTime(),
           lastBought: new Date().getTime()
         });
@@ -479,56 +508,49 @@
 
     function renderMarketsView() {
       const container = document.getElementById('marketsContainer');
-      if (!container) return;
+      const selector = document.getElementById('marketSelector');
+      if (!container || !selector) return;
+      
       container.innerHTML = '';
+      let selectedMarket = selector.value;
 
-      if (products.length === 0) {
-        container.innerHTML = `<div class="text-xs text-slate-500 text-center py-6">Nessun supermercato o prodotto registrato. Usa lo scanner o l'inserimento manuale.</div>`;
+      let filteredProducts = products.map((item, idx) => ({ ...item, originalIndex: idx })).filter(item => {
+        let m = item.market || 'Altro';
+        if (selectedMarket === 'Altro') {
+          return !['Prix', 'Lidl', 'Coop', 'Conad', 'Eurospin', 'Esselunga'].includes(m);
+        }
+        return m === selectedMarket;
+      });
+
+      if (filteredProducts.length === 0) {
+        container.innerHTML = `<div class="text-xs text-slate-500 text-center py-6">Nessun prodotto registrato per "${selectedMarket}".</div>`;
         return;
       }
 
-      let marketsMap = {};
-      products.forEach((item, idx) => {
-        let m = item.market || 'Altro';
-        if (!marketsMap[m]) marketsMap[m] = [];
-        marketsMap[m].push({ ...item, originalIndex: idx });
+      let ulHTML = '<ul class="space-y-2">';
+      filteredProducts.forEach((item) => {
+        let checkedAttr = item.inList ? 'checked' : '';
+        ulHTML += `
+          <li class="flex justify-between items-center bg-slate-900 p-2.5 rounded-lg border border-slate-700 text-xs">
+            <div class="flex items-center gap-2">
+              <input type="checkbox" ${checkedAttr} onchange="toggleItemInList(${item.originalIndex}, this.checked)" title="Attiva per la lista settimanale" class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
+              <div>
+                <input type="text" value="${item.name}" onchange="updateMarketItemName(${item.originalIndex}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-slate-200 font-medium w-32 focus:outline-none focus:border-indigo-500">
+                <div class="text-[9px] text-slate-400 mt-0.5"><i class="fa-solid fa-calendar mr-1"></i>${item.date || 'N/D'}</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-indigo-300 font-bold">€</span>
+              <input type="number" step="0.01" value="${parseFloat(item.price).toFixed(2)}" onchange="updateMarketItemPrice(${item.originalIndex}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-slate-200 font-bold w-16 text-right focus:outline-none focus:border-indigo-500">
+              <button type="button" onclick="removeProduct(${item.originalIndex})" class="text-slate-500 hover:text-rose-400 p-1 cursor-pointer" title="Elimina">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </li>
+        `;
       });
-
-      for (let marketName in marketsMap) {
-        let marketDiv = document.createElement('div');
-        marketDiv.className = 'bg-slate-900 p-3 rounded-xl border border-slate-700/80 space-y-2';
-        
-        let headerHTML = `<div class="flex justify-between items-center border-b border-slate-800 pb-2">
-          <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-wider"><i class="fa-solid fa-store mr-1"></i> ${marketName}</h3>
-          <span class="text-[10px] text-slate-400">${marketsMap[marketName].length} articoli</span>
-        </div>`;
-        
-        let ulHTML = '<ul class="space-y-2">';
-        marketsMap[marketName].forEach((item) => {
-          let checkedAttr = item.inList ? 'checked' : '';
-          ulHTML += `
-            <li class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-lg border border-slate-700 text-xs">
-              <div class="flex items-center gap-2">
-                <input type="checkbox" ${checkedAttr} onchange="toggleItemInList(${item.originalIndex}, this.checked)" title="Attiva per la lista settimanale" class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
-                <div>
-                  <input type="text" value="${item.name}" onchange="updateMarketItemName(${item.originalIndex}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-slate-200 font-medium w-32 focus:outline-none focus:border-indigo-500">
-                  <div class="text-[9px] text-slate-400 mt-0.5"><i class="fa-solid fa-calendar mr-1"></i>${item.date || 'N/D'}</div>
-                </div>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="text-indigo-300 font-bold">€</span>
-                <input type="number" step="0.01" value="${parseFloat(item.price).toFixed(2)}" onchange="updateMarketItemPrice(${item.originalIndex}, this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-slate-200 font-bold w-16 text-right focus:outline-none focus:border-indigo-500">
-                <button type="button" onclick="removeProduct(${item.originalIndex})" class="text-slate-500 hover:text-rose-400 p-1 cursor-pointer" title="Elimina">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              </div>
-            </li>
-          `;
-        });
-        ulHTML += '</ul>';
-        marketDiv.innerHTML = headerHTML + ulHTML;
-        container.appendChild(marketDiv);
-      }
+      ulHTML += '</ul>';
+      container.innerHTML = ulHTML;
     }
 
     function toggleItemInList(index, isChecked) {
@@ -555,10 +577,14 @@
 
     function generateWeeklyList() {
       const weeklyList = document.getElementById('weeklyList');
+      const totalSumEl = document.getElementById('weeklyTotalSum');
       if (!weeklyList) return;
       weeklyList.innerHTML = '';
       
       let activeProducts = products.filter(item => item.inList === true);
+      let sum = 0;
+      activeProducts.forEach(item => { sum += parseFloat(item.price) || 0; });
+      if (totalSumEl) totalSumEl.innerText = `€${sum.toFixed(2)}`;
 
       if (activeProducts.length === 0) {
         weeklyList.innerHTML = `<li class="text-xs text-slate-500 text-center py-6">Nessun articolo attivo in lista. Vai su "Per Supermercato" per attivarli o aggiungine uno sopra al volo.</li>`;
@@ -587,7 +613,6 @@
       if (products[index]) {
         products[index].lastBought = new Date().getTime();
         products[index].date = new Date().toISOString().split('T')[0];
-        // Quando comprato, lo disattiviamo dalla lista corrente
         products[index].inList = false;
         saveAndRender();
       }
@@ -613,7 +638,7 @@
           price: parseFloat(price).toFixed(2),
           frequency,
           date,
-          inList: false, // Va in archivio e va spuntato in "Per Supermercato"
+          inList: false,
           createdAt: new Date().getTime(),
           lastBought: new Date().getTime()
         });
@@ -811,7 +836,7 @@
         renderScannedItemsReview();
         statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Scansione completata! Rivedi e salva.</span>`;
       } catch (err) {
-        console.error("Errore OCR v2.9:", err);
+        console.error("Errore OCR v3.0:", err);
         statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. <button onclick="cancelCrop()" class="underline ml-1">Riprova</button></span>`;
       }
     }
@@ -865,7 +890,7 @@
             price: parseFloat(item.price).toFixed(2),
             frequency: "14",
             date: todayStr,
-            inList: false, // Salvato va in archivio, non in lista diretta
+            inList: false,
             createdAt: new Date().getTime(),
             lastBought: new Date().getTime()
           });
