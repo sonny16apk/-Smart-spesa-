@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v3.1</title>
+  <title>SmartSpesa v3.1.1</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v3.1 e Data Odierna -->
+  <!-- Header con Versione v3.1.1 e Data Odierna -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <div>
@@ -19,14 +19,14 @@
         </h1>
         <div id="currentDateHeader" class="text-[10px] text-slate-400 font-mono mt-0.5"></div>
       </div>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v3.1</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v3.1.1</span>
     </div>
     <button type="button" onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
       <i class="fa-solid fa-circle-info"></i> Info
     </button>
   </header>
 
-  <!-- WIDGET BUDGET CON - e + FUNZIONANTI -->
+  <!-- WIDGET BUDGET -->
   <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 mb-4 space-y-3">
     <div class="flex justify-between items-center">
       <div class="flex items-center gap-2">
@@ -34,7 +34,6 @@
         <span id="budgetTotal" class="text-xs font-mono text-indigo-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">€0.00</span>
       </div>
       
-      <!-- Pulsanti rapidi - e + corretti e Modifica -->
       <div class="flex items-center gap-1.5">
         <button type="button" onclick="promptAdjustBudget('-')" class="w-7 h-7 bg-slate-900 hover:bg-slate-700 text-rose-400 border border-slate-700 rounded-lg font-bold text-xs flex items-center justify-center cursor-pointer" title="Scala importo">-</button>
         <button type="button" onclick="promptAdjustBudget('+')" class="w-7 h-7 bg-slate-900 hover:bg-slate-700 text-emerald-400 border border-slate-700 rounded-lg font-bold text-xs flex items-center justify-center cursor-pointer" title="Aggiungi importo">+</button>
@@ -44,7 +43,7 @@
       </div>
     </div>
 
-    <!-- Disponibile in evidenza assoluta -->
+    <!-- Disponibile Reale -->
     <div class="bg-slate-900 p-4 rounded-xl border border-slate-700/80 text-center space-y-1">
       <div class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">Disponibile Reale</div>
       <div id="budgetRemaining" class="text-3xl font-extrabold text-emerald-400">€0.00</div>
@@ -66,7 +65,7 @@
 
   <!-- SEZIONE 1: LISTA SETTIMANALE -->
   <div id="viewWeekly" class="space-y-4">
-    <!-- Box Inserimento Rapido con Supermercato -->
+    <!-- Box Inserimento Rapido -->
     <div class="bg-slate-800 p-3 rounded-xl shadow-lg border border-slate-700 space-y-2">
       <h2 class="text-xs font-semibold text-slate-300 flex items-center gap-1">
         <i class="fa-solid fa-plus text-indigo-400"></i> Aggiungi al volo in lista
@@ -105,22 +104,22 @@
   <!-- SEZIONE 2: SCANNER SCONTRINO & INSERIMENTO MANUALE -->
   <div id="viewArchive" class="space-y-6 hidden">
     
-    <!-- Box Scanner Scontrino Ottimizzato -->
+    <!-- Box Scanner Scontrino Inquadratura Totale -->
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Revisione (v3.1)
+        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Revisione (v3.1.1)
       </h2>
-      <p class="text-xs text-slate-400">Scatta la foto, ritaglia la zona dei prezzi ed estrai gli articoli.</p>
+      <p class="text-xs text-slate-400">Scatta la foto, seleziona l'area ed estrai gli articoli nello storico.</p>
       
       <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="loadCropImage(event)">
       <button type="button" onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
         <i class="fa-solid fa-crop"></i> Seleziona / Scatta foto scontrino
       </button>
 
-      <!-- Area Anteprima e Ritaglio -->
+      <!-- Area Anteprima e Ritaglio Full-Scale -->
       <div id="cropAreaContainer" class="hidden space-y-2 bg-slate-900 p-3 rounded-xl border border-indigo-900">
-        <div class="text-[11px] text-indigo-300 font-medium text-center">Trascina il rettangolo sullo scontrino:</div>
-        <div class="overflow-hidden rounded-lg flex justify-center bg-black max-h-80 relative">
+        <div class="text-[11px] text-indigo-300 font-medium text-center">Trascina il rettangolo su tutto lo scontrino:</div>
+        <div class="overflow-hidden rounded-lg flex justify-center bg-black max-h-96 relative">
           <canvas id="cropCanvas" class="max-w-full cursor-crosshair touch-none"></canvas>
         </div>
         <div class="grid grid-cols-2 gap-2 pt-1">
@@ -150,9 +149,11 @@
       </div>
     </section>
 
-    <!-- Inserimento Manuale Prodotto -->
+    <!-- Inserimento Manuale Prodotto (Tasto Esplicito) -->
     <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
-      <h2 class="text-sm font-semibold mb-3 text-slate-300">Aggiungi Prodotto Manuale</h2>
+      <h2 class="text-sm font-semibold mb-3 text-slate-300 flex items-center gap-1.5">
+        <i class="fa-solid fa-keyboard text-indigo-400"></i> Inserimento Manuale Dedicato
+      </h2>
       <form id="itemForm" class="space-y-3" onsubmit="handleFormSubmit(event)">
         <input type="text" id="itemName" placeholder="Es. Caffè, Latte, Pane..." required 
                class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
@@ -176,7 +177,7 @@
                  class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
           
           <select id="itemFrequency" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
-            <option value="7">Ogni 7 giorni</option>
+            <option value="7">Ogni 7 giorni (Subito in lista)</option>
             <option value="14" selected>Ogni 14 giorni</option>
             <option value="30">Ogni 30 giorni</option>
             <option value="60">Ogni 60 giorni</option>
@@ -205,15 +206,14 @@
     </section>
   </div>
 
-  <!-- SEZIONE 3: ARCHIVIO SELEZIONATO PER SUPERMERCATO CON FREQUENZA DI SCADENZA -->
+  <!-- SEZIONE 3: ARCHIVIO SELEZIONATO PER SUPERMERCATO -->
   <div id="viewMarkets" class="space-y-4 hidden">
     <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 space-y-3">
       <div class="flex justify-between items-center border-b border-slate-700 pb-2">
         <h2 class="text-sm font-semibold text-slate-300">Archivio per Supermercato</h2>
-        <span class="text-[11px] text-indigo-400">Gestisci articoli e scadenze</span>
+        <span class="text-[11px] text-indigo-400">Scadenze & Gestione</span>
       </div>
       
-      <!-- Selettore Supermercato -->
       <div>
         <label class="block text-[11px] text-slate-400 mb-1">Scegli il supermercato da visualizzare:</label>
         <select id="marketSelector" onchange="renderMarketsView()" class="w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-xs text-slate-200 font-semibold focus:outline-none">
@@ -227,7 +227,7 @@
         </select>
       </div>
 
-      <p class="text-[10px] text-slate-400">Modifica prezzo, spunta "In Lista" e imposta la frequenza di riacquisto (scadenza).</p>
+      <p class="text-[10px] text-slate-400">Le scadenze a 7 giorni vanno subito in lista. Le altre appaiono solo alla scadenza dei giorni impostati.</p>
       
       <div id="marketsContainer" class="space-y-2 pt-1"></div>
     </div>
@@ -238,7 +238,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v3.1
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v3.1.1
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -249,11 +249,10 @@
         <div>
           <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">📘 Funzionalità Principali:</h3>
           <ul class="list-disc list-inside space-y-1.5 text-slate-400">
-            <li><strong>Budget Dinamico:</strong> Disponibile Reale aggiornato all'istante e tasti `-` e `+` operativi.</li>
-            <li><strong>Scanner Alta Precisione:</strong> Ritaglio canvas ad alta risoluzione e riconoscimento OCR migliorato.</li>
-            <li><strong>Frequenza & Scadenze:</strong> Imposta la frequenza di riacquisto direttamente nell'archivio per supermercato.</li>
-            <li><strong>Lista Spesa Calcolata:</strong> Calcolo in tempo reale del totale spesa previsto.</li>
-            <li><strong>Privacy Totale:</strong> Dati salvati esclusivamente sul tuo dispositivo.</li>
+            <li><strong>Budget & Scontrini:</strong> Il disponibile reale scala solo alla lettura e salvataggio degli scontrini o con i conguagli.</li>
+            <li><strong>Scanner Full-Scale:</strong> Inquadratura e ritaglio immagine migliorati per catturare tutto lo scontrino.</li>
+            <li><strong>Scadenze Intelligenti:</strong> Frequenze a 7 giorni attive subito in lista; le altre scattano al termine dei giorni previsti.</li>
+            <li><strong>Privacy Totale:</strong> Dati salvati localmente sul tuo dispositivo.</li>
           </ul>
         </div>
       </div>
@@ -376,6 +375,7 @@
       }
     }
 
+    // Calcolo spesa basato solo su conguagli e scontrini salvati (non sporcato dalla lista)
     function calculateSpentTotal() {
       let now = new Date();
       let currentMonth = now.getMonth();
@@ -383,7 +383,7 @@
 
       let totalSpent = -manualAdjustment; 
       products.forEach(item => {
-        if (item.date && item.inList) {
+        if (item.date && item.fromReceipt) {
           let d = new Date(item.date);
           if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
             totalSpent += parseFloat(item.price) || 0;
@@ -464,6 +464,7 @@
           frequency: "14",
           date: todayStr,
           inList: true,
+          fromReceipt: false,
           createdAt: new Date().getTime(),
           lastBought: new Date().getTime()
         });
@@ -547,11 +548,11 @@
               </div>
             </div>
             
-            <!-- Selettore Frequenza Scadenza -->
+            <!-- Frequenza Scadenza -->
             <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800/60">
               <span class="flex items-center gap-1"><i class="fa-solid fa-rotate text-indigo-400"></i> Frequenza riacquisto:</span>
               <select onchange="updateMarketItemFrequency(${item.originalIndex}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-2 py-0.5 text-slate-300 focus:outline-none">
-                <option value="7" ${freq==='7'?'selected':''}>Ogni 7 giorni</option>
+                <option value="7" ${freq==='7'?'selected':''}>Ogni 7 giorni (Subito in lista)</option>
                 <option value="14" ${freq==='14'?'selected':''}>Ogni 14 giorni</option>
                 <option value="30" ${freq==='30'?'selected':''}>Ogni 30 giorni</option>
                 <option value="60" ${freq==='60'?'selected':''}>Ogni 60 giorni</option>
@@ -599,13 +600,26 @@
       if (!weeklyList) return;
       weeklyList.innerHTML = '';
       
+      const now = new Date().getTime();
+
+      // Logica scadenze intelligenti: 7 giorni o scadenza raggiunta
+      products.forEach(item => {
+        let freq = parseInt(item.frequency || 14);
+        let lastB = item.lastBought || item.createdAt || now;
+        let daysPassed = (now - lastB) / (1000 * 60 * 60 * 24);
+
+        if (freq === 7 || daysPassed >= freq) {
+          item.inList = true;
+        }
+      });
+
       let activeProducts = products.filter(item => item.inList === true);
       let sum = 0;
       activeProducts.forEach(item => { sum += parseFloat(item.price) || 0; });
       if (totalSumEl) totalSumEl.innerText = `€${sum.toFixed(2)}`;
 
       if (activeProducts.length === 0) {
-        weeklyList.innerHTML = `<li class="text-xs text-slate-500 text-center py-6">Nessun articolo attivo in lista. Vai su "Per Supermercato" per attivarli o aggiungine uno sopra al volo.</li>`;
+        weeklyList.innerHTML = `<li class="text-xs text-slate-500 text-center py-6">Nessun articolo in scadenza questa settimana.</li>`;
         return;
       }
 
@@ -650,13 +664,15 @@
       }
 
       if (name && price) {
+        let startInList = (frequency === '7');
         products.unshift({
           name,
           market: finalMarket,
           price: parseFloat(price).toFixed(2),
           frequency,
           date,
-          inList: false,
+          inList: startInList,
+          fromReceipt: false,
           createdAt: new Date().getTime(),
           lastBought: new Date().getTime()
         });
@@ -692,21 +708,22 @@
           if (!cropCanvas) return;
           ctx = cropCanvas.getContext('2d');
 
-          let maxWidth = 400; // Aumentata risoluzione per OCR migliore
+          let maxWidth = 450;
           let scale = maxWidth / loadedImage.width;
           cropCanvas.width = maxWidth;
           cropCanvas.height = loadedImage.height * scale;
 
           ctx.drawImage(loadedImage, 0, 0, cropCanvas.width, cropCanvas.height);
           
-          startX = cropCanvas.width * 0.05;
-          startY = cropCanvas.height * 0.1;
-          endX = cropCanvas.width * 0.95;
-          endY = cropCanvas.height * 0.9;
+          // Inquadratura predefinita estesa su quasi tutto il canvas per non tagliare nulla
+          startX = cropCanvas.width * 0.02;
+          startY = cropCanvas.height * 0.05;
+          endX = cropCanvas.width * 0.98;
+          endY = cropCanvas.height * 0.95;
           drawCropBox();
 
           document.getElementById('cropAreaContainer').classList.remove('hidden');
-          document.getElementById('ocrStatus').innerText = "Trascina il rettangolo sulla zona degli articoli/prezzi.";
+          document.getElementById('ocrStatus').innerText = "Trascina il rettangolo per coprire interamente lo scontrino.";
         }
         loadedImage.src = e.target.result;
       }
@@ -790,7 +807,7 @@
     async function processCroppedReceipt() {
       document.getElementById('cropAreaContainer').classList.add('hidden');
       const statusDiv = document.getElementById('ocrStatus');
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Lettura scontrino ad alta precisione in corso...`;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Lettura scontrino in corso...`;
 
       try {
         let x = Math.min(startX, endX);
@@ -804,7 +821,7 @@
 
         let tempCanvas = document.createElement('canvas');
         let tCtx = tempCanvas.getContext('2d');
-        tempCanvas.width = width * 2; // Supersampling per nitidezza OCR
+        tempCanvas.width = width * 2;
         tempCanvas.height = height * 2;
 
         let scaleX = loadedImage.width / cropCanvas.width;
@@ -854,7 +871,7 @@
         renderScannedItemsReview();
         statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Scansione completata! Rivedi e salva.</span>`;
       } catch (err) {
-        console.error("Errore OCR v3.1:", err);
+        console.error("Errore OCR v3.1.1:", err);
         statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. <button onclick="cancelCrop()" class="underline ml-1">Riprova</button></span>`;
       }
     }
@@ -909,6 +926,7 @@
             frequency: "14",
             date: todayStr,
             inList: false,
+            fromReceipt: true, // Segnato come proveniente da scontrino per scalare il budget
             createdAt: new Date().getTime(),
             lastBought: new Date().getTime()
           });
@@ -916,7 +934,7 @@
       });
 
       document.getElementById('ocrReviewContainer').classList.add('hidden');
-      document.getElementById('ocrStatus').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Articoli salvati nell'archivio supermercati!</span>`;
+      document.getElementById('ocrStatus').innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Articoli salvati e budget scalato!</span>`;
       tempScannedItems = [];
       saveAndRender();
       switchTab('markets');
