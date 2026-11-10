@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v4.4 IA</title>
+  <title>SmartSpesa v4.5 IA</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v4.4 e Toggle Notifiche -->
+  <!-- Header con Versione v4.5 e Toggle Notifiche -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <div>
@@ -18,7 +18,7 @@
         </h1>
         <div id="currentDateHeader" class="text-[10px] text-slate-400 font-mono mt-0.5"></div>
       </div>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v4.4 IA</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v4.5 IA</span>
     </div>
     
     <div class="flex items-center gap-2">
@@ -122,9 +122,9 @@
     <!-- SCANNER SCONTRINO CON IA -->
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-wand-magic-sparkles"></i> Scanner Scontrino IA (Smart-Retry)
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Scanner Scontrino IA (v4.5)
       </h2>
-      <p class="text-xs text-slate-400">Scatta o carica la foto dello scontrino: l'app comprime l'immagine e la invia in sicurezza.</p>
+      <p class="text-xs text-slate-400">Scatta o carica la foto dello scontrino: l'IA integrata leggerà tutto al centesimo.</p>
       
       <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="processReceiptWithAI(event)">
       <button type="button" onclick="triggerReceiptScan()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-3 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-md">
@@ -258,7 +258,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v4.4 IA
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v4.5 IA
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -266,7 +266,7 @@
       </div>
 
       <div class="space-y-3 text-slate-300 text-xs">
-        <p><strong>Versione v4.4:</strong> Compressione intelligente delle immagini e sistema di tentativi automatici per evitare blocchi per troppe richieste.</p>
+        <p><strong>Versione v4.5:</strong> Modello Gemini 3.8 Flash agganciato stabilmente per eliminare qualsiasi errore di endpoint.</p>
       </div>
 
       <button type="button" onclick="toggleInfoModal(false)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-xl text-xs transition-colors cursor-pointer">
@@ -376,7 +376,7 @@
 
     function exportBackup() {
       const backupData = {
-        version: "4.4",
+        version: "4.5",
         exportDate: new Date().toISOString(),
         monthlyBudget: monthlyBudget,
         manualAdjustment: manualAdjustment,
@@ -743,7 +743,7 @@
       }
     }
 
-    // GESTIONE IA GEMINI CON COMPRESSIONE E TENTATIVI AUTOMATICI (V4.4)
+    // GESTIONE IA GEMINI V4.5 (Modello gemini-3.8-flash blindato + Compressione + Retry)
     async function processReceiptWithAI(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -752,7 +752,6 @@
       statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Ottimizzazione foto e analisi IA in corso...`;
 
       try {
-        // Comprimiamo l'immagine a max 1000px per alleggerirla e facilitare l'invio
         const compressedBase64 = await resizeImageToCompressedBase64(file, 1000, 0.8);
         const cleanBase64 = compressedBase64.split(',')[1];
 
@@ -763,10 +762,9 @@
         let attempts = 3;
         let success = false;
 
-        // Sistema di tentativi automatici (Retry) in caso di sovraccarico temporaneo
         while (attempts > 0 && !success) {
           try {
-            response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+            response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${geminiApiKey}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -787,7 +785,7 @@
           } catch (netErr) {
             attempts--;
             if (attempts === 0) throw netErr;
-            statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Traffico intenso, nuovo tentativo fra 3 sec (${attempts} rimasti)...`;
+            statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Attesa server, nuovo tentativo (${attempts} rimasti)...`;
             await new Promise(r => setTimeout(r, 3000));
           }
         }
