@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v3.2.1</title>
+  <title>SmartSpesa v3.2.2</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v3.2.1, Data Odierna e Toggle Notifiche -->
+  <!-- Header con Versione v3.2.2, Data Odierna e Toggle Notifiche -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <div>
@@ -19,7 +19,7 @@
         </h1>
         <div id="currentDateHeader" class="text-[10px] text-slate-400 font-mono mt-0.5"></div>
       </div>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v3.2.1</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v3.2.2</span>
     </div>
     
     <div class="flex items-center gap-2">
@@ -109,9 +109,9 @@
     
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-camera"></i> Scanner Scontrino Sicuro (v3.2.1)
+        <i class="fa-solid fa-camera"></i> Scanner Scontrino ad Alta Precisione (v3.2.2)
       </h2>
-      <p class="text-xs text-slate-400">Scatta la foto o caricala: l'app la ottimizza per evitare blocchi.</p>
+      <p class="text-xs text-slate-400">Scatta o carica: algoritmo OCR ottimizzato per leggere più voci.</p>
       
       <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="loadCropImage(event)">
       <button type="button" onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
@@ -163,7 +163,7 @@
       </div>
     </section>
 
-    <!-- Inserimento Manuale Prodotto -->
+    <!-- Inserimento Manuale Prodotto (Con Supermercato Personalizzato Libero) -->
     <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
       <h2 class="text-sm font-semibold mb-3 text-slate-300 flex items-center gap-1.5">
         <i class="fa-solid fa-keyboard text-indigo-400"></i> Inserimento Manuale Dedicato
@@ -173,16 +173,16 @@
                class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
         
         <div class="space-y-2">
-          <select id="itemMarket" onchange="toggleCustomMarket(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
+          <select id="itemMarket" onchange="toggleCustomMarket(this.value, 'itemMarket', 'customMarketInput')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
             <option value="Prix">Prix</option>
             <option value="Lidl">Lidl</option>
             <option value="Coop">Coop</option>
             <option value="Conad">Conad</option>
             <option value="Eurospin">Eurospin</option>
             <option value="Esselunga">Esselunga</option>
-            <option value="CUSTOM">+ Aggiungi supermercato a mano</option>
+            <option value="CUSTOM">+ Inserisci nuovo supermercato...</option>
           </select>
-          <input type="text" id="customMarketInput" placeholder="Nome supermercato..." 
+          <input type="text" id="customMarketInput" placeholder="Scrivi il nome del supermercato..." 
                  class="hidden w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-sm focus:outline-none">
         </div>
 
@@ -243,17 +243,19 @@
         <span class="text-[11px] text-indigo-400">Scadenze & Gestione</span>
       </div>
       
-      <div>
-        <label class="block text-[11px] text-slate-400 mb-1">Scegli il supermercato da visualizzare:</label>
-        <select id="marketSelector" onchange="renderMarketsView()" class="w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-xs text-slate-200 font-semibold focus:outline-none">
+      <div class="space-y-2">
+        <label class="block text-[11px] text-slate-400 mb-1">Scegli o aggiungi il supermercato da visualizzare:</label>
+        <select id="marketSelector" onchange="handleMarketSelectorChange(this.value)" class="w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-xs text-slate-200 font-semibold focus:outline-none">
           <option value="Prix">Prix</option>
           <option value="Lidl">Lidl</option>
           <option value="Coop">Coop</option>
           <option value="Conad">Conad</option>
           <option value="Eurospin">Eurospin</option>
           <option value="Esselunga">Esselunga</option>
-          <option value="Altro">Altro / Personalizzato</option>
+          <option value="CUSTOM">+ Inserisci nuovo supermercato...</option>
         </select>
+        <input type="text" id="customMarketSelectorInput" placeholder="Scrivi nome supermercato e premi invio..." onchange="handleCustomMarketSelect(this.value)"
+               class="hidden w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none">
       </div>
 
       <p class="text-[10px] text-slate-400">Le scadenze a 7 giorni vanno subito in lista. Le altre appaiono solo alla scadenza dei giorni impostati.</p>
@@ -267,7 +269,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v3.2.1
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v3.2.2
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -276,9 +278,10 @@
 
       <div class="space-y-3 text-slate-300 text-xs">
         <div>
-          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">📘 Funzionalità Principali v3.2.1:</h3>
+          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">📘 Funzionalità Principali v3.2.2:</h3>
           <ul class="list-disc list-inside space-y-1.5 text-slate-400">
-            <li><strong>Scanner Anti-Crash:</strong> Compressione automatica delle foto pesanti per evitare il ricaricamento della pagina.</li>
+            <li><strong>Supermercati Liberi:</strong> Ora puoi aggiungere e nominare qualsiasi nuovo supermercato a mano in piena libertà.</li>
+            <li><strong>Scanner OCR Ottimizzato:</strong> Maggiore precisione di lettura per catturare più voci dallo scontrino.</li>
             <li><strong>Backup & Ripristino:</strong> Gestione file JSON locale.</li>
             <li><strong>Privacy Totale:</strong> Dati salvati sul tuo dispositivo.</li>
           </ul>
@@ -302,14 +305,14 @@
     let manualAdjustment = parseFloat(localStorage.getItem('smartspesa_manual_adjustment')) || 0;
     let notificationsEnabled = JSON.parse(localStorage.getItem('smartspesa_notifications')) || false;
     
-    let customMarketInput, cropCanvas, ctx;
+    let cropCanvas, ctx;
     let loadedImage = null;
     let startX = 0, startY = 0, endX = 0, endY = 0;
     let isDragging = false;
     let tempScannedItems = [];
+    let currentActiveMarket = "Prix";
 
     window.addEventListener('DOMContentLoaded', () => {
-      customMarketInput = document.getElementById('customMarketInput');
       cropCanvas = document.getElementById('cropCanvas');
       
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -318,6 +321,7 @@
       if (dateHeaderEl) dateHeaderEl.innerText = todayFormatted.charAt(0).toUpperCase() + todayFormatted.slice(1);
 
       updateNotificationUI();
+      populateMarketSelectorOptions();
 
       if (cropCanvas) {
         ctx = cropCanvas.getContext('2d');
@@ -369,9 +373,60 @@
       checkExpirationsForNotifications();
     });
 
+    function getDynamicMarketsList() {
+      let defaultMarkets = ["Prix", "Lidl", "Coop", "Conad", "Eurospin", "Esselunga"];
+      products.forEach(p => {
+        if (p.market && !defaultMarkets.includes(p.market)) {
+          defaultMarkets.push(p.market);
+        }
+      });
+      return defaultMarkets;
+    }
+
+    function populateMarketSelectorOptions() {
+      const selector = document.getElementById('marketSelector');
+      if (!selector) return;
+      
+      let markets = getDynamicMarketsList();
+      let currentVal = currentActiveMarket;
+
+      let html = '';
+      markets.forEach(m => {
+        let sel = (m === currentVal) ? 'selected' : '';
+        html += `<option value="${m}" ${sel}>${m}</option>`;
+      });
+      html += `<option value="CUSTOM">+ Inserisci nuovo supermercato...</option>`;
+      selector.innerHTML = html;
+    }
+
+    function handleMarketSelectorChange(val) {
+      const customInput = document.getElementById('customMarketSelectorInput');
+      if (val === 'CUSTOM') {
+        customInput.classList.remove('hidden');
+        customInput.focus();
+      } else {
+        customInput.classList.add('hidden');
+        customInput.value = '';
+        currentActiveMarket = val;
+        renderMarketsView();
+      }
+    }
+
+    function handleCustomMarketSelect(newVal) {
+      let clean = newVal.trim();
+      if (clean) {
+        currentActiveMarket = clean;
+        populateMarketSelectorOptions();
+        document.getElementById('marketSelector').value = clean;
+        document.getElementById('customMarketSelectorInput').classList.add('hidden');
+        document.getElementById('customMarketSelectorInput').value = '';
+        renderMarketsView();
+      }
+    }
+
     function exportBackup() {
       const backupData = {
-        version: "3.2.1",
+        version: "3.2.2",
         exportDate: new Date().toISOString(),
         monthlyBudget: monthlyBudget,
         manualAdjustment: manualAdjustment,
@@ -555,7 +610,10 @@
       document.getElementById('tabMarkets').className = isMarkets ? 'py-2 text-[11px] font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer' : 'py-2 text-[11px] font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer';
 
       if (isWeekly) generateWeeklyList();
-      if (isMarkets) renderMarketsView();
+      if (isMarkets) {
+        populateMarketSelectorOptions();
+        renderMarketsView();
+      }
     }
 
     function toggleInfoModal(show) {
@@ -563,22 +621,23 @@
       if (modal) modal.classList.toggle('hidden', !show);
     }
 
-    function toggleCustomMarket(val) {
-      if (!customMarketInput) customMarketInput = document.getElementById('customMarketInput');
+    function toggleCustomMarket(val, selectId, inputId) {
+      const customInput = document.getElementById(inputId);
       if (val === 'CUSTOM') {
-        customMarketInput.classList.remove('hidden');
-        customMarketInput.required = true;
-        customMarketInput.focus();
+        customInput.classList.remove('hidden');
+        customInput.required = true;
+        customInput.focus();
       } else {
-        customMarketInput.classList.add('hidden');
-        customMarketInput.required = false;
-        customMarketInput.value = '';
+        customInput.classList.add('hidden');
+        customInput.required = false;
+        customInput.value = '';
       }
     }
 
     function saveAndRender() {
       localStorage.setItem('smartspesa_products', JSON.stringify(products));
       renderArchive();
+      populateMarketSelectorOptions();
       renderMarketsView();
       generateWeeklyList();
       updateBudgetDisplay();
@@ -644,22 +703,18 @@
 
     function renderMarketsView() {
       const container = document.getElementById('marketsContainer');
-      const selector = document.getElementById('marketSelector');
-      if (!container || !selector) return;
+      if (!container) return;
       
       container.innerHTML = '';
-      let selectedMarket = selector.value;
+      let selectedMarket = currentActiveMarket;
 
       let filteredProducts = products.map((item, idx) => ({ ...item, originalIndex: idx })).filter(item => {
-        let m = item.market || 'Altro';
-        if (selectedMarket === 'Altro') {
-          return !['Prix', 'Lidl', 'Coop', 'Conad', 'Eurospin', 'Esselunga'].includes(m);
-        }
-        return m === selectedMarket;
+        let m = item.market || 'Prix';
+        return m.toLowerCase() === selectedMarket.toLowerCase();
       });
 
       if (filteredProducts.length === 0) {
-        container.innerHTML = `<div class="text-xs text-slate-500 text-center py-6">Nessun prodotto registrato per "${selectedMarket}".</div>`;
+        container.innerHTML = `<div class="text-xs text-slate-500 text-center py-6">Nessun prodotto registrato per "${selectedMarket}". Aggiungine uno con questo nome dal modulo manuale o dallo scanner.</div>`;
         return;
       }
 
@@ -793,7 +848,7 @@
 
       let finalMarket = selectedMarket;
       if (selectedMarket === 'CUSTOM') {
-        finalMarket = customMarketInput.value.trim() || 'Altro';
+        finalMarket = document.getElementById('customMarketInput').value.trim() || 'Altro';
       }
 
       if (name && price) {
@@ -812,7 +867,7 @@
         saveAndRender();
         document.getElementById('itemForm').reset();
         document.getElementById('itemDate').valueAsDate = new Date();
-        toggleCustomMarket('');
+        toggleCustomMarket('', 'itemMarket', 'customMarketInput');
         switchTab('markets'); 
       }
     }
@@ -829,7 +884,6 @@
       }
     }
 
-    // 🛑 GESTIONE ANTI-CRASH: Downscaling automatico delle immagini pesanti
     function loadCropImage(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -838,8 +892,7 @@
       reader.onload = function(e) {
         const img = new Image();
         img.onload = function() {
-          // Ridimensiona preventivamente l'immagine se supera i 1000px per evitare crash di memoria mobile
-          const maxDim = 1000;
+          const maxDim = 1200; // Risoluzione leggermente alzata per catturare anche gli ultimi articoli
           let w = img.width;
           let h = img.height;
           
@@ -881,7 +934,7 @@
             document.getElementById('cropAreaContainer').classList.remove('hidden');
             document.getElementById('ocrStatus').innerText = "Immagine caricata in sicurezza. Premi 'Leggi Articoli' o ritaglia.";
           };
-          loadedImage.src = resizeCanvas.toDataURL('image/jpeg', 0.85);
+          loadedImage.src = resizeCanvas.toDataURL('image/jpeg', 0.9);
         };
         img.src = e.target.result;
       };
@@ -971,10 +1024,11 @@
       tempScannedItems = [];
     }
 
+    // 🔍 OCR OTTIMIZZATO: Pattern di ricerca prezzi più flessibile per catturare tutte le voci
     async function processCroppedReceipt() {
       document.getElementById('cropAreaContainer').classList.add('hidden');
       const statusDiv = document.getElementById('ocrStatus');
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Lettura scontrino in corso...`;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Lettura scontrino avanzata in corso...`;
 
       try {
         let x = Math.min(startX, endX);
@@ -988,14 +1042,14 @@
 
         let tempCanvas = document.createElement('canvas');
         let tCtx = tempCanvas.getContext('2d');
-        tempCanvas.width = width * 2;
-        tempCanvas.height = height * 2;
+        tempCanvas.width = width * 2.5;
+        tempCanvas.height = height * 2.5;
 
         let scaleX = loadedImage.width / cropCanvas.width;
         let scaleY = loadedImage.height / cropCanvas.height;
 
-        tCtx.drawImage(loadedImage, x * scaleX, y * scaleY, width * scaleX, height * scaleY, 0, 0, width * 2, height * 2);
-        let croppedDataUrl = tempCanvas.toDataURL('image/jpeg', 0.9);
+        tCtx.drawImage(loadedImage, x * scaleX, y * scaleX ? y * scaleY : y * scaleY, width * scaleX, height * scaleY, 0, 0, tempCanvas.width, tempCanvas.height);
+        let croppedDataUrl = tempCanvas.toDataURL('image/jpeg', 0.95);
 
         const result = await Tesseract.recognize(
           croppedDataUrl,
@@ -1016,33 +1070,34 @@
 
         lines.forEach(line => {
           let cleanLine = line.trim();
-          if (cleanLine.length < 3) return;
+          if (cleanLine.length < 2) return;
           
+          // Match più flessibile per numeri decimali (es. 1,50 o 1.50 o 2,9 €)
           let priceMatch = cleanLine.match(/\b\d+[\.,]\d{2}\b/g);
           if (priceMatch && priceMatch.length > 0) {
             let priceStr = priceMatch[priceMatch.length - 1].replace(',', '.');
             let priceVal = parseFloat(priceStr);
             let name = cleanLine.replace(priceMatch[priceMatch.length - 1], '').replace(/[\.,€\*]/g, '').trim();
-            if (!name) name = "Prodotto Scontrino";
+            if (!name || name.length < 2) name = "Prodotto Scontrino";
             
             tempScannedItems.push({
               name: name,
               price: priceVal.toFixed(2),
-              market: "Prix"
+              market: currentActiveMarket || "Prix"
             });
             calculatedTotal += priceVal;
           }
         });
 
         if (tempScannedItems.length === 0) {
-          tempScannedItems.push({ name: "Prodotto Scontrino", price: "1.00", market: "Prix" });
+          tempScannedItems.push({ name: "Prodotto Scontrino", price: "1.00", market: currentActiveMarket || "Prix" });
           calculatedTotal = 1.00;
         }
 
         renderScannedItemsReview(calculatedTotal);
         statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Scansione completata! Rivedi e conferma.</span>`;
       } catch (err) {
-        console.error("Errore OCR v3.2.1:", err);
+        console.error("Errore OCR v3.2.2:", err);
         statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. <button onclick="cancelCrop()" class="underline ml-1">Riprova</button></span>`;
       }
     }
@@ -1055,9 +1110,18 @@
 
       if (totalInput) totalInput.value = initialTotal.toFixed(2);
 
+      let dynamicMarkets = getDynamicMarketsList();
+
       tempScannedItems.forEach((item, idx) => {
         let div = document.createElement('div');
         div.className = 'bg-slate-800 p-2.5 rounded-lg border border-slate-700 space-y-2 text-xs';
+        
+        let marketOptionsHtml = '';
+        dynamicMarkets.forEach(m => {
+          let sel = (item.market === m) ? 'selected' : '';
+          marketOptionsHtml += `<option value="${m}" ${sel}>${m}</option>`;
+        });
+
         div.innerHTML = `
           <div class="grid grid-cols-1 gap-1.5">
             <input type="text" value="${item.name}" onchange="updateTempItem(${idx}, 'name', this.value)" placeholder="Nome prodotto" class="bg-slate-900 border border-slate-700 rounded p-1.5 text-slate-200 focus:outline-none focus:border-indigo-500">
@@ -1067,12 +1131,7 @@
                 <input type="number" step="0.01" value="${item.price}" onchange="updateTempItem(${idx}, 'price', this.value)" placeholder="Prezzo" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-slate-200 focus:outline-none focus:border-indigo-500">
               </div>
               <select onchange="updateTempItem(${idx}, 'market', this.value)" class="bg-slate-900 border border-slate-700 rounded p-1.5 text-slate-200 focus:outline-none focus:border-indigo-500">
-                <option value="Prix" ${item.market==='Prix'?'selected':''}>Prix</option>
-                <option value="Lidl" ${item.market==='Lidl'?'selected':''}>Lidl</option>
-                <option value="Coop" ${item.market==='Coop'?'selected':''}>Coop</option>
-                <option value="Conad" ${item.market==='Conad'?'selected':''}>Conad</option>
-                <option value="Eurospin" ${item.market==='Eurospin'?'selected':''}>Eurospin</option>
-                <option value="Esselunga" ${item.market==='Esselunga'?'selected':''}>Esselunga</option>
+                ${marketOptionsHtml}
               </select>
             </div>
           </div>
@@ -1103,7 +1162,7 @@
 
           products.unshift({
             name: item.name,
-            market: item.market || 'Prix',
+            market: item.market || currentActiveMarket || 'Prix',
             price: parseFloat(itemPriceToSave).toFixed(2),
             frequency: "14",
             date: todayStr,
