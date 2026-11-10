@@ -1,877 +1,569 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v4.8 IA</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartSpesa v5.1</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12">
 
-  <!-- Header con Versione v4.8, Data Cliccabile (Calendario) e Toggle Notifiche -->
-  <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
+<header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
+  <div class="flex items-center gap-2">
+    <div>
+      <h1 class="text-xl font-bold text-indigo-400"><i class="fa-solid fa-basket-shopping"></i> SmartSpesa</h1>
+      <div id="currentDateHeader" class="text-[10px] text-slate-400 font-mono mt-0.5"></div>
+    </div>
+    <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v5.1</span>
+  </div>
+  <div class="flex items-center gap-2">
+    <button type="button" id="notifToggleBtn" onclick="toggleNotifications()" class="text-xs bg-slate-800 text-slate-400 border border-slate-700 px-2 py-1.5 rounded-lg"><i id="notifIcon" class="fa-solid fa-bell-slash"></i></button>
+    <button type="button" onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg"><i class="fa-solid fa-circle-info"></i> Info</button>
+  </div>
+</header>
+
+<section class="bg-slate-800 p-4 rounded-xl border border-slate-700 mb-4 space-y-3">
+  <div class="flex justify-between items-center">
     <div class="flex items-center gap-2">
+      <span class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-wallet text-indigo-400 mr-1"></i> Budget Mensile</span>
+      <span id="budgetTotal" class="text-xs font-mono text-indigo-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">€0.00</span>
+    </div>
+    <div class="flex items-center gap-1.5">
+      <button type="button" onclick="promptAdjustBudget('-')" class="w-7 h-7 bg-slate-900 text-rose-400 border border-slate-700 rounded-lg font-bold text-xs">-</button>
+      <button type="button" onclick="promptAdjustBudget('+')" class="w-7 h-7 bg-slate-900 text-emerald-400 border border-slate-700 rounded-lg font-bold text-xs">+</button>
+      <button type="button" onclick="openBudgetModal()" class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800 px-2.5 py-1.5 rounded-lg">Modifica</button>
+    </div>
+  </div>
+  <div class="bg-slate-900 p-4 rounded-xl border border-slate-700/80 text-center space-y-1">
+    <div class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">Disponibile Reale</div>
+    <div id="budgetRemaining" class="text-3xl font-extrabold text-emerald-400">€0.00</div>
+    <div id="budgetSpent" class="text-[10px] text-slate-500"></div>
+  </div>
+</section>
+
+<div class="grid grid-cols-3 gap-1 mb-6 bg-slate-800 p-1 rounded-xl border border-slate-700 text-center">
+  <button type="button" onclick="switchTab('weekly')" id="tabWeekly" class="py-2 text-[11px] font-semibold rounded-lg"><i class="fa-solid fa-list-check mr-1"></i> Lista Home</button>
+  <button type="button" onclick="switchTab('archive')" id="tabArchive" class="py-2 text-[11px] font-semibold rounded-lg"><i class="fa-solid fa-paste mr-1"></i> Importa da IA</button>
+  <button type="button" onclick="switchTab('markets')" id="tabMarkets" class="py-2 text-[11px] font-semibold rounded-lg"><i class="fa-solid fa-store mr-1"></i> Per Supermercato</button>
+</div>
+
+<!-- LISTA -->
+<div id="viewWeekly" class="space-y-4">
+  <section class="bg-slate-800 p-3 rounded-xl border border-slate-700 space-y-2">
+    <div class="flex justify-between items-center">
+      <label class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-calendar-days text-indigo-400"></i> Pianifica Giorno & Ora Spesa</label>
+      <button type="button" onclick="clearShoppingSchedule()" class="text-[10px] text-rose-400 hover:underline">Rimuovi data</button>
+    </div>
+    <input type="datetime-local" id="shoppingDateTimeInput" onchange="updateShoppingSchedule(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-indigo-300 font-mono">
+    <button type="button" onclick="downloadICS()" class="w-full text-[11px] bg-slate-900 border border-slate-700 text-indigo-300 py-1.5 rounded-lg"><i class="fa-solid fa-calendar-plus"></i> Aggiungi al calendario del telefono (promemoria anche ad app chiusa)</button>
+  </section>
+
+  <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 space-y-2">
+    <h2 class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-plus text-indigo-400"></i> Aggiungi al volo in lista</h2>
+    <form onsubmit="handleQuickSubmit(event)" class="space-y-2">
+      <div class="grid grid-cols-12 gap-2">
+        <input type="text" id="quickName" placeholder="Prodotto..." required class="col-span-8 bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs">
+        <input type="number" step="0.01" id="quickPrice" placeholder="Prezzo (€)" required class="col-span-4 bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs">
+      </div>
+      <div class="flex gap-2">
+        <select id="quickMarket" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs"></select>
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 font-semibold text-xs px-5 py-2 rounded-lg">Salva</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3">
+    <div class="flex justify-between items-center border-b border-slate-700 pb-2">
       <div>
-        <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
-        </h1>
-        <div class="flex items-center gap-1.5 mt-0.5">
-          <!-- Data cliccabile per aprire il calendario spesa -->
-          <input type="date" id="shoppingDateInput" onchange="updateShoppingDate(this.value)" class="bg-slate-950 text-indigo-300 border border-slate-700 rounded px-2 py-0.5 text-[10px] font-mono cursor-pointer focus:outline-none">
-          <span class="text-[10px] text-slate-400 font-mono">📅 Spesa</span>
+        <h2 class="text-sm font-semibold text-slate-300">Da Comprare Questa Settimana</h2>
+        <div id="scheduledBannerContainer" class="hidden mt-1">
+          <span class="text-[11px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-md font-mono inline-flex items-center gap-1"><i class="fa-solid fa-clock"></i> <strong id="scheduledBannerText"></strong></span>
         </div>
       </div>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v4.8 IA</span>
+      <div class="text-xs font-bold text-indigo-300 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-700">Totale: <span id="weeklyTotalSum" class="text-emerald-400 font-extrabold">€0.00</span></div>
     </div>
-    
-    <div class="flex items-center gap-2">
-      <button type="button" id="notifToggleBtn" onclick="toggleNotifications()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700 px-2 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer" title="Gestisci Notifiche">
-        <i id="notifIcon" class="fa-solid fa-bell-slash"></i>
-      </button>
-      <button type="button" onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
-        <i class="fa-solid fa-circle-info"></i> Info
-      </button>
-    </div>
-  </header>
+    <ul id="weeklyList" class="space-y-2"></ul>
+  </div>
+</div>
 
-  <!-- WIDGET BUDGET -->
-  <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 mb-4 space-y-3">
-    <div class="flex justify-between items-center">
-      <div class="flex items-center gap-2">
-        <span class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-wallet text-indigo-400 mr-1"></i> Budget Mensile</span>
-        <span id="budgetTotal" class="text-xs font-mono text-indigo-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">€0.00</span>
-      </div>
-      
-      <div class="flex items-center gap-1.5">
-        <button type="button" onclick="promptAdjustBudget('-')" class="w-7 h-7 bg-slate-900 hover:bg-slate-700 text-rose-400 border border-slate-700 rounded-lg font-bold text-xs flex items-center justify-center cursor-pointer">-</button>
-        <button type="button" onclick="promptAdjustBudget('+')" class="w-7 h-7 bg-slate-900 hover:bg-slate-700 text-emerald-400 border border-slate-700 rounded-lg font-bold text-xs flex items-center justify-center cursor-pointer">+</button>
-        <button type="button" onclick="openBudgetModal()" class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800 px-2.5 py-1.5 rounded-lg hover:bg-indigo-900 transition-all cursor-pointer">
-          Modifica
-        </button>
-      </div>
-    </div>
+<!-- IMPORTA -->
+<div id="viewArchive" class="space-y-6 hidden">
+  <section class="bg-indigo-950/40 p-4 rounded-xl border border-indigo-800/60 space-y-3">
+    <h2 class="text-sm font-semibold text-indigo-300"><i class="fa-solid fa-paste"></i> Incolla Scontrino da IA</h2>
+    <button type="button" onclick="copyGeminiPrompt()" class="w-full bg-slate-900 border border-indigo-700 text-indigo-300 text-xs font-semibold py-2 rounded-lg"><i class="fa-solid fa-copy"></i> 1. Copia istruzioni per Gemini</button>
+    <p class="text-[11px] text-slate-400">2. Incolla le istruzioni in Gemini e invia la foto dello scontrino. 3. Copia la risposta e incollala qui:</p>
+    <textarea id="pasteReceiptText" rows="4" placeholder="Incolla qui il testo ricevuto..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs"></textarea>
+    <button type="button" onclick="processPastedText()" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold text-xs py-2.5 rounded-lg"><i class="fa-solid fa-wand-magic-sparkles"></i> Analizza Testo Incollato</button>
+    <div id="ocrStatus" class="text-xs text-indigo-300 text-center font-medium"></div>
 
-    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700/80 text-center space-y-1">
-      <div class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">Disponibile Reale</div>
-      <div id="budgetRemaining" class="text-3xl font-extrabold text-emerald-400">€0.00</div>
+    <div id="ocrReviewContainer" class="hidden space-y-3 bg-slate-900 p-3 rounded-xl border border-indigo-900">
+      <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Verifica Prodotti Estratti:</h3>
+      <div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700 space-y-2">
+        <label class="block text-[11px] text-slate-300 font-semibold">Supermercato Scontrino:</label>
+        <select id="receiptGlobalMarket" onchange="handleReceiptMarketChange(this.value)" class="w-full bg-slate-900 border border-indigo-500 rounded p-2 text-xs font-semibold"></select>
+        <input type="text" id="receiptCustomMarketInput" placeholder="Nome nuovo supermercato..." onchange="handleReceiptCustomMarketSave(this.value)" class="hidden w-full bg-slate-900 border border-indigo-500 rounded p-2 text-xs">
+      </div>
+      <div id="scannedItemsList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+      <div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex justify-between items-center">
+        <span class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-receipt text-indigo-400"></i> Totale Scontrino:</span>
+        <div class="flex items-center gap-1">
+          <span class="text-emerald-400 font-bold text-sm">€</span>
+          <input type="number" step="0.01" id="scannedTotalInput" class="bg-slate-950 border border-emerald-500/80 rounded px-2 py-1 text-emerald-400 font-extrabold w-24 text-right text-sm">
+        </div>
+      </div>
+      <div id="duplicateNote" class="text-[10px] text-slate-400"></div>
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" onclick="saveAllScannedItems()" class="bg-indigo-600 hover:bg-indigo-500 font-semibold text-xs py-2.5 rounded-lg">Salva & Scala Budget</button>
+        <button type="button" onclick="cancelAIReview()" class="bg-slate-700 text-slate-300 font-semibold text-xs py-2.5 rounded-lg">Annulla</button>
+      </div>
     </div>
   </section>
 
-  <!-- Navigazione Tab -->
-  <div class="grid grid-cols-3 gap-1 mb-6 bg-slate-800 p-1 rounded-xl border border-slate-700 text-center">
-    <button type="button" onclick="switchTab('weekly')" id="tabWeekly" class="py-2 text-[11px] font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer">
-      <i class="fa-solid fa-list-check mr-1"></i> Lista Home
-    </button>
-    <button type="button" onclick="switchTab('archive')" id="tabArchive" class="py-2 text-[11px] font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer">
-      <i class="fa-solid fa-paste mr-1"></i> Importa da IA
-    </button>
-    <button type="button" onclick="switchTab('markets')" id="tabMarkets" class="py-2 text-[11px] font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer">
-      <i class="fa-solid fa-store mr-1"></i> Per Supermercato
-    </button>
-  </div>
-
-  <!-- SEZIONE 1: LISTA SETTIMANALE -->
-  <div id="viewWeekly" class="space-y-4">
-    <div class="bg-slate-800 p-3 rounded-xl shadow-lg border border-slate-700 space-y-2">
-      <h2 class="text-xs font-semibold text-slate-300 flex items-center gap-1">
-        <i class="fa-solid fa-plus text-indigo-400"></i> Aggiungi al volo in lista
-      </h2>
-      <form onsubmit="handleQuickSubmit(event)" class="space-y-2">
-        <div class="grid grid-cols-12 gap-2">
-          <input type="text" id="quickName" placeholder="Prodotto..." required class="col-span-8 bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
-          <input type="number" step="0.01" id="quickPrice" placeholder="Prezzo (€)" required class="col-span-4 bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
-        </div>
-        <div class="flex gap-2">
-          <select id="quickMarket" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
-            <option value="Prix">Prix</option>
-            <option value="Lidl">Lidl</option>
-            <option value="Coop">Coop</option>
-            <option value="Conad">Conad</option>
-            <option value="Eurospin">Eurospin</option>
-            <option value="Esselunga">Esselunga</option>
-          </select>
-          <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-5 py-2 rounded-lg cursor-pointer">Salva</button>
-        </div>
-      </form>
-    </div>
-
-    <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 space-y-3">
-      <div class="flex justify-between items-center border-b border-slate-700 pb-2">
-        <h2 class="text-sm font-semibold text-slate-300">Da Comprare Questa Settimana</h2>
-        <div class="text-xs font-bold text-indigo-300 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-700">
-          Totale: <span id="weeklyTotalSum" class="text-emerald-400 font-extrabold">€0.00</span>
-        </div>
-      </div>
-      <ul id="weeklyList" class="space-y-2"></ul>
-    </div>
-  </div>
-
-  <!-- SEZIONE 2: IMPORTAZIONE RAPIDA DA IA -->
-  <div id="viewArchive" class="space-y-6 hidden">
-    
-    <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
-      <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-paste"></i> Incolla Scontrino da IA
-      </h2>
-      <p class="text-xs text-slate-400">Invia la foto dello scontrino in chat, copia il testo generato e incollalo qui sotto:</p>
-      
-      <textarea id="pasteReceiptText" rows="4" placeholder="Incolla qui il testo ricevuto..." 
-                class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"></textarea>
-      
-      <button type="button" onclick="processPastedText()" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold text-xs py-2.5 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-md">
-        <i class="fa-solid fa-wand-magic-sparkles"></i> Analizza Testo Incollato
-      </button>
-
-      <div id="ocrStatus" class="text-xs text-indigo-300 text-center font-medium pt-1"></div>
-
-      <!-- REVISIONE DATI INCOLLATI -->
-      <div id="ocrReviewContainer" class="hidden space-y-3 bg-slate-900 p-3 rounded-xl border border-indigo-900">
-        <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Verifica Prodotti Estratti:</h3>
-        
-        <div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700">
-          <label class="block text-[11px] text-slate-300 font-semibold mb-1">Supermercato Scontrino:</label>
-          <select id="receiptGlobalMarket" class="w-full bg-slate-900 border border-indigo-500 rounded p-2 text-xs text-slate-200 focus:outline-none font-semibold">
-          </select>
-        </div>
-
-        <div id="scannedItemsList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
-        
-        <div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex justify-between items-center">
-          <span class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-receipt text-indigo-400 mr-1"></i> Totale Scontrino:</span>
-          <div class="flex items-center gap-1">
-            <span class="text-emerald-400 font-bold text-sm">€</span>
-            <input type="number" step="0.01" id="scannedTotalInput" class="bg-slate-950 border border-emerald-500/80 rounded px-2 py-1 text-emerald-400 font-extrabold w-24 text-right text-sm focus:outline-none">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <button type="button" onclick="saveAllScannedItems()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2.5 rounded-lg cursor-pointer">
-            Salva & Scala Budget
-          </button>
-          <button type="button" onclick="cancelAIReview()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold text-xs py-2.5 rounded-lg cursor-pointer">
-            Annulla
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- INSERIMENTO MANUALE SNELLO -->
-    <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
-      <h2 class="text-sm font-semibold mb-3 text-slate-300 flex items-center gap-1.5">
-        <i class="fa-solid fa-keyboard text-indigo-400"></i> Inserimento Manuale
-      </h2>
-      <form id="itemForm" class="space-y-3" onsubmit="handleFormSubmit(event)">
-        <input type="text" id="itemName" placeholder="Es. Caffè, Latte, Pane..." required 
-               class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
-        
-        <div class="space-y-2">
-          <select id="itemMarket" onchange="toggleCustomMarket(this.value, 'itemMarket', 'customMarketInput')" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
-            <option value="Prix">Prix</option>
-            <option value="Lidl">Lidl</option>
-            <option value="Coop">Coop</option>
-            <option value="Conad">Conad</option>
-            <option value="Eurospin">Eurospin</option>
-            <option value="Esselunga">Esselunga</option>
-            <option value="CUSTOM">+ Inserisci nuovo supermercato...</option>
-          </select>
-          <input type="text" id="customMarketInput" placeholder="Scrivi il nome del supermercato..." 
-                 class="hidden w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-sm focus:outline-none">
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <input type="number" step="0.01" id="itemPrice" placeholder="Prezzo (€)" required 
-               class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
-          
-          <div class="flex items-center gap-1 bg-slate-900 border border-slate-700 rounded-lg px-2">
-            <input type="number" id="itemFrequency" placeholder="Giorni" min="1" value="14" required 
-                   class="w-full bg-transparent py-2.5 text-sm text-slate-200 focus:outline-none font-bold text-center">
-            <span class="text-[10px] text-slate-400 font-semibold">gg</span>
-          </div>
-        </div>
-
-        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold text-sm py-2.5 rounded-lg transition-colors cursor-pointer">
-          Salva in Archivio
-        </button>
-      </form>
-    </section>
-
-    <!-- BACKUP E RIPRISTINO -->
-    <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 space-y-3">
-      <div class="text-xs font-semibold text-slate-300 flex items-center gap-1">
-        <i class="fa-solid fa-database text-indigo-400"></i> Gestione Backup Dati
-      </div>
+  <section class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+    <h2 class="text-sm font-semibold mb-3 text-slate-300"><i class="fa-solid fa-keyboard text-indigo-400"></i> Inserimento Manuale</h2>
+    <form id="itemForm" class="space-y-3" onsubmit="handleFormSubmit(event)">
+      <input type="text" id="itemName" placeholder="Es. Caffè, Latte, Pane..." required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm">
+      <select id="itemMarket" onchange="toggleCustomMarket(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm"></select>
+      <input type="text" id="customMarketInput" placeholder="Nome del supermercato..." class="hidden w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-sm">
       <div class="grid grid-cols-2 gap-2">
-        <button type="button" onclick="exportBackup()" class="bg-slate-900 hover:bg-slate-700 text-indigo-300 border border-slate-700 text-xs font-medium py-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1">
-          <i class="fa-solid fa-download"></i> Esporta JSON
-        </button>
-        <label class="bg-slate-900 hover:bg-slate-700 text-emerald-300 border border-slate-700 text-xs font-medium py-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1 text-center">
-          <i class="fa-solid fa-upload"></i> Importa JSON
-          <input type="file" accept=".json" class="hidden" onchange="importBackup(event)">
-        </label>
+        <input type="number" step="0.01" id="itemPrice" placeholder="Prezzo (€)" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm">
+        <div class="flex items-center gap-1 bg-slate-900 border border-slate-700 rounded-lg px-2">
+          <input type="number" id="itemFrequency" min="1" value="14" required class="w-full bg-transparent py-2.5 text-sm font-bold text-center">
+          <span class="text-[10px] text-slate-400 font-semibold">gg</span>
+        </div>
       </div>
-      <div class="pt-2 border-t border-slate-700 text-right">
-        <button type="button" onclick="clearDatabase()" class="text-xs text-rose-400 hover:underline cursor-pointer">Svuota tutto l'archivio</button>
-      </div>
-    </section>
-  </div>
+      <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold text-sm py-2.5 rounded-lg">Salva in Archivio</button>
+    </form>
+  </section>
 
-  <!-- SEZIONE 3: ARCHIVIO PER SUPERMERCATO -->
-  <div id="viewMarkets" class="space-y-4 hidden">
-    <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 space-y-3">
-      <div class="flex justify-between items-center border-b border-slate-700 pb-2">
-        <h2 class="text-sm font-semibold text-slate-300">Archivio per Supermercato</h2>
-        <span class="text-[11px] text-indigo-400">Gestione Articoli</span>
-      </div>
-      
-      <div class="space-y-2">
-        <label class="block text-[11px] text-slate-400 mb-1">Seleziona il supermercato:</label>
-        <select id="marketSelector" onchange="handleMarketSelectorChange(this.value)" class="w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-xs text-slate-200 font-semibold focus:outline-none">
-          <option value="Prix">Prix</option>
-          <option value="Lidl">Lidl</option>
-          <option value="Coop">Coop</option>
-          <option value="Conad">Conad</option>
-          <option value="Eurospin">Eurospin</option>
-          <option value="Esselunga">Esselunga</option>
-          <option value="CUSTOM">+ Inserisci nuovo supermercato...</option>
-        </select>
-        <input type="text" id="customMarketSelectorInput" placeholder="Scrivi nome supermercato e premi invio..." onchange="handleCustomMarketSelect(this.value)"
-               class="hidden w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none">
-      </div>
-
-      <p class="text-[10px] text-slate-400">Spunta la casella accanto al prodotto per inviarlo alla **Lista Home**.</p>
-      
-      <div id="marketsContainer" class="space-y-2 pt-1"></div>
+  <section class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3">
+    <div class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-database text-indigo-400"></i> Backup Dati</div>
+    <div class="grid grid-cols-2 gap-2">
+      <button type="button" onclick="exportBackup()" class="bg-slate-900 text-indigo-300 border border-slate-700 text-xs py-2 rounded-lg"><i class="fa-solid fa-download"></i> Esporta JSON</button>
+      <label class="bg-slate-900 text-emerald-300 border border-slate-700 text-xs py-2 rounded-lg cursor-pointer text-center"><i class="fa-solid fa-upload"></i> Importa JSON<input type="file" accept=".json" class="hidden" onchange="importBackup(event)"></label>
     </div>
-  </div>
+    <div class="pt-2 border-t border-slate-700 text-right"><button type="button" onclick="clearDatabase()" class="text-xs text-rose-400 hover:underline">Svuota tutto l'archivio</button></div>
+  </section>
+</div>
 
-  <!-- MODALE INFO AGGIORNATA CON MENU A TENDINA E SPECIFICHE -->
-  <div id="infoModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-        <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v4.8 IA
-        </h2>
-        <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <div class="space-y-3 text-slate-300 text-xs">
-        <p><strong>A cosa serve:</strong> SmartSpesa è progettata per essere un gestore mobile-first della spesa e del budget domestico senza stress, 100% gratuito e locale.</p>
-        <p><strong>Come funziona:</strong> Gestisci la lista settimanale, monitora il budget reale e importa gli scontrini in modo smart sfruttando l'assistente IA.</p>
-        
-        <!-- MENU A TENDINA PASSO A PASSO -->
-        <details class="bg-slate-900 border border-slate-700 rounded-xl p-3 cursor-pointer">
-          <summary class="font-bold text-indigo-300 text-xs flex justify-between items-center">
-            <span>📖 Guida Passo-Passo per lo Scan</span>
-            <i class="fa-solid fa-chevron-down text-[10px]"></i>
-          </summary>
-          <div class="mt-2 pt-2 border-t border-slate-800 space-y-2 text-[11px] text-slate-400">
-            <p><strong>1.</strong> Scatta o invia la foto dello scontrino qui in chat.</p>
-            <p><strong>2.</strong> L'IA leggerà automaticamente i prodotti e ti darà il testo pronto.</p>
-            <p><strong>3.</strong> Copia il testo fornito dalla chat.</p>
-            <p><strong>4.</strong> Vai nella scheda <strong>"Importa da IA"</strong> dell'app.</p>
-            <p><strong>5.</strong> Incolla il testo nel box, premi analizza e salva per aggiornare il budget!</p>
-          </div>
-        </details>
-
-        <p class="text-[11px] text-slate-400"><strong>Pianificazione e Notifiche:</strong> Cliccando sulla data in alto puoi impostare il giorno della spesa. L'app ti ricorderà con una notifica sia <strong>il giorno prima</strong> che <strong>un'ora prima</strong> dell'appuntamento.</p>
-      </div>
-
-      <button type="button" onclick="toggleInfoModal(false)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-xl text-xs transition-colors cursor-pointer">
-        Chiudi
-      </button>
+<!-- SUPERMERCATI -->
+<div id="viewMarkets" class="space-y-4 hidden">
+  <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3">
+    <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+      <h2 class="text-sm font-semibold text-slate-300">Archivio per Supermercato</h2>
+      <span class="text-[11px] text-indigo-400">Gestione Articoli</span>
     </div>
+    <select id="marketSelector" onchange="handleMarketSelectorChange(this.value)" class="w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-xs font-semibold"></select>
+    <input type="text" id="customMarketSelectorInput" placeholder="Nome supermercato e premi invio..." onchange="handleCustomMarketSelect(this.value)" class="hidden w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-xs">
+    <p class="text-[10px] text-slate-400">Spunta il prodotto per inviarlo alla <strong>Lista Home</strong>.</p>
+    <div id="marketsContainer" class="space-y-2 pt-1"></div>
   </div>
+</div>
 
-  <script>
-    let products = JSON.parse(localStorage.getItem('smartspesa_products')) || [];
-    let monthlyBudget = parseFloat(localStorage.getItem('smartspesa_budget')) || 0;
-    let manualAdjustment = parseFloat(localStorage.getItem('smartspesa_manual_adjustment')) || 0;
-    let notificationsEnabled = JSON.parse(localStorage.getItem('smartspesa_notifications')) || false;
-    let shoppingDate = localStorage.getItem('smartspesa_shopping_date') || new Date().toISOString().split('T')[0];
-    
-    let tempScannedItems = [];
-    let currentActiveMarket = "Prix";
+<!-- INFO -->
+<div id="infoModal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
+  <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 space-y-4 text-sm max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+      <h2 class="text-base font-bold text-indigo-400">SmartSpesa v5.1</h2>
+      <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 p-1"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="space-y-3 text-slate-300 text-xs">
+      <p>Gestore della spesa e del budget, gratuito, offline e con dati solo sul tuo dispositivo.</p>
+      <details class="bg-slate-900 border border-slate-700 rounded-xl p-3">
+        <summary class="font-bold text-indigo-300">📖 Come importare uno scontrino</summary>
+        <div class="mt-2 pt-2 border-t border-slate-800 space-y-2 text-[11px] text-slate-400">
+          <p><strong>1.</strong> Scheda "Importa da IA" → "Copia istruzioni per Gemini".</p>
+          <p><strong>2.</strong> In Gemini incolla le istruzioni e invia la foto dello scontrino.</p>
+          <p><strong>3.</strong> Copia la risposta, incollala nell'app e premi Analizza.</p>
+          <p><strong>4.</strong> Controlla, scegli il supermercato e salva: il budget si scala e i prezzi nel catalogo si aggiornano.</p>
+        </div>
+      </details>
+      <p class="text-[11px] text-slate-400"><strong>Notifiche:</strong> funzionano solo con l'app aperta (il giorno prima e un'ora prima). Per un promemoria sicuro usa "Aggiungi al calendario".</p>
+    </div>
+    <button type="button" onclick="toggleInfoModal(false)" class="w-full bg-indigo-600 font-semibold py-2 rounded-xl text-xs">Chiudi</button>
+  </div>
+</div>
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const dateInput = document.getElementById('shoppingDateInput');
-      if (dateInput) dateInput.value = shoppingDate;
+<script>
+const DEFAULT_MARKETS = ["Prix","Lidl","Coop","Conad","Eurospin","Esselunga"];
+const ls = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+let products = ls.get('smartspesa_products', []);
+let receipts = ls.get('smartspesa_receipts', []);
+let monthlyBudget = parseFloat(ls.get('smartspesa_budget', 0)) || 0;
+let manualAdjustment = parseFloat(ls.get('smartspesa_manual_adjustment', 0)) || 0;
+let notificationsEnabled = ls.get('smartspesa_notifications', false);
+let shoppingDateTime = ls.get('smartspesa_shopping_datetime', '') || '';
+let notified = ls.get('smartspesa_notified', {});
+let tempScannedItems = [], tempReceiptTotal = null, currentActiveMarket = "Prix";
 
-      updateNotificationUI();
-      populateMarketSelectorOptions();
-      updateBudgetDisplay();
-      renderMarketsView();
-      generateWeeklyList();
-      checkAndScheduleNotifications();
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const todayISO = () => new Date().toISOString().split('T')[0];
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+window.addEventListener('DOMContentLoaded', () => {
+  const t = new Date().toLocaleDateString('it-IT', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('currentDateHeader').innerText = cap(t);
+  if (shoppingDateTime) document.getElementById('shoppingDateTimeInput').value = shoppingDateTime;
+  updateNotificationUI(); populateMarketSelectorOptions(); updateBudgetDisplay();
+  renderMarketsView(); generateWeeklyList(); updateScheduledBanner();
+  switchTab('weekly');
+  checkNotifications(); setInterval(checkNotifications, 60000);
+});
+
+/* ---------- Pianificazione & notifiche ---------- */
+function updateShoppingSchedule(val) {
+  if (!val) return;
+  shoppingDateTime = val; ls.set('smartspesa_shopping_datetime', val);
+  notified = {}; ls.set('smartspesa_notified', notified);
+  updateScheduledBanner(); checkNotifications();
+}
+function clearShoppingSchedule() {
+  shoppingDateTime = ''; localStorage.removeItem('smartspesa_shopping_datetime');
+  document.getElementById('shoppingDateTimeInput').value = '';
+  updateScheduledBanner();
+}
+function updateScheduledBanner() {
+  const c = document.getElementById('scheduledBannerContainer');
+  if (shoppingDateTime) {
+    document.getElementById('scheduledBannerText').innerText = 'Spesa prevista: ' + new Date(shoppingDateTime).toLocaleString('it-IT', { dateStyle:'medium', timeStyle:'short' });
+    c.classList.remove('hidden');
+  } else c.classList.add('hidden');
+}
+function toggleNotifications() {
+  if (!notificationsEnabled) {
+    if (!("Notification" in window)) return alert("Il tuo browser non supporta le notifiche.");
+    Notification.requestPermission().then(p => {
+      if (p === "granted") { notificationsEnabled = true; ls.set('smartspesa_notifications', true); updateNotificationUI(); checkNotifications(); alert("Notifiche attivate (funzionano con l'app aperta)."); }
+      else alert("Permesso notifiche negato dal browser.");
     });
+  } else { notificationsEnabled = false; ls.set('smartspesa_notifications', false); updateNotificationUI(); }
+}
+function updateNotificationUI() {
+  const btn = document.getElementById('notifToggleBtn'), icon = document.getElementById('notifIcon');
+  btn.className = notificationsEnabled ? "text-xs bg-indigo-900 text-indigo-300 border border-indigo-700 px-2 py-1.5 rounded-lg" : "text-xs bg-slate-800 text-slate-400 border border-slate-700 px-2 py-1.5 rounded-lg";
+  icon.className = notificationsEnabled ? "fa-solid fa-bell" : "fa-solid fa-bell-slash";
+}
+function checkNotifications() {
+  if (!notificationsEnabled || !shoppingDateTime || !("Notification" in window) || Notification.permission !== "granted") return;
+  const diff = new Date(shoppingDateTime).getTime() - Date.now();
+  const rules = [
+    { key: 'day', min: 0, max: 24*3600e3, text: "Domani hai la spesa in programma." },
+    { key: 'hour', min: 0, max: 3600e3, text: "La spesa è tra circa un'ora!" }
+  ];
+  rules.forEach(r => {
+    const id = r.key + '_' + shoppingDateTime;
+    if (diff > r.min && diff <= r.max && !notified[id]) {
+      notified[id] = true; ls.set('smartspesa_notified', notified);
+      try { new Notification("SmartSpesa", { body: r.text }); } catch (e) {}
+    }
+  });
+}
+function downloadICS() {
+  if (!shoppingDateTime) return alert("Prima scegli data e ora della spesa.");
+  const fmt = d => d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0') + 'T' + String(d.getHours()).padStart(2,'0') + String(d.getMinutes()).padStart(2,'0') + '00';
+  const s = new Date(shoppingDateTime), e = new Date(s.getTime() + 3600e3);
+  const ics = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//SmartSpesa//IT","BEGIN:VEVENT","UID:" + Date.now() + "@smartspesa","DTSTAMP:" + fmt(new Date()),
+    "DTSTART:" + fmt(s), "DTEND:" + fmt(e), "SUMMARY:Spesa", "BEGIN:VALARM","TRIGGER:-PT1H","ACTION:DISPLAY","DESCRIPTION:Spesa tra un'ora","END:VALARM",
+    "BEGIN:VALARM","TRIGGER:-P1D","ACTION:DISPLAY","DESCRIPTION:Domani spesa","END:VALARM","END:VEVENT","END:VCALENDAR"].join("\r\n");
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
+  a.download = 'spesa.ics'; document.body.appendChild(a); a.click(); a.remove();
+}
 
-    function updateShoppingDate(newDate) {
-      if (newDate) {
-        shoppingDate = newDate;
-        localStorage.setItem('smartspesa_shopping_date', shoppingDate);
-        checkAndScheduleNotifications();
-        alert("Data spesa aggiornata al " + newDate);
+/* ---------- Supermercati ---------- */
+function getMarkets() {
+  const m = [...DEFAULT_MARKETS];
+  products.forEach(p => { if (p.market && !m.some(x => x.toLowerCase() === p.market.toLowerCase())) m.push(p.market); });
+  return m;
+}
+function marketOptions(sel, withCustom) {
+  let h = getMarkets().map(m => `<option value="${esc(m)}" ${m === sel ? 'selected' : ''}>${esc(m)}</option>`).join('');
+  return h + (withCustom ? `<option value="CUSTOM">+ Inserisci nuovo supermercato...</option>` : '');
+}
+function populateMarketSelectorOptions() {
+  document.getElementById('marketSelector').innerHTML = marketOptions(currentActiveMarket, true);
+  const r = document.getElementById('receiptGlobalMarket'), keep = r.value;
+  r.innerHTML = marketOptions(keep || currentActiveMarket, true);
+  const q = document.getElementById('quickMarket'), qk = q.value;
+  q.innerHTML = marketOptions(qk, false);
+  const i = document.getElementById('itemMarket'), ik = i.value;
+  i.innerHTML = marketOptions(ik, true);
+}
+function handleReceiptMarketChange(v) {
+  const c = document.getElementById('receiptCustomMarketInput');
+  c.classList.toggle('hidden', v !== 'CUSTOM'); if (v === 'CUSTOM') c.focus(); else c.value = '';
+}
+function handleReceiptCustomMarketSave(v) {
+  const clean = v.trim(); if (!clean) return;
+  const sel = document.getElementById('receiptGlobalMarket');
+  const opt = document.createElement('option'); opt.value = clean; opt.text = clean; opt.selected = true;
+  sel.insertBefore(opt, sel.lastElementChild);
+  const c = document.getElementById('receiptCustomMarketInput'); c.classList.add('hidden'); c.value = '';
+}
+function handleMarketSelectorChange(v) {
+  const c = document.getElementById('customMarketSelectorInput');
+  if (v === 'CUSTOM') { c.classList.remove('hidden'); c.focus(); }
+  else { c.classList.add('hidden'); c.value = ''; currentActiveMarket = v; renderMarketsView(); }
+}
+function handleCustomMarketSelect(v) {
+  const clean = v.trim(); if (!clean) return;
+  currentActiveMarket = clean; populateMarketSelectorOptions();
+  const s = document.getElementById('marketSelector');
+  if (![...s.options].some(o => o.value === clean)) { const o = document.createElement('option'); o.value = clean; o.text = clean; s.insertBefore(o, s.lastElementChild); }
+  s.value = clean;
+  const c = document.getElementById('customMarketSelectorInput'); c.classList.add('hidden'); c.value = '';
+  renderMarketsView();
+}
+function toggleCustomMarket(v) {
+  const c = document.getElementById('customMarketInput');
+  c.classList.toggle('hidden', v !== 'CUSTOM'); if (v === 'CUSTOM') c.focus(); else c.value = '';
+}
+
+/* ---------- Backup ---------- */
+function exportBackup() {
+  const data = { version:"5.1", exportDate:new Date().toISOString(), monthlyBudget, manualAdjustment, shoppingDateTime, products, receipts };
+  const a = document.createElement('a');
+  a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+  a.download = `smartspesa_backup_${todayISO()}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function importBackup(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const d = JSON.parse(e.target.result);
+      if (d && Array.isArray(d.products) && confirm("Ripristinare il backup? I dati attuali verranno sostituiti.")) {
+        products = d.products;
+        receipts = Array.isArray(d.receipts) ? d.receipts : [];
+        if (typeof d.monthlyBudget === 'number') monthlyBudget = d.monthlyBudget;
+        if (typeof d.manualAdjustment === 'number') manualAdjustment = d.manualAdjustment;
+        shoppingDateTime = d.shoppingDateTime || '';
+        document.getElementById('shoppingDateTimeInput').value = shoppingDateTime;
+        ls.set('smartspesa_budget', monthlyBudget); ls.set('smartspesa_manual_adjustment', manualAdjustment);
+        ls.set('smartspesa_shopping_datetime', shoppingDateTime); ls.set('smartspesa_receipts', receipts);
+        updateScheduledBanner(); saveAndRender(); alert("Backup importato!");
       }
-    }
-
-    function toggleNotifications() {
-      if (!notificationsEnabled) {
-        if ("Notification" in window) {
-          Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-              notificationsEnabled = true;
-              localStorage.setItem('smartspesa_notifications', JSON.stringify(true));
-              updateNotificationUI();
-              checkAndScheduleNotifications();
-              alert("Notifiche attivate con successo!");
-            } else {
-              alert("Permesso notifiche negato dal browser.");
-            }
-          });
-        } else {
-          alert("Il tuo browser non supporta le notifiche.");
-        }
-      } else {
-        notificationsEnabled = false;
-        localStorage.setItem('smartspesa_notifications', JSON.stringify(false));
-        updateNotificationUI();
-        alert("Notifiche disattivate.");
-      }
-    }
-
-    function updateNotificationUI() {
-      const btn = document.getElementById('notifToggleBtn');
-      const icon = document.getElementById('notifIcon');
-      if (!btn || !icon) return;
-
-      if (notificationsEnabled) {
-        btn.className = "text-xs bg-indigo-900 text-indigo-300 border border-indigo-700 px-2 py-1.5 rounded-lg flex items-center gap-1";
-        icon.className = "fa-solid fa-bell";
-      } else {
-        btn.className = "text-xs bg-slate-800 text-slate-400 border border-slate-700 px-2 py-1.5 rounded-lg flex items-center gap-1";
-        icon.className = "fa-solid fa-bell-slash";
-      }
-    }
-
-    function checkAndScheduleNotifications() {
-      if (!notificationsEnabled || !shoppingDate) return;
-
-      const now = new Date().getTime();
-      const targetDate = new Date(shoppingDate + "T10:00:00").getTime(); // Promemoria alle 10:00 del giorno spesa
-      const oneDayBefore = targetDate - (24 * 60 * 60 * 1000);
-      const oneHourBefore = targetDate - (60 * 60 * 1000);
-
-      // Simulazione logica notifiche browser locali
-      console.log("Notifiche configurate per la spesa del:", shoppingDate);
-    }
-
-    function getDynamicMarketsList() {
-      let defaultMarkets = ["Prix", "Lidl", "Coop", "Conad", "Eurospin", "Esselunga"];
-      products.forEach(p => {
-        if (p.market && !defaultMarkets.includes(p.market)) defaultMarkets.push(p.market);
-      });
-      return defaultMarkets;
-    }
-
-    function populateMarketSelectorOptions() {
-      const selector = document.getElementById('marketSelector');
-      const receiptSelector = document.getElementById('receiptGlobalMarket');
-      if (!selector) return;
-      
-      let markets = getDynamicMarketsList();
-      let currentVal = currentActiveMarket;
-
-      let html = '';
-      markets.forEach(m => {
-        let sel = (m === currentVal) ? 'selected' : '';
-        html += `<option value="${m}" ${sel}>${m}</option>`;
-      });
-      
-      selector.innerHTML = html + `<option value="CUSTOM">+ Inserisci nuovo supermercato...</option>`;
-      if (receiptSelector) receiptSelector.innerHTML = html;
-    }
-
-    function handleMarketSelectorChange(val) {
-      const customInput = document.getElementById('customMarketSelectorInput');
-      if (val === 'CUSTOM') {
-        customInput.classList.remove('hidden');
-        customInput.focus();
-      } else {
-        customInput.classList.add('hidden');
-        customInput.value = '';
-        currentActiveMarket = val;
-        renderMarketsView();
-      }
-    }
-
-    function handleCustomMarketSelect(newVal) {
-      let clean = newVal.trim();
-      if (clean) {
-        currentActiveMarket = clean;
-        populateMarketSelectorOptions();
-        document.getElementById('marketSelector').value = clean;
-        document.getElementById('customMarketSelectorInput').classList.add('hidden');
-        document.getElementById('customMarketSelectorInput').value = '';
-        renderMarketsView();
-      }
-    }
-
-    function exportBackup() {
-      const backupData = {
-        version: "4.8",
-        exportDate: new Date().toISOString(),
-        monthlyBudget: monthlyBudget,
-        manualAdjustment: manualAdjustment,
-        shoppingDate: shoppingDate,
-        products: products
-      };
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `smartspesa_backup_${new Date().toISOString().split('T')[0]}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    }
-
-    function importBackup(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const imported = JSON.parse(e.target.result);
-          if (imported && Array.isArray(imported.products)) {
-            if (confirm("Ripristinare il backup?")) {
-              products = imported.products;
-              if (typeof imported.monthlyBudget === 'number') monthlyBudget = imported.monthlyBudget;
-              if (typeof imported.manualAdjustment === 'number') manualAdjustment = imported.manualAdjustment;
-              if (imported.shoppingDate) {
-                shoppingDate = imported.shoppingDate;
-                document.getElementById('shoppingDateInput').value = shoppingDate;
-              }
-
-              localStorage.setItem('smartspesa_products', JSON.stringify(products));
-              localStorage.setItem('smartspesa_budget', monthlyBudget);
-              localStorage.setItem('smartspesa_manual_adjustment', manualAdjustment);
-              localStorage.setItem('smartspesa_shopping_date', shoppingDate);
-
-              saveAndRender();
-              alert("Backup importato con successo!");
-            }
-          }
-        } catch (err) { alert("File JSON non valido."); }
-        event.target.value = '';
-      };
-      reader.readAsText(file);
-    }
-
-    function openBudgetModal() {
-      let bInput = prompt("Budget Mensile Totale (€):", monthlyBudget > 0 ? monthlyBudget : "0");
-      if (bInput !== null) {
-        let bVal = parseFloat(bInput.replace(',', '.'));
-        if (!isNaN(bVal) && bVal >= 0) {
-          monthlyBudget = bVal;
-          localStorage.setItem('smartspesa_budget', monthlyBudget);
-          updateBudgetDisplay();
-        }
-      }
-    }
-
-    function promptAdjustBudget(op) {
-      let label = op === '+' ? "Importo da AGGIUNGERE (€):" : "Importo da SCALARE (€):";
-      let valInput = prompt(label, "10");
-      if (valInput !== null) {
-        let val = parseFloat(valInput.replace(',', '.'));
-        if (!isNaN(val) && val > 0) {
-          manualAdjustment += (op === '+' ? val : -val);
-          localStorage.setItem('smartspesa_manual_adjustment', manualAdjustment);
-          updateBudgetDisplay();
-        }
-      }
-    }
-
-    function calculateSpentTotal() {
-      let now = new Date();
-      let currentMonth = now.getMonth();
-      let currentYear = now.getFullYear();
-
-      let totalSpent = -manualAdjustment; 
-      products.forEach(item => {
-        if (item.date && item.fromReceipt) {
-          let d = new Date(item.date);
-          if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
-            totalSpent += parseFloat(item.price) || 0;
-          }
-        }
-      });
-      return totalSpent;
-    }
-
-    function updateBudgetDisplay() {
-      let spent = calculateSpentTotal();
-      let remaining = monthlyBudget - spent;
-      const totalEl = document.getElementById('budgetTotal');
-      const remEl = document.getElementById('budgetRemaining');
-
-      if (totalEl) totalEl.innerText = `€${monthlyBudget.toFixed(2)}`;
-      if (remEl) {
-        remEl.innerText = `€${remaining.toFixed(2)}`;
-        remEl.className = remaining >= 0 ? "text-3xl font-extrabold text-emerald-400" : "text-3xl font-extrabold text-rose-400";
-      }
-    }
-
-    function switchTab(tab) {
-      const isWeekly = tab === 'weekly';
-      const isArchive = tab === 'archive';
-      const isMarkets = tab === 'markets';
-
-      document.getElementById('viewWeekly').classList.toggle('hidden', !isWeekly);
-      document.getElementById('viewArchive').classList.toggle('hidden', !isArchive);
-      document.getElementById('viewMarkets').classList.toggle('hidden', !isMarkets);
-      
-      document.getElementById('tabWeekly').className = isWeekly ? 'py-2 text-[11px] font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer' : 'py-2 text-[11px] font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer';
-      document.getElementById('tabArchive').className = isArchive ? 'py-2 text-[11px] font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer' : 'py-2 text-[11px] font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer';
-      document.getElementById('tabMarkets').className = isMarkets ? 'py-2 text-[11px] font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer' : 'py-2 text-[11px] font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer';
-
-      if (isWeekly) generateWeeklyList();
-      if (isMarkets) {
-        populateMarketSelectorOptions();
-        renderMarketsView();
-      }
-    }
-
-    function toggleInfoModal(show) {
-      const modal = document.getElementById('infoModal');
-      if (modal) modal.classList.toggle('hidden', !show);
-    }
-
-    function toggleCustomMarket(val, selectId, inputId) {
-      const customInput = document.getElementById(inputId);
-      if (val === 'CUSTOM') {
-        customInput.classList.remove('hidden');
-        customInput.focus();
-      } else {
-        customInput.classList.add('hidden');
-        customInput.value = '';
-      }
-    }
-
-    function saveAndRender() {
-      localStorage.setItem('smartspesa_products', JSON.stringify(products));
-      populateMarketSelectorOptions();
-      renderMarketsView();
-      generateWeeklyList();
-      updateBudgetDisplay();
-    }
-
-    function handleQuickSubmit(e) {
-      e.preventDefault();
-      const name = document.getElementById('quickName').value.trim();
-      const price = document.getElementById('quickPrice').value;
-      const market = document.getElementById('quickMarket').value;
-      const todayStr = new Date().toISOString().split('T')[0];
-
-      if (name && price) {
-        products.unshift({
-          name: name,
-          market: market,
-          price: parseFloat(price).toFixed(2),
-          frequency: "14",
-          date: todayStr,
-          inList: true,
-          fromReceipt: false,
-          createdAt: new Date().getTime(),
-          lastBought: new Date().getTime()
-        });
-        saveAndRender();
-        document.getElementById('quickName').value = '';
-        document.getElementById('quickPrice').value = '';
-        switchTab('weekly');
-      }
-    }
-
-    function renderMarketsView() {
-      const container = document.getElementById('marketsContainer');
-      if (!container) return;
-      
-      container.innerHTML = '';
-      let selectedMarket = currentActiveMarket;
-
-      let filteredProducts = products.map((item, idx) => ({ ...item, originalIndex: idx })).filter(item => {
-        let m = item.market || 'Prix';
-        return m.toLowerCase() === selectedMarket.toLowerCase();
-      });
-
-      if (filteredProducts.length === 0) {
-        container.innerHTML = `<div class="text-xs text-slate-500 text-center py-6">Nessun prodotto nell'archivio di "${selectedMarket}".</div>`;
-        return;
-      }
-
-      let ulHTML = '<ul class="space-y-2.5">';
-      filteredProducts.forEach((item) => {
-        let checkedAttr = item.inList ? 'checked' : '';
-        let freq = item.frequency || "14";
-        ulHTML += `
-          <li class="bg-slate-900 p-3 rounded-lg border border-slate-700 space-y-2">
-            <div class="flex justify-between items-center text-xs">
-              <div class="flex items-center gap-2">
-                <input type="checkbox" ${checkedAttr} onchange="toggleItemInList(${item.originalIndex}, this.checked)" class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
-                <input type="text" value="${item.name}" onchange="updateMarketItemName(${item.originalIndex}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-slate-200 font-medium w-36 focus:outline-none">
-              </div>
-              <div class="flex items-center gap-1.5">
-                <span class="text-indigo-300 font-bold">€</span>
-                <input type="number" step="0.01" value="${parseFloat(item.price).toFixed(2)}" onchange="updateMarketItemPrice(${item.originalIndex}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-slate-200 font-bold w-16 text-right focus:outline-none">
-                <button type="button" onclick="removeProduct(${item.originalIndex})" class="text-slate-500 hover:text-rose-400 p-1 cursor-pointer">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              </div>
-            </div>
-
-            <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800/60">
-              <span class="flex items-center gap-1"><i class="fa-solid fa-rotate text-indigo-400"></i> Frequenza riacquisto:</span>
-              <div class="flex items-center gap-1">
-                <input type="number" min="1" value="${freq}" onchange="updateMarketItemFrequency(${item.originalIndex}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-1.5 py-0.5 text-slate-200 w-12 text-center focus:outline-none font-bold">
-                <span class="text-slate-400 font-semibold">giorni</span>
-              </div>
-            </div>
-          </li>
-        `;
-      });
-      ulHTML += '</ul>';
-      container.innerHTML = ulHTML;
-    }
-
-    function updateMarketItemFrequency(index, newFreq) {
-      if (products[index]) {
-        let val = parseInt(newFreq);
-        if (!isNaN(val) && val > 0) {
-          products[index].frequency = val.toString();
-          saveAndRender();
-        }
-      }
-    }
-
-    function toggleItemInList(index, isChecked) {
-      if (products[index]) {
-        products[index].inList = isChecked;
-        saveAndRender();
-      }
-    }
-
-    function updateMarketItemName(index, newName) {
-      if (products[index]) {
-        products[index].name = newName.trim();
-        saveAndRender();
-      }
-    }
-
-    function updateMarketItemPrice(index, newPrice) {
-      let val = parseFloat(newPrice);
-      if (!isNaN(val) && products[index]) {
-        products[index].price = val.toFixed(2);
-        saveAndRender();
-      }
-    }
-
-    function generateWeeklyList() {
-      const weeklyList = document.getElementById('weeklyList');
-      const totalSumEl = document.getElementById('weeklyTotalSum');
-      if (!weeklyList) return;
-      weeklyList.innerHTML = '';
-
-      let activeProducts = products.filter(item => item.inList === true);
-      let sum = 0;
-      activeProducts.forEach(item => { sum += parseFloat(item.price) || 0; });
-      if (totalSumEl) totalSumEl.innerText = `€${sum.toFixed(2)}`;
-
-      if (activeProducts.length === 0) {
-        weeklyList.innerHTML = `<li class="text-xs text-slate-500 text-center py-6">La tua lista della spesa è vuota. Spunta i prodotti dalla scheda "Per Supermercato" o aggiungili al volo!</li>`;
-        return;
-      }
-
-      activeProducts.forEach((item) => {
-        let globalIdx = products.indexOf(item);
-        const li = document.createElement('li');
-        li.className = 'flex justify-between items-center bg-slate-900 p-3 rounded-lg border border-slate-700 text-sm';
-        li.innerHTML = `
-          <div class="flex items-center gap-3">
-            <input type="checkbox" onchange="markAsBought(${globalIdx})" class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
-            <div>
-              <div class="font-medium text-slate-200">${item.name}</div>
-              <div class="text-xs text-slate-400"><i class="fa-solid fa-store mr-1"></i>${item.market}</div>
-            </div>
-          </div>
-          <span class="font-bold text-indigo-300">€${parseFloat(item.price).toFixed(2)}</span>
-        `;
-        weeklyList.appendChild(li);
-      });
-    }
-
-    function markAsBought(index) {
-      if (products[index]) {
-        products[index].lastBought = new Date().getTime();
-        products[index].date = new Date().toISOString().split('T')[0];
-        products[index].inList = false;
-        saveAndRender();
-      }
-    }
-
-    function handleFormSubmit(e) {
-      e.preventDefault();
-      const name = document.getElementById('itemName').value.trim();
-      const selectedMarket = document.getElementById('itemMarket').value;
-      const price = document.getElementById('itemPrice').value;
-      const frequency = document.getElementById('itemFrequency').value || "14";
-      const todayStr = new Date().toISOString().split('T')[0];
-
-      let finalMarket = selectedMarket === 'CUSTOM' ? (document.getElementById('customMarketInput').value.trim() || 'Altro') : selectedMarket;
-
-      if (name && price) {
-        products.unshift({
-          name,
-          market: finalMarket,
-          price: parseFloat(price).toFixed(2),
-          frequency: frequency.toString(),
-          date: todayStr,
-          inList: false,
-          fromReceipt: false,
-          createdAt: new Date().getTime(),
-          lastBought: new Date().getTime()
-        });
-        saveAndRender();
-        document.getElementById('itemForm').reset();
-        document.getElementById('itemFrequency').value = "14";
-        switchTab('markets'); 
-      }
-    }
-
-    function removeProduct(index) {
-      products.splice(index, 1);
-      saveAndRender();
-    }
-
-    function clearDatabase() {
-      if (confirm('Vuoi cancellare tutto l\'archivio?')) {
-        products = [];
-        saveAndRender();
-      }
-    }
-
-    // --- ANALISI TESTO INCOLLATO ---
-    function processPastedText() {
-      const text = document.getElementById('pasteReceiptText').value.trim();
-      const statusDiv = document.getElementById('ocrStatus');
-      
-      if (!text) {
-        statusDiv.innerHTML = `<span class="text-rose-400">Incolla prima il testo copiato!</span>`;
-        return;
-      }
-
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Estrazione prodotti in corso...`;
-
-      try {
-        let lines = text.split('\n');
-        tempScannedItems = [];
-
-        lines.forEach(line => {
-          let cleanLine = line.trim();
-          if (!cleanLine) return;
-
-          let match = cleanLine.match(/(\d+[\.,]\d{2})/);
-          if (match) {
-            let priceStr = match[1].replace(',', '.');
-            let namePart = cleanLine.replace(match[0], '').replace(/[-–:€]/g, '').trim();
-            if (namePart.length > 1) {
-              tempScannedItems.push({
-                name: namePart.charAt(0).toUpperCase() + namePart.slice(1),
-                price: parseFloat(priceStr).toFixed(2)
-              });
-            }
-          }
-        });
-
-        if (tempScannedItems.length === 0) {
-          tempScannedItems.push({ name: "Spesa scontrino", price: "0.00" });
-        }
-
-        let calculatedTotal = 0;
-        tempScannedItems.forEach(i => calculatedTotal += parseFloat(i.price) || 0);
-
-        renderAIReview(calculatedTotal);
-        statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Testo analizzato con successo!</span>`;
-      } catch (err) {
-        console.error(err);
-        statusDiv.innerHTML = `<span class="text-rose-400">Errore nell'analisi del testo.</span>`;
-      }
-    }
-
-    function renderAIReview(initialTotal) {
-      const reviewContainer = document.getElementById('ocrReviewContainer');
-      const listContainer = document.getElementById('scannedItemsList');
-      const totalInput = document.getElementById('scannedTotalInput');
-      listContainer.innerHTML = '';
-      if (totalInput) totalInput.value = initialTotal.toFixed(2);
-
-      tempScannedItems.forEach((item, idx) => {
-        let div = document.createElement('div');
-        div.className = 'bg-slate-800 p-2.5 rounded-lg border border-slate-700 space-y-2 text-xs';
-        div.innerHTML = `
-          <div class="grid grid-cols-12 gap-2 items-center">
-            <input type="text" value="${item.name}" onchange="updateTempItem(${idx}, 'name', this.value)" class="col-span-8 bg-slate-900 border border-slate-700 rounded p-1.5 text-slate-200 focus:outline-none">
-            <div class="col-span-4 flex items-center gap-1">
-              <span class="text-indigo-300 font-bold">€</span>
-              <input type="number" step="0.01" value="${item.price}" onchange="updateTempItem(${idx}, 'price', this.value)" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-slate-200 focus:outline-none text-right">
-            </div>
-          </div>
-        `;
-        listContainer.appendChild(div);
-      });
-
-      reviewContainer.classList.remove('hidden');
-    }
-
-    function updateTempItem(index, field, value) {
-      if (tempScannedItems[index]) tempScannedItems[index][field] = value.trim();
-    }
-
-    function cancelAIReview() {
-      document.getElementById('ocrReviewContainer').classList.add('hidden');
-      document.getElementById('ocrStatus').innerText = "";
-      document.getElementById('pasteReceiptText').value = "";
-      tempScannedItems = [];
-    }
-
-    function saveAllScannedItems() {
-      let todayStr = new Date().toISOString().split('T')[0];
-      const selectedGlobalMarket = document.getElementById('receiptGlobalMarket').value || currentActiveMarket || 'Prix';
-
-      tempScannedItems.forEach((item) => {
-        if (item.name && item.price) {
-          products.unshift({
-            name: item.name,
-            market: selectedGlobalMarket,
-            price: parseFloat(item.price).toFixed(2),
-            frequency: "14",
-            date: todayStr,
-            inList: false,
-            fromReceipt: true,
-            createdAt: new Date().getTime(),
-            lastBought: new Date().getTime()
-          });
-        }
-      });
-
-      document.getElementById('ocrReviewContainer').classList.add('hidden');
-      document.getElementById('ocrStatus').innerHTML = `<span class="text-emerald-400 font-bold">Prodotti salvati e budget aggiornato!</span>`;
-      document.getElementById('pasteReceiptText').value = "";
-      tempScannedItems = [];
-      saveAndRender();
-      switchTab('markets');
-    }
-  </script>
+    } catch (err) { alert("File JSON non valido."); }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+/* ---------- Budget ---------- */
+function openBudgetModal() {
+  const v = prompt("Budget Mensile Totale (€):", monthlyBudget > 0 ? monthlyBudget : "0");
+  if (v === null) return;
+  const n = parseFloat(v.replace(',', '.'));
+  if (!isNaN(n) && n >= 0) { monthlyBudget = n; ls.set('smartspesa_budget', n); updateBudgetDisplay(); }
+}
+function promptAdjustBudget(op) {
+  const v = prompt(op === '+' ? "Importo da AGGIUNGERE (€):" : "Importo da SCALARE (€):", "10");
+  if (v === null) return;
+  const n = parseFloat(v.replace(',', '.'));
+  if (!isNaN(n) && n > 0) { manualAdjustment += (op === '+' ? n : -n); ls.set('smartspesa_manual_adjustment', manualAdjustment); updateBudgetDisplay(); }
+}
+function calculateSpentTotal() {
+  const now = new Date(), m = now.getMonth(), y = now.getFullYear();
+  const inMonth = ds => { const d = new Date(ds); return d.getMonth() === m && d.getFullYear() === y; };
+  let total = -manualAdjustment;
+  receipts.forEach(r => { if (r.date && inMonth(r.date)) total += parseFloat(r.total) || 0; });
+  // compatibilità con i dati della v5.0 (prodotti salvati da scontrino)
+  products.forEach(p => { if (p.fromReceipt && p.date && inMonth(p.date)) total += parseFloat(p.price) || 0; });
+  return total;
+}
+function updateBudgetDisplay() {
+  const spent = calculateSpentTotal(), rem = monthlyBudget - spent;
+  document.getElementById('budgetTotal').innerText = `€${monthlyBudget.toFixed(2)}`;
+  const el = document.getElementById('budgetRemaining');
+  el.innerText = `€${rem.toFixed(2)}`;
+  el.className = "text-3xl font-extrabold " + (rem >= 0 ? "text-emerald-400" : "text-rose-400");
+  document.getElementById('budgetSpent').innerText = `Speso questo mese: €${spent.toFixed(2)}`;
+}
+
+/* ---------- Tab ---------- */
+function switchTab(tab) {
+  const on = 'py-2 text-[11px] font-semibold rounded-lg bg-indigo-600 text-white', off = 'py-2 text-[11px] font-semibold rounded-lg text-slate-400';
+  ['weekly','archive','markets'].forEach(t => {
+    const T = cap(t);
+    document.getElementById('view' + T).classList.toggle('hidden', t !== tab);
+    document.getElementById('tab' + T).className = t === tab ? on : off;
+  });
+  if (tab === 'weekly') generateWeeklyList();
+  if (tab === 'markets') { populateMarketSelectorOptions(); renderMarketsView(); }
+}
+function toggleInfoModal(show) { document.getElementById('infoModal').classList.toggle('hidden', !show); }
+
+function saveAndRender() {
+  ls.set('smartspesa_products', products);
+  populateMarketSelectorOptions(); renderMarketsView(); generateWeeklyList(); updateBudgetDisplay();
+}
+
+/* ---------- Prodotti ---------- */
+function handleQuickSubmit(e) {
+  e.preventDefault();
+  const name = document.getElementById('quickName').value.trim();
+  const price = document.getElementById('quickPrice').value;
+  const market = document.getElementById('quickMarket').value;
+  if (!name || !price) return;
+  products.unshift({ name, market, price: parseFloat(price).toFixed(2), frequency:"14", date:todayISO(), inList:true, fromReceipt:false, createdAt:Date.now(), lastBought:Date.now() });
+  saveAndRender();
+  document.getElementById('quickName').value = ''; document.getElementById('quickPrice').value = '';
+  switchTab('weekly');
+}
+function handleFormSubmit(e) {
+  e.preventDefault();
+  const name = document.getElementById('itemName').value.trim();
+  const sel = document.getElementById('itemMarket').value;
+  const price = document.getElementById('itemPrice').value;
+  const freq = document.getElementById('itemFrequency').value || "14";
+  const market = sel === 'CUSTOM' ? (document.getElementById('customMarketInput').value.trim() || 'Altro') : sel;
+  if (!name || !price) return;
+  products.unshift({ name, market, price: parseFloat(price).toFixed(2), frequency: String(freq), date:todayISO(), inList:false, fromReceipt:false, createdAt:Date.now(), lastBought:Date.now() });
+  saveAndRender();
+  document.getElementById('itemForm').reset(); document.getElementById('itemFrequency').value = "14";
+  document.getElementById('customMarketInput').classList.add('hidden');
+  currentActiveMarket = market; populateMarketSelectorOptions(); switchTab('markets');
+}
+function renderMarketsView() {
+  const c = document.getElementById('marketsContainer');
+  const list = products.map((it, i) => ({ ...it, i })).filter(it => (it.market || 'Prix').toLowerCase() === currentActiveMarket.toLowerCase());
+  if (!list.length) { c.innerHTML = `<div class="text-xs text-slate-500 text-center py-6">Nessun prodotto nell'archivio di "${esc(currentActiveMarket)}".</div>`; return; }
+  c.innerHTML = '<ul class="space-y-2.5">' + list.map(it => `
+    <li class="bg-slate-900 p-3 rounded-lg border border-slate-700 space-y-2">
+      <div class="flex justify-between items-center text-xs">
+        <div class="flex items-center gap-2">
+          <input type="checkbox" ${it.inList ? 'checked' : ''} onchange="toggleItemInList(${it.i}, this.checked)" class="w-4 h-4 accent-indigo-600">
+          <input type="text" value="${esc(it.name)}" onchange="updateMarketItemName(${it.i}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 font-medium w-36">
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-indigo-300 font-bold">€</span>
+          <input type="number" step="0.01" value="${(parseFloat(it.price) || 0).toFixed(2)}" onchange="updateMarketItemPrice(${it.i}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-1.5 py-1 font-bold w-16 text-right">
+          <button type="button" onclick="removeProduct(${it.i})" class="text-slate-500 hover:text-rose-400 p-1"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+      <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800/60">
+        <span><i class="fa-solid fa-rotate text-indigo-400"></i> Frequenza riacquisto:</span>
+        <div class="flex items-center gap-1">
+          <input type="number" min="1" value="${esc(it.frequency || 14)}" onchange="updateMarketItemFrequency(${it.i}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-1.5 py-0.5 w-12 text-center font-bold">
+          <span class="font-semibold">giorni</span>
+        </div>
+      </div>
+    </li>`).join('') + '</ul>';
+}
+function updateMarketItemFrequency(i, v) { const n = parseInt(v); if (products[i] && n > 0) { products[i].frequency = String(n); saveAndRender(); } }
+function toggleItemInList(i, c) { if (products[i]) { products[i].inList = c; saveAndRender(); } }
+function updateMarketItemName(i, v) { if (products[i] && v.trim()) { products[i].name = v.trim(); saveAndRender(); } }
+function updateMarketItemPrice(i, v) { const n = parseFloat(v); if (!isNaN(n) && products[i]) { products[i].price = n.toFixed(2); saveAndRender(); } }
+function removeProduct(i) { products.splice(i, 1); saveAndRender(); }
+function clearDatabase() {
+  if (confirm("Vuoi cancellare tutto l'archivio (prodotti e scontrini)?")) { products = []; receipts = []; ls.set('smartspesa_receipts', receipts); saveAndRender(); }
+}
+function generateWeeklyList() {
+  const ul = document.getElementById('weeklyList');
+  const active = products.map((it, i) => ({ ...it, i })).filter(it => it.inList === true);
+  document.getElementById('weeklyTotalSum').innerText = '€' + active.reduce((s, it) => s + (parseFloat(it.price) || 0), 0).toFixed(2);
+  if (!active.length) { ul.innerHTML = `<li class="text-xs text-slate-500 text-center py-6">La lista è vuota. Spunta i prodotti da "Per Supermercato" o aggiungili al volo!</li>`; return; }
+  ul.innerHTML = active.map(it => `
+    <li class="flex justify-between items-center bg-slate-900 p-3 rounded-lg border border-slate-700 text-sm">
+      <div class="flex items-center gap-3">
+        <input type="checkbox" onchange="markAsBought(${it.i})" class="w-4 h-4 accent-indigo-600">
+        <div><div class="font-medium text-slate-200">${esc(it.name)}</div><div class="text-xs text-slate-400"><i class="fa-solid fa-store mr-1"></i>${esc(it.market)}</div></div>
+      </div>
+      <span class="font-bold text-indigo-300">€${(parseFloat(it.price) || 0).toFixed(2)}</span>
+    </li>`).join('');
+}
+function markAsBought(i) {
+  if (products[i]) { products[i].lastBought = Date.now(); products[i].date = todayISO(); products[i].inList = false; saveAndRender(); }
+}
+
+/* ---------- Import scontrino da IA ---------- */
+function copyGeminiPrompt() {
+  const p = "Leggi lo scontrino nella foto. Rispondi SOLO con una riga per prodotto, nel formato esatto:\nNome prodotto - 1,50\nSe un prodotto ha quantità maggiore di 1, scrivi il prezzo totale della riga. Non aggiungere spiegazioni, simboli o numeri di riga. Ultima riga:\nTOTALE - 00,00";
+  const done = () => { document.getElementById('ocrStatus').innerHTML = '<span class="text-emerald-400 font-bold">Istruzioni copiate! Incollale in Gemini.</span>'; };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(p).then(done).catch(() => prompt("Copia queste istruzioni:", p));
+  else prompt("Copia queste istruzioni:", p);
+}
+function parseReceiptText(text) {
+  const items = []; let total = null;
+  const price = '(\\d{1,4}(?:[.,]\\d{2}))';
+  const strict = new RegExp('^(.*?)[\\s\\-–:]*€?\\s*' + price + '\\s*(?:€|eur|euro)?\\s*[A-Za-z]?$', 'i');
+  const skip = /(subtotale|resto|contanti|carta|bancomat|pagamento|iva|sconto|punti|arrotond)/i;
+  text.split('\n').forEach(raw => {
+    let line = raw.replace(/^[\s*•·\-\d.)]+(?=[A-Za-zÀ-ÿ])/, '').replace(/\*\*/g, '').trim();
+    if (!line) return;
+    const m = line.match(strict); if (!m) return;
+    let name = m[1].replace(/[€:–\-\s]+$/, '').trim();
+    const val = parseFloat(m[2].replace(',', '.'));
+    if (/^(totale|total|importo|da pagare)/i.test(name)) { total = val; return; }
+    if (skip.test(name) || name.length < 2 || isNaN(val)) return;
+    items.push({ name: cap(name), price: val.toFixed(2) });
+  });
+  return { items, total };
+}
+function processPastedText() {
+  const text = document.getElementById('pasteReceiptText').value.trim();
+  const status = document.getElementById('ocrStatus');
+  if (!text) { status.innerHTML = '<span class="text-rose-400">Incolla prima il testo copiato!</span>'; return; }
+  const r = parseReceiptText(text);
+  tempScannedItems = r.items; tempReceiptTotal = r.total;
+  if (!tempScannedItems.length) { status.innerHTML = '<span class="text-rose-400">Non ho trovato prodotti. Controlla che ogni riga sia "Nome - 1,50".</span>'; return; }
+  const sum = tempScannedItems.reduce((s, i) => s + parseFloat(i.price), 0);
+  renderAIReview(r.total !== null ? r.total : sum);
+  status.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> ${tempScannedItems.length} prodotti trovati</span>`;
+}
+function renderAIReview(total) {
+  document.getElementById('scannedTotalInput').value = total.toFixed(2);
+  populateMarketSelectorOptions();
+  const list = document.getElementById('scannedItemsList');
+  list.innerHTML = tempScannedItems.map((it, i) => `
+    <div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700 text-xs">
+      <div class="grid grid-cols-12 gap-2 items-center">
+        <input type="text" value="${esc(it.name)}" onchange="updateTempItem(${i}, 'name', this.value)" class="col-span-7 bg-slate-900 border border-slate-700 rounded p-1.5">
+        <div class="col-span-4 flex items-center gap-1"><span class="text-indigo-300 font-bold">€</span>
+          <input type="number" step="0.01" value="${esc(it.price)}" onchange="updateTempItem(${i}, 'price', this.value)" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-right"></div>
+        <button type="button" onclick="removeTempItem(${i})" class="col-span-1 text-slate-500 hover:text-rose-400"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    </div>`).join('');
+  document.getElementById('duplicateNote').innerText = "I prodotti già presenti nello stesso supermercato verranno aggiornati (prezzo e data), non duplicati.";
+  document.getElementById('ocrReviewContainer').classList.remove('hidden');
+}
+function updateTempItem(i, f, v) { if (tempScannedItems[i]) tempScannedItems[i][f] = v.trim(); }
+function removeTempItem(i) {
+  tempScannedItems.splice(i, 1);
+  const sum = tempScannedItems.reduce((s, it) => s + (parseFloat(it.price) || 0), 0);
+  renderAIReview(tempReceiptTotal !== null ? parseFloat(document.getElementById('scannedTotalInput').value) || sum : sum);
+}
+function cancelAIReview() {
+  document.getElementById('ocrReviewContainer').classList.add('hidden');
+  document.getElementById('ocrStatus').innerText = '';
+  document.getElementById('pasteReceiptText').value = '';
+  tempScannedItems = []; tempReceiptTotal = null;
+}
+function saveAllScannedItems() {
+  const sel = document.getElementById('receiptGlobalMarket');
+  let market = sel.value;
+  if (market === 'CUSTOM') market = document.getElementById('receiptCustomMarketInput').value.trim() || 'Altro';
+  const total = parseFloat(document.getElementById('scannedTotalInput').value) || 0;
+  let updated = 0, added = 0;
+  tempScannedItems.forEach(it => {
+    const price = parseFloat(it.price);
+    if (!it.name || isNaN(price)) return;
+    const existing = products.find(p => p.name.toLowerCase() === it.name.toLowerCase() && (p.market || '').toLowerCase() === market.toLowerCase());
+    if (existing) { existing.price = price.toFixed(2); existing.date = todayISO(); existing.lastBought = Date.now(); updated++; }
+    else { products.unshift({ name: it.name, market, price: price.toFixed(2), frequency:"14", date:todayISO(), inList:false, fromReceipt:false, createdAt:Date.now(), lastBought:Date.now() }); added++; }
+  });
+  receipts.push({ date: todayISO(), market, total: total.toFixed(2), items: tempScannedItems.length });
+  ls.set('smartspesa_receipts', receipts);
+  currentActiveMarket = market;
+  cancelAIReview();
+  document.getElementById('ocrStatus').innerHTML = `<span class="text-emerald-400 font-bold">Scontrino salvato: ${added} nuovi, ${updated} aggiornati. Budget scalato di €${total.toFixed(2)}.</span>`;
+  saveAndRender(); switchTab('markets');
+}
+</script>
 </body>
 </html>
