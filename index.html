@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v4.5 IA</title>
+  <title>SmartSpesa v4.6 IA</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v4.5 e Toggle Notifiche -->
+  <!-- Header con Versione v4.6 e Toggle Notifiche -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <div>
@@ -18,7 +18,7 @@
         </h1>
         <div id="currentDateHeader" class="text-[10px] text-slate-400 font-mono mt-0.5"></div>
       </div>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v4.5 IA</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v4.6 IA</span>
     </div>
     
     <div class="flex items-center gap-2">
@@ -119,17 +119,36 @@
       <div class="text-[10px] text-slate-400">La chiave viene salvata solo nel tuo browser in modo sicuro.</div>
     </section>
 
-    <!-- SCANNER SCONTRINO CON IA -->
+    <!-- SCANNER SCONTRINO CON RITAGLIO & IA -->
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-wand-magic-sparkles"></i> Scanner Scontrino IA (v4.5)
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Scanner Scontrino con Ritaglio IA
       </h2>
-      <p class="text-xs text-slate-400">Scatta o carica la foto dello scontrino: l'IA integrata leggerà tutto al centesimo.</p>
+      <p class="text-xs text-slate-400">Scatta o carica la foto, ritaglia solo lo scontrino e l'IA leggerà tutto al centesimo.</p>
       
-      <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="processReceiptWithAI(event)">
+      <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="loadReceiptForCrop(event)">
       <button type="button" onclick="triggerReceiptScan()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-3 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-md">
         <i class="fa-solid fa-camera text-sm"></i> Scatta / Carica Foto Scontrino
       </button>
+
+      <!-- SCHERMATA DI RITAGLIO IMMAGINE -->
+      <div id="cropContainer" class="hidden space-y-3 bg-slate-900 p-3 rounded-xl border border-indigo-900">
+        <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Ritaglia lo Scontrino:</h3>
+        <p class="text-[11px] text-slate-400">Trascina o usa i cursori per isolare solo la parte con i prodotti e prezzi.</p>
+        
+        <div class="relative overflow-hidden bg-black rounded-lg border border-slate-700 flex justify-center items-center max-h-72">
+          <canvas id="cropCanvas" class="cursor-crosshair max-w-full object-contain"></canvas>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="confirmCropAndScan()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2.5 rounded-lg cursor-pointer flex items-center justify-center gap-1">
+            <i class="fa-solid fa-check"></i> Conferma e Analizza
+          </button>
+          <button type="button" onclick="cancelCrop()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold text-xs py-2.5 rounded-lg cursor-pointer">
+            Annulla
+          </button>
+        </div>
+      </div>
       
       <div id="ocrStatus" class="text-xs text-indigo-300 text-center font-medium pt-1"></div>
 
@@ -258,7 +277,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v4.5 IA
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v4.6 IA
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -266,7 +285,7 @@
       </div>
 
       <div class="space-y-3 text-slate-300 text-xs">
-        <p><strong>Versione v4.5:</strong> Modello Gemini 3.8 Flash agganciato stabilmente per eliminare qualsiasi errore di endpoint.</p>
+        <p><strong>Versione v4.6:</strong> Introduzione del ritaglio interattivo dell'immagine per inviare solo lo scontrino pulito e velocizzare l'IA.</p>
       </div>
 
       <button type="button" onclick="toggleInfoModal(false)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-xl text-xs transition-colors cursor-pointer">
@@ -284,6 +303,12 @@
     
     let tempScannedItems = [];
     let currentActiveMarket = "Prix";
+    
+    // Variabili per il ritaglio
+    let cropImg = null;
+    let cropX = 0, cropY = 0, cropW = 0, cropH = 0;
+    let isDragging = false;
+    let startX = 0, startY = 0;
 
     window.addEventListener('DOMContentLoaded', () => {
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -300,6 +325,7 @@
       updateBudgetDisplay();
       renderMarketsView();
       generateWeeklyList();
+      setupCropCanvasEvents();
     });
 
     function saveApiKey() {
@@ -376,7 +402,7 @@
 
     function exportBackup() {
       const backupData = {
-        version: "4.5",
+        version: "4.6",
         exportDate: new Date().toISOString(),
         monthlyBudget: monthlyBudget,
         manualAdjustment: manualAdjustment,
@@ -743,17 +769,157 @@
       }
     }
 
-    // GESTIONE IA GEMINI V4.5 (Modello gemini-3.8-flash blindato + Compressione + Retry)
-    async function processReceiptWithAI(event) {
+    // --- GESTIONE RITAGLIO E IA (V4.6) ---
+    function loadReceiptForCrop(event) {
       const file = event.target.files[0];
       if (!file) return;
 
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        cropImg = new Image();
+        cropImg.onload = function() {
+          const canvas = document.getElementById('cropCanvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Ridimensiona canvas per adattarlo alla vista mobile
+          let maxW = 320;
+          let scale = maxW / cropImg.width;
+          canvas.width = maxW;
+          canvas.height = cropImg.height * scale;
+
+          ctx.drawImage(cropImg, 0, 0, canvas.width, canvas.height);
+
+          // Imposta un riquadro di ritaglio iniziale (tutta l'immagine o quasi)
+          cropX = 20; cropY = 20; cropW = canvas.width - 40; cropH = canvas.height - 40;
+          drawCropOverlay();
+
+          document.getElementById('cropContainer').classList.remove('hidden');
+          document.getElementById('ocrStatus').innerText = "Ritaglia l'area dello scontrino e conferma.";
+        }
+        cropImg.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+      event.target.value = '';
+    }
+
+    function setupCropCanvasEvents() {
+      const canvas = document.getElementById('cropCanvas');
+      if (!canvas) return;
+
+      let startXTouch, startYTouch;
+
+      canvas.addEventListener('mousedown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        startX = e.clientX - rect.left;
+        startY = e.clientY - rect.top;
+        isDragging = true;
+      });
+
+      canvas.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const rect = canvas.getBoundingClientRect();
+        let currentX = e.clientX - rect.left;
+        let currentY = e.clientY - rect.top;
+
+        cropX = Math.min(startX, currentX);
+        cropY = Math.min(startY, currentY);
+        cropW = Math.abs(currentX - startX);
+        cropH = Math.abs(currentY - startY);
+
+        drawCropOverlay();
+      });
+
+      canvas.addEventListener('mouseup', () => { isDragging = false; });
+      canvas.addEventListener('mouseleave', () => { isDragging = false; });
+
+      // Supporto Touch per Smartphone
+      canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          const rect = canvas.getBoundingClientRect();
+          startX = e.touches[0].clientX - rect.left;
+          startY = e.touches[0].clientY - rect.top;
+          isDragging = true;
+        }
+      });
+
+      canvas.addEventListener('touchmove', (e) => {
+        if (!isDragging || e.touches.length !== 1) return;
+        const rect = canvas.getBoundingClientRect();
+        let currentX = e.touches[0].clientX - rect.left;
+        let currentY = e.touches[0].clientY - rect.top;
+
+        cropX = Math.min(startX, currentX);
+        cropY = Math.min(startY, currentY);
+        cropW = Math.abs(currentX - startX);
+        cropH = Math.abs(currentY - startY);
+
+        drawCropOverlay();
+        e.preventDefault();
+      });
+
+      canvas.addEventListener('touchend', () => { isDragging = false; });
+    }
+
+    function drawCropOverlay() {
+      const canvas = document.getElementById('cropCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(cropImg, 0, 0, canvas.width, canvas.height);
+
+      // Disegna un velo scuro fuori dall'area di ritaglio
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Ritaglia l'area selezionata mantenendola luminosa
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(cropX, cropY, cropW, cropH);
+      ctx.clip();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(cropImg, 0, 0, canvas.width, canvas.height);
+      ctx.restore();
+
+      // Bordo del rettangolo di ritaglio
+      ctx.strokeStyle = '#6366f1';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(cropX, cropY, cropW, cropH);
+    }
+
+    function cancelCrop() {
+      document.getElementById('cropContainer').classList.add('hidden');
+      document.getElementById('ocrStatus').innerText = "";
+    }
+
+    async function confirmCropAndScan() {
+      document.getElementById('cropContainer').classList.add('hidden');
       const statusDiv = document.getElementById('ocrStatus');
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Ottimizzazione foto e analisi IA in corso...`;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Invio ritaglio e analisi IA in corso...`;
 
       try {
-        const compressedBase64 = await resizeImageToCompressedBase64(file, 1000, 0.8);
-        const cleanBase64 = compressedBase64.split(',')[1];
+        const canvas = document.getElementById('cropCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Se il ritaglio è troppo piccolo, usiamo tutta l'immagine
+        if (cropW < 50 || cropH < 50) {
+          cropX = 0; cropY = 0; cropW = canvas.width; cropH = canvas.height;
+        }
+
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = cropW;
+        croppedCanvas.height = cropH;
+        const croppedCtx = croppedCanvas.getContext('2d');
+        
+        let scaleX = cropImg.width / canvas.width;
+        let scaleY = cropImg.height / canvas.height;
+
+        croppedCtx.drawImage(
+          cropImg, 
+          cropX * scaleX, cropY * scaleY, cropW * scaleX, cropH * scaleY, 
+          0, 0, cropW, cropH
+        );
+
+        const base64Data = croppedCanvas.toDataURL('image/jpeg', 0.85);
+        const cleanBase64 = base64Data.split(',')[1];
 
         const promptText = "Estrai da questo scontrino commerciale tutti i prodotti acquistati con il relativo prezzo in euro. Restituisci ESCLUSIVAMENTE un oggetto JSON valido, senza blocchi di codice markdown, nel seguente formato esatto: {\"items\": [{\"name\": \"Nome prodotto\", \"price\": \"0.00\"}]}";
 
@@ -799,49 +965,11 @@
         tempScannedItems.forEach(i => calculatedTotal += parseFloat(i.price) || 0);
 
         renderAIReview(calculatedTotal);
-        statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Scontrino letto con successo dall'IA!</span>`;
+        statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Scontrino ritagliato e letto con successo!</span>`;
       } catch (err) {
         console.error(err);
         statusDiv.innerHTML = `<span class="text-rose-400">Errore IA: ${err.message || 'Controlla la chiave API o riprova'}</span>`;
       }
-      event.target.value = '';
-    }
-
-    function resizeImageToCompressedBase64(file, maxDimension, quality) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = event => {
-          const img = new Image();
-          img.src = event.target.result;
-          img.onload = () => {
-            let width = img.width;
-            let height = img.height;
-
-            if (width > height) {
-              if (width > maxDimension) {
-                height *= maxDimension / width;
-                width = maxDimension;
-              }
-            } else {
-              if (height > maxDimension) {
-                width *= maxDimension / height;
-                height = maxDimension;
-              }
-            }
-
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-
-            resolve(canvas.toDataURL('image/jpeg', quality));
-          };
-          img.onerror = error => reject(error);
-        };
-        reader.onerror = error => reject(error);
-      });
     }
 
     function renderAIReview(initialTotal) {
