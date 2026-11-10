@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v3.3</title>
+  <title>SmartSpesa v3.3.1</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v3.3, Data Odierna e Toggle Notifiche -->
+  <!-- Header con Versione v3.3.1, Data Odierna e Toggle Notifiche -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <div>
@@ -19,7 +19,7 @@
         </h1>
         <div id="currentDateHeader" class="text-[10px] text-slate-400 font-mono mt-0.5"></div>
       </div>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v3.3</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v3.3.1</span>
     </div>
     
     <div class="flex items-center gap-2">
@@ -109,9 +109,9 @@
     
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-camera"></i> Scanner Scontrino con Banca Dati v3.3
+        <i class="fa-solid fa-camera"></i> Scanner Scontrino con Banca Dati v3.3.1
       </h2>
-      <p class="text-xs text-slate-400">Scatta o carica: l'OCR incrocia i dati con la banca dati precaricata.</p>
+      <p class="text-xs text-slate-400">Scatta o carica: l'OCR incrocia i dati con la banca dati nell'archivio.</p>
       
       <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="loadCropImage(event)">
       <button type="button" onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
@@ -269,7 +269,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v3.3
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v3.3.1
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -278,11 +278,11 @@
 
       <div class="space-y-3 text-slate-300 text-xs">
         <div>
-          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">📘 Funzionalità Principali v3.3:</h3>
+          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">📘 Funzionalità Principali v3.3.1:</h3>
           <ul class="list-disc list-inside space-y-1.5 text-slate-400">
-            <li><strong>Banca Dati Iniziale (Seed):</strong> Oltre 300 prodotti comuni precaricati (50 per ciascuno dei principali supermercati).</li>
-            <li><strong>Match OCR Intelligente:</strong> L'app riconosce e corregge automaticamente i nomi letti dallo scanner confrontandoli con la banca dati.</li>
-            <li><strong>Supermercati Liberi & Backup:</strong> Gestione completa di nuovi negozi e file JSON locali.</li>
+            <li><strong>Home Pulita:</strong> La lista settimanale parte vuota; i prodotti della banca dati risiedono nell'archivio/supermercati come dizionario.</li>
+            <li><strong>Spunte Corrette:</strong> Risolto il bug degli indici nelle liste filtrate per supermercato.</li>
+            <li><strong>Scanner & Backup JSON:</strong> Match OCR intelligente e portabilità totale dei dati.</li>
           </ul>
         </div>
       </div>
@@ -462,7 +462,7 @@
 
     let products = JSON.parse(localStorage.getItem('smartspesa_products')) || [];
     
-    // Inizializzazione della Banca Dati Seed se l'archivio è vuoto
+    // Inizializzazione della Banca Dati Seed se l'archivio è vuoto (LA LISTA SETTIMANALE RESTA VUOTA)
     if (products.length === 0) {
       products = DEFAULT_SEED_PRODUCTS.map(p => ({
         name: p.name,
@@ -470,7 +470,7 @@
         price: "0.00",
         frequency: p.frequency,
         date: new Date().toISOString().split('T')[0],
-        inList: false,
+        inList: false, // <-- IMPORTANTE: inList è false così la home parte pulita e vuota
         fromReceipt: false,
         createdAt: new Date().getTime(),
         lastBought: new Date().getTime()
@@ -539,8 +539,8 @@
         dateInput.valueAsDate = new Date();
       }
 
-      if (monthlyBudget === 0 && products.length === 0 && manualAdjustment === 0) {
-        setTimeout(openBudgetModal, 400);
+      if (monthlyBudget === 0 && manualAdjustment === 0) {
+        // Budget non forzato se l'utente ha già i dati seed
       }
       
       updateBudgetDisplay();
@@ -603,7 +603,7 @@
 
     function exportBackup() {
       const backupData = {
-        version: "3.3",
+        version: "3.3.1",
         exportDate: new Date().toISOString(),
         monthlyBudget: monthlyBudget,
         manualAdjustment: manualAdjustment,
@@ -692,6 +692,7 @@
       if (!notificationsEnabled) return;
       const now = new Date().getTime();
       products.forEach(item => {
+        if (!item.inList) return;
         let freq = parseInt(item.frequency || 14);
         let lastB = item.lastBought || item.createdAt || now;
         let daysPassed = (now - lastB) / (1000 * 60 * 60 * 24);
@@ -968,12 +969,13 @@
       
       const now = new Date().getTime();
 
+      // Logica scadenze: attiva in lista solo se esplicitamente spuntato o se frequenza = 7 e scaduto
       products.forEach(item => {
         let freq = parseInt(item.frequency || 14);
         let lastB = item.lastBought || item.createdAt || now;
         let daysPassed = (now - lastB) / (1000 * 60 * 60 * 24);
 
-        if (freq === 7 || daysPassed >= freq) {
+        if (freq === 7 && daysPassed >= 7) {
           item.inList = true;
         }
       });
@@ -984,7 +986,7 @@
       if (totalSumEl) totalSumEl.innerText = `€${sum.toFixed(2)}`;
 
       if (activeProducts.length === 0) {
-        weeklyList.innerHTML = `<li class="text-xs text-slate-500 text-center py-6">Nessun articolo in scadenza questa settimana.</li>`;
+        weeklyList.innerHTML = `<li class="text-xs text-slate-500 text-center py-6">Nessun articolo in lista questa settimana. Spunta i prodotti dall'archivio o aggiungili al volo!</li>`;
         return;
       }
 
@@ -1201,20 +1203,18 @@
       tempScannedItems = [];
     }
 
-    // 🧠 ALGORITMO DI MATCH INTELLIGENTE CON LA BANCA DATI
     function findBestProductMatch(rawName, market) {
       let cleanRaw = rawName.toLowerCase().replace(/[^a-z0-9]/g, '');
       if (cleanRaw.length < 2) return rawName;
 
       let marketProducts = products.filter(p => p.market.toLowerCase() === market.toLowerCase());
-      if (marketProducts.length === 0) marketProducts = products; // Fallback su tutto
+      if (marketProducts.length === 0) marketProducts = products;
 
       let bestMatch = rawName;
       let highestScore = 0;
 
       marketProducts.forEach(p => {
         let pClean = p.name.toLowerCase().replace(/[^a-z0-9]/g, '');
-        // Controllo corrispondenza sottostringa o parole chiave
         let score = 0;
         if (pClean.includes(cleanRaw) || cleanRaw.includes(pClean)) {
           score = Math.min(pClean.length, cleanRaw.length);
@@ -1282,7 +1282,6 @@
             let rawName = cleanLine.replace(priceMatch[priceMatch.length - 1], '').replace(/[\.,€\*]/g, '').trim();
             if (!rawName || rawName.length < 2) rawName = "Prodotto Scontrino";
             
-            // Applica il match con la banca dati iniziale/archivio
             let matchedName = findBestProductMatch(rawName, currentActiveMarket);
 
             tempScannedItems.push({
@@ -1302,7 +1301,7 @@
         renderScannedItemsReview(calculatedTotal);
         statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Scansione con Match completata!</span>`;
       } catch (err) {
-        console.error("Errore OCR v3.3:", err);
+        console.error("Errore OCR v3.3.1:", err);
         statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. <button onclick="cancelCrop()" class="underline ml-1">Riprova</button></span>`;
       }
     }
