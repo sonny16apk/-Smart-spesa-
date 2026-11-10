@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v3.2.2</title>
+  <title>SmartSpesa v3.3</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v3.2.2, Data Odierna e Toggle Notifiche -->
+  <!-- Header con Versione v3.3, Data Odierna e Toggle Notifiche -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <div>
@@ -19,7 +19,7 @@
         </h1>
         <div id="currentDateHeader" class="text-[10px] text-slate-400 font-mono mt-0.5"></div>
       </div>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v3.2.2</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v3.3</span>
     </div>
     
     <div class="flex items-center gap-2">
@@ -109,9 +109,9 @@
     
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-camera"></i> Scanner Scontrino ad Alta Precisione (v3.2.2)
+        <i class="fa-solid fa-camera"></i> Scanner Scontrino con Banca Dati v3.3
       </h2>
-      <p class="text-xs text-slate-400">Scatta o carica: algoritmo OCR ottimizzato per leggere più voci.</p>
+      <p class="text-xs text-slate-400">Scatta o carica: l'OCR incrocia i dati con la banca dati precaricata.</p>
       
       <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="loadCropImage(event)">
       <button type="button" onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
@@ -130,7 +130,7 @@
         </div>
         <div class="grid grid-cols-2 gap-2 pt-1">
           <button type="button" onclick="processCroppedReceipt()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2 rounded-lg cursor-pointer">
-            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Leggi Articoli
+            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Leggi con Match DB
           </button>
           <button type="button" onclick="cancelCrop()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold text-xs py-2 rounded-lg cursor-pointer">
             Annulla e Rifai
@@ -163,7 +163,7 @@
       </div>
     </section>
 
-    <!-- Inserimento Manuale Prodotto (Con Supermercato Personalizzato Libero) -->
+    <!-- Inserimento Manuale Prodotto -->
     <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
       <h2 class="text-sm font-semibold mb-3 text-slate-300 flex items-center gap-1.5">
         <i class="fa-solid fa-keyboard text-indigo-400"></i> Inserimento Manuale Dedicato
@@ -269,7 +269,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v3.2.2
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v3.3
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -278,17 +278,15 @@
 
       <div class="space-y-3 text-slate-300 text-xs">
         <div>
-          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">📘 Funzionalità Principali v3.2.2:</h3>
+          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">📘 Funzionalità Principali v3.3:</h3>
           <ul class="list-disc list-inside space-y-1.5 text-slate-400">
-            <li><strong>Supermercati Liberi:</strong> Ora puoi aggiungere e nominare qualsiasi nuovo supermercato a mano in piena libertà.</li>
-            <li><strong>Scanner OCR Ottimizzato:</strong> Maggiore precisione di lettura per catturare più voci dallo scontrino.</li>
-            <li><strong>Backup & Ripristino:</strong> Gestione file JSON locale.</li>
-            <li><strong>Privacy Totale:</strong> Dati salvati sul tuo dispositivo.</li>
+            <li><strong>Banca Dati Iniziale (Seed):</strong> Oltre 300 prodotti comuni precaricati (50 per ciascuno dei principali supermercati).</li>
+            <li><strong>Match OCR Intelligente:</strong> L'app riconosce e corregge automaticamente i nomi letti dallo scanner confrontandoli con la banca dati.</li>
+            <li><strong>Supermercati Liberi & Backup:</strong> Gestione completa di nuovi negozi e file JSON locali.</li>
           </ul>
         </div>
       </div>
 
-      <!-- Firma minimal B_16_ -->
       <div class="border-t border-slate-700/60 pt-2 text-right">
         <p class="text-[10px] text-slate-400 font-mono tracking-wider">B_16_</p>
       </div>
@@ -300,7 +298,186 @@
   </div>
 
   <script>
+    // 📦 BANCA DATI INIZIALE (SEED) - 50 prodotti comuni per ciascuno dei 6 supermercati principali
+    const DEFAULT_SEED_PRODUCTS = [
+      // --- PRIX (50 articoli) ---
+      {name:"Latte Intero 1L", market:"Prix", frequency:"7"}, {name:"Latte Parzialmente Scremato 1L", market:"Prix", frequency:"7"},
+      {name:"Caffè Macinato 250g", market:"Prix", frequency:"30"}, {name:"Pasta Spaghetti 500g", market:"Prix", frequency:"14"},
+      {name:"Pasta Penne Rigate 500g", market:"Prix", frequency:"14"}, {name:"Passata di Pomodoro 700g", market:"Prix", frequency:"14"},
+      {name:"Olio Extravergine 1L", market:"Prix", frequency:"60"}, {name:"Olio di Semi di Girasole 1L", market:"Prix", frequency:"30"},
+      {name:"Farina Tipo 00 1kg", market:"Prix", frequency:"30"}, {name:"Zucchero Semolato 1kg", market:"Prix", frequency:"30"},
+      {name:"Sale Fino 1kg", market:"Prix", frequency:"60"}, {name:"Acqua Naturale 6x1.5L", market:"Prix", frequency:"7"},
+      {name:"Acqua Frizzante 6x1.5L", market:"Prix", frequency:"7"}, {name:"Biscotti Frollini 500g", market:"Prix", frequency:"14"},
+      {name:"Fette Biscottate", market:"Prix", frequency:"14"}, {name:"Cereali Colazione", market:"Prix", frequency:"14"},
+      {name:"Yogurt Bianco 2x125g", market:"Prix", frequency:"7"}, {name:"Mozzarella 125g", market:"Prix", frequency:"7"},
+      {name:"Prosciutto Cotto 150g", market:"Prix", frequency:"7"}, {name:"Petto di Tacchino Affettato", market:"Prix", frequency:"7"},
+      {name:"Parmigiano Reggiano 200g", market:"Prix", frequency:"14"}, {name:"Formaggio Fuso Sottilette", market:"Prix", frequency:"14"},
+      {name:"Uova Fresche Medie 6pz", market:"Prix", frequency:"7"}, {name:"Burro 250g", market:"Prix", frequency:"14"},
+      {name:"Pane Bauletto", market:"Prix", frequency:"7"}, {name:"Piadine Fresche 3pz", market:"Prix", frequency:"7"},
+      {name:"Tonno in Olio d'Oliva 3x80g", market:"Prix", frequency:"30"}, {name:"Mais Dolce in Scatola", market:"Prix", frequency:"30"},
+      {name:"Piselli Fini in Scatola", market:"Prix", frequency:"30"}, {name:"Pelati di Pomodoro", market:"Prix", frequency:"14"},
+      {name:"Mele Golden 1kg", market:"Prix", frequency:"7"}, {name:"Banane 1kg", market:"Prix", frequency:"7"},
+      {name:"Insalata in Busta", market:"Prix", frequency:"7"}, {name:"Carote 1kg", market:"Prix", frequency:"7"},
+      {name:"Patate 2kg", market:"Prix", frequency:"14"}, {name:"Detersivo Piatti 1L", market:"Prix", frequency:"30"},
+      {name:"Detersivo Lavatrice 30 Lavaggi", market:"Prix", frequency:"30"}, {name:"Ammorbidente 1.5L", market:"Prix", frequency:"30"},
+      {name:"Carta Igienica 4 Rotoli", market:"Prix", frequency:"14"}, {name:"Carta Casa Rotoloni", market:"Prix", frequency:"30"},
+      {name:"Sugo Pronto al Basilico", market:"Prix", frequency:"14"}, {name:"Cracker Salati", market:"Prix", frequency:"14"},
+      {name:"Patatine Fustino", market:"Prix", frequency:"14"}, {name:"Coca Cola 1.5L", market:"Prix", frequency:"7"},
+      {name:"Birra Lattina 33cl", market:"Prix", frequency:"14"}, {name:"Carta Forno", market:"Prix", frequency:"60"},
+      {name:"Sacchetti Pattumiera con Maniglie", market:"Prix", frequency:"30"}, {name:"Sapone Mani Dispenser", market:"Prix", frequency:"30"},
+      {name:"Dentifricio", market:"Prix", frequency:"30"}, {name:"Shampoo Delicato", market:"Prix", frequency:"60"},
+
+      // --- LIDL (50 articoli) ---
+      {name:"Latte Fresco Intero 1L", market:"Lidl", frequency:"7"}, {name:"Latte Parzialmente Scremato 1L", market:"Lidl", frequency:"7"},
+      {name:"Caffè Bellarom 250g", market:"Lidl", frequency:"30"}, {name:"Pasta Combino Spaghetti 500g", market:"Lidl", frequency:"14"},
+      {name:"Pasta Combino Penne 500g", market:"Lidl", frequency:"14"}, {name:"Passata Pomodoro 700g", market:"Lidl", frequency:"14"},
+      {name:"Olio Evo Primadonna 1L", market:"Lidl", frequency:"60"}, {name:"Farina 00 1kg", market:"Lidl", frequency:"30"},
+      {name:"Zucchero 1kg", market:"Lidl", frequency:"30"}, {name:"Acqua Saguaro Naturale 6x1.5L", market:"Lidl", frequency:"7"},
+      {name:"Acqua Saguaro Frizzante 6x1.5L", market:"Lidl", frequency:"7"}, {name:"Biscotti Sondey 500g", market:"Lidl", frequency:"14"},
+      {name:"Yogurt Milbona Frutta", market:"Lidl", frequency:"7"}, {name:"Mozzarella Lovilio", market:"Lidl", frequency:"7"},
+      {name:"Prosciutto Cotto Dulano", market:"Lidl", frequency:"7"}, {name:"Wurstel di Suino 250g", market:"Lidl", frequency:"14"},
+      {name:"Uova Fresche 10pz", market:"Lidl", frequency:"7"}, {name:"Burro 250g", market:"Lidl", frequency:"14"},
+      {name:"Pane in Cassetta Integrale", market:"Lidl", frequency:"7"}, {name:"Piadine Fresche", market:"Lidl", frequency:"7"},
+      {name:"Tonno Consorcio / Nixe 3x80g", market:"Lidl", frequency:"30"}, {name:"Mais in Scatola 3pz", market:"Lidl", frequency:"30"},
+      {name:"Mele 1kg", market:"Lidl", frequency:"7"}, {name:"Banane 1kg", market:"Lidl", frequency:"7"},
+      {name:"Insalata Mista in Busta", market:"Lidl", frequency:"7"}, {name:"Detersivo W5 Piatti", market:"Lidl", frequency:"30"},
+      {name:"Detersivo Formil Lavatrice", market:"Lidl", frequency:"30"}, {name:"Carta Igienica Floralys", market:"Lidl", frequency:"14"},
+      {name:"Carta Cucina W5", market:"Lidl", frequency:"30"}, {name:"Sugo Pronto Basilico", market:"Lidl", frequency:"14"},
+      {name:"Cracker Salati Snack Day", market:"Lidl", frequency:"14"}, {name:"Patatine Freeway", market:"Lidl", frequency:"14"},
+      {name:"Bibeta Cola Freeway 1.5L", market:"Lidl", frequency:"7"}, {name:"Birra Argus Lattina", market:"Lidl", frequency:"14"},
+      {name:"Carta Forno Cien", market:"Lidl", frequency:"60"}, {name:"Sacchetti Immondizia", market:"Lidl", frequency:"30"},
+      {name:"Sapone Liquido Cien", market:"Lidl", frequency:"30"}, {name:"Dentifricio Dentalux", market:"Lidl", frequency:"30"},
+      {name:"Shampoo Cien", market:"Lidl", frequency:"60"}, {name:"Parmigiano Reggiano DOP", market:"Lidl", frequency:"14"},
+      {name:"Formaggio Grattugiato 100g", market:"Lidl", frequency:"14"}, {name:"Fette Biscottate", market:"Lidl", frequency:"14"},
+      {name:"Cereali Choco Balls", market:"Lidl", frequency:"14"}, {name:"Miele Millefiori", market:"Lidl", frequency:"60"},
+      {name:"Marmellata Fragole", market:"Lidl", frequency:"30"}, {name:"Ghiaccioli Frutta", market:"Lidl", frequency:"14"},
+      {name:"Pizza Margherita Surgelata", market:"Lidl", frequency:"14"}, {name:"Gelato Coni", market:"Lidl", frequency:"14"},
+      {name:"Sofficini / Cotolette Pollo", market:"Lidl", frequency:"14"}, {name:"Filetti Merluzzo Surgelati", market:"Lidl", frequency:"30"},
+
+      // --- COOP (50 articoli) ---
+      {name:"Latte Coop ViviVerde Bio 1L", market:"Coop", frequency:"7"}, {name:"Latte Parzialmente Scremato Coop 1L", market:"Coop", frequency:"7"},
+      {name:"Caffè Fior Fiore Coop 250g", market:"Coop", frequency:"30"}, {name:"Pasta Coop Spaghetti 500g", market:"Coop", frequency:"14"},
+      {name:"Pasta Coop Penne Rigate 500g", market:"Coop", frequency:"14"}, {name:"Passata Pomodoro Coop 700g", market:"Coop", frequency:"14"},
+      {name:"Olio Extravergine Coop 1L", market:"Coop", frequency:"60"}, {name:"Farina Coop 00 1kg", market:"Coop", frequency:"30"},
+      {name:"Zucchero Semolato Coop 1kg", market:"Coop", frequency:"30"}, {name:"Acqua Coop Naturale 6x1.5L", market:"Coop", frequency:"7"},
+      {name:"Acqua Coop Frizzante 6x1.5L", market:"Coop", frequency:"7"}, {name:"Biscotti Coop Frollini 500g", market:"Coop", frequency:"14"},
+      {name:"Yogurt Coop Intero", market:"Coop", frequency:"7"}, {name:"Mozzarella Coop 125g", market:"Coop", frequency:"7"},
+      {name:"Prosciutto Cotto Alta Qualità Coop", market:"Coop", frequency:"7"}, {name:"Parmigiano Reggiano DOP Coop", market:"Coop", frequency:"14"},
+      {name:"Uova Fresche Coop 6pz", market:"Coop", frequency:"7"}, {name:"Burro Coop 250g", market:"Coop", frequency:"14"},
+      {name:"Pane in Cassetta Coop", market:"Coop", frequency:"7"}, {name:"Tonno Coop in Olio 3x80g", market:"Coop", frequency:"30"},
+      {name:"Mele Bio Coop 1kg", market:"Coop", frequency:"7"}, {name:"Banane Coop 1kg", market:"Coop", frequency:"7"},
+      {name:"Insalata Coop in Busta", market:"Coop", frequency:"7"}, {name:"Detersivo Piatti Coop", market:"Coop", frequency:"30"},
+      {name:"Detersivo Lavatrice Coop", market:"Coop", frequency:"30"}, {name:"Carta Igienica Coop Compact", market:"Coop", frequency:"14"},
+      {name:"Carta Cucina Coop", market:"Coop", frequency:"30"}, {name:"Sugo Pronto Basilico Coop", market:"Coop", frequency:"14"},
+      {name:"Cracker Coop", market:"Coop", frequency:"14"}, {name:"Patatine Coop", market:"Coop", frequency:"14"},
+      {name:"Bibeta Cola Coop 1.5L", market:"Coop", frequency:"7"}, {name:"Birra Coop Lattina", market:"Coop", frequency:"14"},
+      {name:"Carta Forno Coop", market:"Coop", frequency:"60"}, {name:"Sacchetti Spazzatura Coop", market:"Coop", frequency:"30"},
+      {name:"Sapone Liquido Coop", market:"Coop", frequency:"30"}, {name:"Dentifricio Coop", market:"Coop", frequency:"30"},
+      {name:"Shampoo Coop", market:"Coop", frequency:"60"}, {name:"Formaggio Grattugiato Coop", market:"Coop", frequency:"14"},
+      {name:"Fette Biscottate Coop", market:"Coop", frequency:"14"}, {name:"Cereali Fiocchi Coop", market:"Coop", frequency:"14"},
+      {name:"Miele Coop", market:"Coop", frequency:"60"}, {name:"Marmellata Coop", market:"Coop", frequency:"30"},
+      {name:"Pizza Surgelata Coop", market:"Coop", frequency:"14"}, {name:"Gelato Coop", market:"Coop", frequency:"14"},
+      {name:"Filetti Merluzzo Coop", market:"Coop", frequency:"30"}, {name:"Passata Bio Coop", market:"Coop", frequency:"14"},
+      {name:"Olio di Semi Coop", market:"Coop", frequency:"30"}, {name:"Sale Fino Coop", market:"Coop", frequency:"60"},
+      {name:"Aceto di Vino Bianco Coop", market:"Coop", frequency:"60"}, {name:"Maionese Coop", market:"Coop", frequency:"30"},
+
+      // --- CONAD (50 articoli) ---
+      {name:"Latte Conad Intero 1L", market:"Conad", frequency:"7"}, {name:"Latte Conad Parzialmente Scremato 1L", market:"Conad", frequency:"7"},
+      {name:"Caffè Conad 250g", market:"Conad", frequency:"30"}, {name:"Pasta Conad Spaghetti 500g", market:"Conad", frequency:"14"},
+      {name:"Pasta Conad Penne 500g", market:"Conad", frequency:"14"}, {name:"Passata Pomodoro Conad 700g", market:"Conad", frequency:"14"},
+      {name:"Olio Extravergine Conad 1L", market:"Conad", frequency:"60"}, {name:"Farina Conad 00 1kg", market:"Conad", frequency:"30"},
+      {name:"Zucchero Conad 1kg", market:"Conad", frequency:"30"}, {name:"Acqua Conad Naturale 6x1.5L", market:"Conad", frequency:"7"},
+      {name:"Acqua Conad Frizzante 6x1.5L", market:"Conad", frequency:"7"}, {name:"Biscotti Conad Frollini 500g", market:"Conad", frequency:"14"},
+      {name:"Yogurt Conad Frutta", market:"Conad", frequency:"7"}, {name:"Mozzarella Conad 125g", market:"Conad", frequency:"7"},
+      {name:"Prosciutto Cotto Conad", market:"Conad", frequency:"7"}, {name:"Parmigiano Reggiano Conad", market:"Conad", frequency:"14"},
+      {name:"Uova Fresche Conad 6pz", market:"Conad", frequency:"7"}, {name:"Burro Conad 250g", market:"Conad", frequency:"14"},
+      {name:"Pane in Cassetta Conad", market:"Conad", frequency:"7"}, {name:"Tonno Conad in Olio 3x80g", market:"Conad", frequency:"30"},
+      {name:"Mele Conad 1kg", market:"Conad", frequency:"7"}, {name:"Banane Conad 1kg", market:"Conad", frequency:"7"},
+      {name:"Insalata Conad in Busta", market:"Conad", frequency:"7"}, {name:"Detersivo Piatti Conad", market:"Conad", frequency:"30"},
+      {name:"Detersivo Lavatrice Conad", market:"Conad", frequency:"30"}, {name:"Carta Igienica Conad", market:"Conad", frequency:"14"},
+      {name:"Carta Cucina Conad", market:"Conad", frequency:"30"}, {name:"Sugo Pronto Basilico Conad", market:"Conad", frequency:"14"},
+      {name:"Cracker Conad", market:"Conad", frequency:"14"}, {name:"Patatine Conad", market:"Conad", frequency:"14"},
+      {name:"Bibeta Cola Conad 1.5L", market:"Conad", frequency:"7"}, {name:"Birra Conad Lattina", market:"Conad", frequency:"14"},
+      {name:"Carta Forno Conad", market:"Conad", frequency:"60"}, {name:"Sacchetti Spazzatura Conad", market:"Conad", frequency:"30"},
+      {name:"Sapone Liquido Conad", market:"Conad", frequency:"30"}, {name:"Dentifricio Conad", market:"Conad", frequency:"30"},
+      {name:"Shampoo Conad", market:"Conad", frequency:"60"}, {name:"Formaggio Grattugiato Conad", market:"Conad", frequency:"14"},
+      {name:"Fette Biscottate Conad", market:"Conad", frequency:"14"}, {name:"Cereali Conad", market:"Conad", frequency:"14"},
+      {name:"Miele Conad", market:"Conad", frequency:"60"}, {name:"Marmellata Conad", market:"Conad", frequency:"30"},
+      {name:"Pizza Surgelata Conad", market:"Conad", frequency:"14"}, {name:"Gelato Conad", market:"Conad", frequency:"14"},
+      {name:"Filetti Merluzzo Conad", market:"Conad", frequency:"30"}, {name:"Olio di Semi Conad", market:"Conad", frequency:"30"},
+      {name:"Sale Fino Conad", market:"Conad", frequency:"60"}, {name:"Aceto Conad", market:"Conad", frequency:"60"}, {name:"Maionese Conad", market:"Conad", frequency:"30"},
+
+      // --- EUROSPIN (50 articoli) ---
+      {name:"Latte Land Intero 1L", market:"Eurospin", frequency:"7"}, {name:"Latte Land Parzialmente Scremato 1L", market:"Eurospin", frequency:"7"},
+      {name:"Caffè Don Jerez 250g", market:"Eurospin", frequency:"30"}, {name:"Pasta Tre Mulini Spaghetti 500g", market:"Eurospin", frequency:"14"},
+      {name:"Pasta Tre Mulini Penne 500g", market:"Eurospin", frequency:"14"}, {name:"Passata Pomodoro Tre Mulini 700g", market:"Eurospin", frequency:"14"},
+      {name:"Olio Extravergine Amo Essere 1L", market:"Eurospin", frequency:"60"}, {name:"Farina Tre Mulini 00 1kg", market:"Eurospin", frequency:"30"},
+      {name:"Zucchero Tre Mulini 1kg", market:"Eurospin", frequency:"30"}, {name:"Acqua Blues Naturale 6x1.5L", market:"Eurospin", frequency:"7"},
+      {name:"Acqua Blues Frizzante 6x1.5L", market:"Eurospin", frequency:"7"}, {name:"Biscotti Dolando Frollini 500g", market:"Eurospin", frequency:"14"},
+      {name:"Yogurt Land Frutta", market:"Eurospin", frequency:"7"}, {name:"Mozzarella Land 125g", market:"Eurospin", frequency:"7"},
+      {name:"Prosciutto Cotto Al Dente", market:"Eurospin", frequency:"7"}, {name:"Parmigiano Reggiano Amo Essere", market:"Eurospin", frequency:"14"},
+      {name:"Uova Fresche Eurospin 6pz", market:"Eurospin", frequency:"7"}, {name:"Burro Land 250g", market:"Eurospin", frequency:"14"},
+      {name:"Pane in Cassetta Tre Mulini", market:"Eurospin", frequency:"7"}, {name:"Tonno Athena in Olio 3x80g", market:"Eurospin", frequency:"30"},
+      {name:"Mele Eurospin 1kg", market:"Eurospin", frequency:"7"}, {name:"Banane Eurospin 1kg", market:"Eurospin", frequency:"7"},
+      {name:"Insalata Eurospin in Busta", market:"Eurospin", frequency:"7"}, {name:"Detersivo Dexal Piatti", market:"Eurospin", frequency:"30"},
+      {name:"Detersivo Dexal Lavatrice", market:"Eurospin", frequency:"30"}, {name:"Carta Igienica Soft Dream", market:"Eurospin", frequency:"14"},
+      {name:"Carta Cucina Soft Dream", market:"Eurospin", frequency:"30"}, {name:"Sugo Pronto Basilico", market:"Eurospin", frequency:"14"},
+      {name:"Cracker Dolando", market:"Eurospin", frequency:"14"}, {name:"Patatine Blues", market:"Eurospin", frequency:"14"},
+      {name:"Bibeta Cola Blues 1.5L", market:"Eurospin", frequency:"7"}, {name:"Birra Perlenbacher Lattina", market:"Eurospin", frequency:"14"},
+      {name:"Carta Forno Dexal", market:"Eurospin", frequency:"60"}, {name:"Sacchetti Spazzatura Dexal", market:"Eurospin", frequency:"30"},
+      {name:"Sapone Liquido Amo Essere", market:"Eurospin", frequency:"30"}, {name:"Dentifricio Dentil", market:"Eurospin", frequency:"30"},
+      {name:"Shampoo Amo Essere", market:"Eurospin", frequency:"60"}, {name:"Formaggio Grattugiato Land", market:"Eurospin", frequency:"14"},
+      {name:"Fette Biscottate Tre Mulini", market:"Eurospin", frequency:"14"}, {name:"Cereali Tre Mulini", market:"Eurospin", frequency:"14"},
+      {name:"Miele Eurospin", market:"Eurospin", frequency:"60"}, {name:"Marmellata Dolando", market:"Eurospin", frequency:"30"},
+      {name:"Pizza Surgelata Tre Mulini", market:"Eurospin", frequency:"14"}, {name:"Gelato Eurospin", market:"Eurospin", frequency:"14"},
+      {name:"Filetti Merluzzo Surgelati", market:"Eurospin", frequency:"30"}, {name:"Olio di Semi Eurospin", market:"Eurospin", frequency:"30"},
+      {name:"Sale Fino Eurospin", market:"Eurospin", frequency:"60"}, {name:"Aceto Eurospin", market:"Eurospin", frequency:"60"}, {name:"Maionese Eurospin", market:"Eurospin", frequency:"30"},
+
+      // --- ESSELUNGA (50 articoli) ---
+      {name:"Latte Esselunga Bio 1L", market:"Esselunga", frequency:"7"}, {name:"Latte Parzialmente Scremato Esselunga 1L", market:"Esselunga", frequency:"7"},
+      {name:"Caffè Esselunga Qualità Rossa 250g", market:"Esselunga", frequency:"30"}, {name:"Pasta Esselunga Spaghetti 500g", market:"Esselunga", frequency:"14"},
+      {name:"Pasta Esselunga Penne 500g", market:"Esselunga", frequency:"14"}, {name:"Passata Pomodoro Esselunga 700g", market:"Esselunga", frequency:"14"},
+      {name:"Olio Extravergine Esselunga 1L", market:"Esselunga", frequency:"60"}, {name:"Farina Esselunga 00 1kg", market:"Esselunga", frequency:"30"},
+      {name:"Zucchero Esselunga 1kg", market:"Esselunga", frequency:"30"}, {name:"Acqua Esselunga Naturale 6x1.5L", market:"Esselunga", frequency:"7"},
+      {name:"Acqua Esselunga Frizzante 6x1.5L", market:"Esselunga", frequency:"7"}, {name:"Biscotti Esselunga Frollini 500g", market:"Esselunga", frequency:"14"},
+      {name:"Yogurt Esselunga Frutta", market:"Esselunga", frequency:"7"}, {name:"Mozzarella Esselunga 125g", market:"Esselunga", frequency:"7"},
+      {name:"Prosciutto Cotto Esselunga Alta Qualità", market:"Esselunga", frequency:"7"}, {name:"Parmigiano Reggiano Esselunga", market:"Esselunga", frequency:"14"},
+      {name:"Uova Fresche Esselunga 6pz", market:"Esselunga", frequency:"7"}, {name:"Burro Esselunga 250g", market:"Esselunga", frequency:"14"},
+      {name:"Pane in Cassetta Esselunga", market:"Esselunga", frequency:"7"}, {name:"Tonno Esselunga in Olio 3x80g", market:"Esselunga", frequency:"30"},
+      {name:"Mele Esselunga 1kg", market:"Esselunga", frequency:"7"}, {name:"Banane Esselunga 1kg", market:"Esselunga", frequency:"7"},
+      {name:"Insalata Esselunga in Busta", market:"Esselunga", frequency:"7"}, {name:"Detersivo Piatti Esselunga", market:"Esselunga", frequency:"30"},
+      {name:"Detersivo Lavatrice Esselunga", market:"Esselunga", frequency:"30"}, {name:"Carta Igienica Esselunga", market:"Esselunga", frequency:"14"},
+      {name:"Carta Cucina Esselunga", market:"Esselunga", frequency:"30"}, {name:"Sugo Pronto Basilico Esselunga", market:"Esselunga", frequency:"14"},
+      {name:"Cracker Esselunga", market:"Esselunga", frequency:"14"}, {name:"Patatine Esselunga", market:"Esselunga", frequency:"14"},
+      {name:"Bibeta Cola Esselunga 1.5L", market:"Esselunga", frequency:"7"}, {name:"Birra Esselunga Lattina", market:"Esselunga", frequency:"14"},
+      {name:"Carta Forno Esselunga", market:"Esselunga", frequency:"60"}, {name:"Sacchetti Spazzatura Esselunga", market:"Esselunga", frequency:"30"},
+      {name:"Sapone Liquido Esselunga", market:"Esselunga", frequency:"30"}, {name:"Dentifricio Esselunga", market:"Esselunga", frequency:"30"},
+      {name:"Shampoo Esselunga", market:"Esselunga", frequency:"60"}, {name:"Formaggio Grattugiato Esselunga", market:"Esselunga", frequency:"14"},
+      {name:"Fette Biscottate Esselunga", market:"Esselunga", frequency:"14"}, {name:"Cereali Esselunga", market:"Esselunga", frequency:"14"},
+      {name:"Miele Esselunga", market:"Esselunga", frequency:"60"}, {name:"Marmellata Esselunga", market:"Esselunga", frequency:"30"},
+      {name:"Pizza Surgelata Esselunga", market:"Esselunga", frequency:"14"}, {name:"Gelato Esselunga", market:"Esselunga", frequency:"14"},
+      {name:"Filetti Merluzzo Esselunga", market:"Esselunga", frequency:"30"}, {name:"Olio di Semi Esselunga", market:"Esselunga", frequency:"30"},
+      {name:"Sale Fino Esselunga", market:"Esselunga", frequency:"60"}, {name:"Aceto Esselunga", market:"Esselunga", frequency:"60"}, {name:"Maionese Esselunga", market:"Esselunga", frequency:"30"}
+    ];
+
     let products = JSON.parse(localStorage.getItem('smartspesa_products')) || [];
+    
+    // Inizializzazione della Banca Dati Seed se l'archivio è vuoto
+    if (products.length === 0) {
+      products = DEFAULT_SEED_PRODUCTS.map(p => ({
+        name: p.name,
+        market: p.market,
+        price: "0.00",
+        frequency: p.frequency,
+        date: new Date().toISOString().split('T')[0],
+        inList: false,
+        fromReceipt: false,
+        createdAt: new Date().getTime(),
+        lastBought: new Date().getTime()
+      }));
+      localStorage.setItem('smartspesa_products', JSON.stringify(products));
+    }
+
     let monthlyBudget = parseFloat(localStorage.getItem('smartspesa_budget')) || 0;
     let manualAdjustment = parseFloat(localStorage.getItem('smartspesa_manual_adjustment')) || 0;
     let notificationsEnabled = JSON.parse(localStorage.getItem('smartspesa_notifications')) || false;
@@ -426,7 +603,7 @@
 
     function exportBackup() {
       const backupData = {
-        version: "3.2.2",
+        version: "3.3",
         exportDate: new Date().toISOString(),
         monthlyBudget: monthlyBudget,
         manualAdjustment: manualAdjustment,
@@ -892,7 +1069,7 @@
       reader.onload = function(e) {
         const img = new Image();
         img.onload = function() {
-          const maxDim = 1200; // Risoluzione leggermente alzata per catturare anche gli ultimi articoli
+          const maxDim = 1200;
           let w = img.width;
           let h = img.height;
           
@@ -932,7 +1109,7 @@
             drawCropBox();
 
             document.getElementById('cropAreaContainer').classList.remove('hidden');
-            document.getElementById('ocrStatus').innerText = "Immagine caricata in sicurezza. Premi 'Leggi Articoli' o ritaglia.";
+            document.getElementById('ocrStatus').innerText = "Immagine caricata. Premi 'Leggi con Match DB' per incrociare i dati.";
           };
           loadedImage.src = resizeCanvas.toDataURL('image/jpeg', 0.9);
         };
@@ -1024,11 +1201,37 @@
       tempScannedItems = [];
     }
 
-    // 🔍 OCR OTTIMIZZATO: Pattern di ricerca prezzi più flessibile per catturare tutte le voci
+    // 🧠 ALGORITMO DI MATCH INTELLIGENTE CON LA BANCA DATI
+    function findBestProductMatch(rawName, market) {
+      let cleanRaw = rawName.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (cleanRaw.length < 2) return rawName;
+
+      let marketProducts = products.filter(p => p.market.toLowerCase() === market.toLowerCase());
+      if (marketProducts.length === 0) marketProducts = products; // Fallback su tutto
+
+      let bestMatch = rawName;
+      let highestScore = 0;
+
+      marketProducts.forEach(p => {
+        let pClean = p.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        // Controllo corrispondenza sottostringa o parole chiave
+        let score = 0;
+        if (pClean.includes(cleanRaw) || cleanRaw.includes(pClean)) {
+          score = Math.min(pClean.length, cleanRaw.length);
+        }
+        if (score > highestScore) {
+          highestScore = score;
+          bestMatch = p.name;
+        }
+      });
+
+      return highestScore > 2 ? bestMatch : rawName;
+    }
+
     async function processCroppedReceipt() {
       document.getElementById('cropAreaContainer').classList.add('hidden');
       const statusDiv = document.getElementById('ocrStatus');
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Lettura scontrino avanzata in corso...`;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Lettura e match con Banca Dati in corso...`;
 
       try {
         let x = Math.min(startX, endX);
@@ -1048,7 +1251,7 @@
         let scaleX = loadedImage.width / cropCanvas.width;
         let scaleY = loadedImage.height / cropCanvas.height;
 
-        tCtx.drawImage(loadedImage, x * scaleX, y * scaleX ? y * scaleY : y * scaleY, width * scaleX, height * scaleY, 0, 0, tempCanvas.width, tempCanvas.height);
+        tCtx.drawImage(loadedImage, x * scaleX, y * scaleY, width * scaleX, height * scaleY, 0, 0, tempCanvas.width, tempCanvas.height);
         let croppedDataUrl = tempCanvas.toDataURL('image/jpeg', 0.95);
 
         const result = await Tesseract.recognize(
@@ -1072,16 +1275,18 @@
           let cleanLine = line.trim();
           if (cleanLine.length < 2) return;
           
-          // Match più flessibile per numeri decimali (es. 1,50 o 1.50 o 2,9 €)
           let priceMatch = cleanLine.match(/\b\d+[\.,]\d{2}\b/g);
           if (priceMatch && priceMatch.length > 0) {
             let priceStr = priceMatch[priceMatch.length - 1].replace(',', '.');
             let priceVal = parseFloat(priceStr);
-            let name = cleanLine.replace(priceMatch[priceMatch.length - 1], '').replace(/[\.,€\*]/g, '').trim();
-            if (!name || name.length < 2) name = "Prodotto Scontrino";
+            let rawName = cleanLine.replace(priceMatch[priceMatch.length - 1], '').replace(/[\.,€\*]/g, '').trim();
+            if (!rawName || rawName.length < 2) rawName = "Prodotto Scontrino";
             
+            // Applica il match con la banca dati iniziale/archivio
+            let matchedName = findBestProductMatch(rawName, currentActiveMarket);
+
             tempScannedItems.push({
-              name: name,
+              name: matchedName,
               price: priceVal.toFixed(2),
               market: currentActiveMarket || "Prix"
             });
@@ -1095,9 +1300,9 @@
         }
 
         renderScannedItemsReview(calculatedTotal);
-        statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Scansione completata! Rivedi e conferma.</span>`;
+        statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Scansione con Match completata!</span>`;
       } catch (err) {
-        console.error("Errore OCR v3.2.2:", err);
+        console.error("Errore OCR v3.3:", err);
         statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. <button onclick="cancelCrop()" class="underline ml-1">Riprova</button></span>`;
       }
     }
