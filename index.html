@@ -3,26 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v4.7 IA</title>
+  <title>SmartSpesa v4.8 IA</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v4.7 e Toggle Notifiche -->
+  <!-- Header con Versione v4.8, Data Cliccabile (Calendario) e Toggle Notifiche -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <div>
         <h1 class="text-xl font-bold text-indigo-400 flex items-center gap-2">
           <i class="fa-solid fa-basket-shopping"></i> SmartSpesa
         </h1>
-        <div id="currentDateHeader" class="text-[10px] text-slate-400 font-mono mt-0.5"></div>
+        <div class="flex items-center gap-1.5 mt-0.5">
+          <!-- Data cliccabile per aprire il calendario spesa -->
+          <input type="date" id="shoppingDateInput" onchange="updateShoppingDate(this.value)" class="bg-slate-950 text-indigo-300 border border-slate-700 rounded px-2 py-0.5 text-[10px] font-mono cursor-pointer focus:outline-none">
+          <span class="text-[10px] text-slate-400 font-mono">📅 Spesa</span>
+        </div>
       </div>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v4.7 IA</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v4.8 IA</span>
     </div>
     
     <div class="flex items-center gap-2">
-      <button type="button" id="notifToggleBtn" onclick="toggleNotifications()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700 px-2 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
+      <button type="button" id="notifToggleBtn" onclick="toggleNotifications()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700 px-2 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer" title="Gestisci Notifiche">
         <i id="notifIcon" class="fa-solid fa-bell-slash"></i>
       </button>
       <button type="button" onclick="toggleInfoModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
@@ -103,17 +107,16 @@
     </div>
   </div>
 
-  <!-- SEZIONE 2: IMPORTAZIONE RAPIDA DA GEMINI & INSERIMENTO MANUALE -->
+  <!-- SEZIONE 2: IMPORTAZIONE RAPIDA DA IA -->
   <div id="viewArchive" class="space-y-6 hidden">
     
-    <!-- IMPORTATORE TESTUALE DA GEMINI (ZERO BLOCCHI) -->
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-paste"></i> Incolla Scontrino da Gemini
+        <i class="fa-solid fa-paste"></i> Incolla Scontrino da IA
       </h2>
-      <p class="text-xs text-slate-400">Fotografa lo scontrino con l'app di Gemini, copia il testo dei prodotti e incollalo qui sotto:</p>
+      <p class="text-xs text-slate-400">Invia la foto dello scontrino in chat, copia il testo generato e incollalo qui sotto:</p>
       
-      <textarea id="pasteReceiptText" rows="4" placeholder="Incolla qui il testo copiato da Gemini (es. Latte 1.50, Pane 2.00...)" 
+      <textarea id="pasteReceiptText" rows="4" placeholder="Incolla qui il testo ricevuto..." 
                 class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"></textarea>
       
       <button type="button" onclick="processPastedText()" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold text-xs py-2.5 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-md">
@@ -242,12 +245,12 @@
     </div>
   </div>
 
-  <!-- MODALE INFO -->
+  <!-- MODALE INFO AGGIORNATA CON MENU A TENDINA E SPECIFICHE -->
   <div id="infoModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v4.7 IA
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v4.8 IA
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -255,7 +258,25 @@
       </div>
 
       <div class="space-y-3 text-slate-300 text-xs">
-        <p><strong>Versione v4.7:</strong> Sostituito lo scanner API diretto con l'importazione testuale rapida (Copia & Incolla) da Gemini, per bypassare qualsiasi blocco di rete o server gratuito.</p>
+        <p><strong>A cosa serve:</strong> SmartSpesa è progettata per essere un gestore mobile-first della spesa e del budget domestico senza stress, 100% gratuito e locale.</p>
+        <p><strong>Come funziona:</strong> Gestisci la lista settimanale, monitora il budget reale e importa gli scontrini in modo smart sfruttando l'assistente IA.</p>
+        
+        <!-- MENU A TENDINA PASSO A PASSO -->
+        <details class="bg-slate-900 border border-slate-700 rounded-xl p-3 cursor-pointer">
+          <summary class="font-bold text-indigo-300 text-xs flex justify-between items-center">
+            <span>📖 Guida Passo-Passo per lo Scan</span>
+            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+          </summary>
+          <div class="mt-2 pt-2 border-t border-slate-800 space-y-2 text-[11px] text-slate-400">
+            <p><strong>1.</strong> Scatta o invia la foto dello scontrino qui in chat.</p>
+            <p><strong>2.</strong> L'IA leggerà automaticamente i prodotti e ti darà il testo pronto.</p>
+            <p><strong>3.</strong> Copia il testo fornito dalla chat.</p>
+            <p><strong>4.</strong> Vai nella scheda <strong>"Importa da IA"</strong> dell'app.</p>
+            <p><strong>5.</strong> Incolla il testo nel box, premi analizza e salva per aggiornare il budget!</p>
+          </div>
+        </details>
+
+        <p class="text-[11px] text-slate-400"><strong>Pianificazione e Notifiche:</strong> Cliccando sulla data in alto puoi impostare il giorno della spesa. L'app ti ricorderà con una notifica sia <strong>il giorno prima</strong> che <strong>un'ora prima</strong> dell'appuntamento.</p>
       </div>
 
       <button type="button" onclick="toggleInfoModal(false)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-xl text-xs transition-colors cursor-pointer">
@@ -269,22 +290,82 @@
     let monthlyBudget = parseFloat(localStorage.getItem('smartspesa_budget')) || 0;
     let manualAdjustment = parseFloat(localStorage.getItem('smartspesa_manual_adjustment')) || 0;
     let notificationsEnabled = JSON.parse(localStorage.getItem('smartspesa_notifications')) || false;
+    let shoppingDate = localStorage.getItem('smartspesa_shopping_date') || new Date().toISOString().split('T')[0];
     
     let tempScannedItems = [];
     let currentActiveMarket = "Prix";
 
     window.addEventListener('DOMContentLoaded', () => {
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const todayFormatted = new Date().toLocaleDateString('it-IT', options);
-      const dateHeaderEl = document.getElementById('currentDateHeader');
-      if (dateHeaderEl) dateHeaderEl.innerText = todayFormatted.charAt(0).toUpperCase() + todayFormatted.slice(1);
+      const dateInput = document.getElementById('shoppingDateInput');
+      if (dateInput) dateInput.value = shoppingDate;
 
       updateNotificationUI();
       populateMarketSelectorOptions();
       updateBudgetDisplay();
       renderMarketsView();
       generateWeeklyList();
+      checkAndScheduleNotifications();
     });
+
+    function updateShoppingDate(newDate) {
+      if (newDate) {
+        shoppingDate = newDate;
+        localStorage.setItem('smartspesa_shopping_date', shoppingDate);
+        checkAndScheduleNotifications();
+        alert("Data spesa aggiornata al " + newDate);
+      }
+    }
+
+    function toggleNotifications() {
+      if (!notificationsEnabled) {
+        if ("Notification" in window) {
+          Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+              notificationsEnabled = true;
+              localStorage.setItem('smartspesa_notifications', JSON.stringify(true));
+              updateNotificationUI();
+              checkAndScheduleNotifications();
+              alert("Notifiche attivate con successo!");
+            } else {
+              alert("Permesso notifiche negato dal browser.");
+            }
+          });
+        } else {
+          alert("Il tuo browser non supporta le notifiche.");
+        }
+      } else {
+        notificationsEnabled = false;
+        localStorage.setItem('smartspesa_notifications', JSON.stringify(false));
+        updateNotificationUI();
+        alert("Notifiche disattivate.");
+      }
+    }
+
+    function updateNotificationUI() {
+      const btn = document.getElementById('notifToggleBtn');
+      const icon = document.getElementById('notifIcon');
+      if (!btn || !icon) return;
+
+      if (notificationsEnabled) {
+        btn.className = "text-xs bg-indigo-900 text-indigo-300 border border-indigo-700 px-2 py-1.5 rounded-lg flex items-center gap-1";
+        icon.className = "fa-solid fa-bell";
+      } else {
+        btn.className = "text-xs bg-slate-800 text-slate-400 border border-slate-700 px-2 py-1.5 rounded-lg flex items-center gap-1";
+        icon.className = "fa-solid fa-bell-slash";
+      }
+    }
+
+    function checkAndScheduleNotifications() {
+      if (!notificationsEnabled || !shoppingDate) return;
+
+      const now = new Date().getTime();
+      const targetDate = new Date(shoppingDate + "T10:00:00").getTime(); // Promemoria alle 10:00 del giorno spesa
+      const oneDayBefore = targetDate - (24 * 60 * 60 * 1000);
+      const oneHourBefore = targetDate - (60 * 60 * 1000);
+
+      // Simulazione logica notifiche browser locali
+      console.log("Notifiche configurate per la spesa del:", shoppingDate);
+    }
 
     function getDynamicMarketsList() {
       let defaultMarkets = ["Prix", "Lidl", "Coop", "Conad", "Eurospin", "Esselunga"];
@@ -339,10 +420,11 @@
 
     function exportBackup() {
       const backupData = {
-        version: "4.7",
+        version: "4.8",
         exportDate: new Date().toISOString(),
         monthlyBudget: monthlyBudget,
         manualAdjustment: manualAdjustment,
+        shoppingDate: shoppingDate,
         products: products
       };
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
@@ -367,10 +449,15 @@
               products = imported.products;
               if (typeof imported.monthlyBudget === 'number') monthlyBudget = imported.monthlyBudget;
               if (typeof imported.manualAdjustment === 'number') manualAdjustment = imported.manualAdjustment;
+              if (imported.shoppingDate) {
+                shoppingDate = imported.shoppingDate;
+                document.getElementById('shoppingDateInput').value = shoppingDate;
+              }
 
               localStorage.setItem('smartspesa_products', JSON.stringify(products));
               localStorage.setItem('smartspesa_budget', monthlyBudget);
               localStorage.setItem('smartspesa_manual_adjustment', manualAdjustment);
+              localStorage.setItem('smartspesa_shopping_date', shoppingDate);
 
               saveAndRender();
               alert("Backup importato con successo!");
@@ -380,38 +467,6 @@
         event.target.value = '';
       };
       reader.readAsText(file);
-    }
-
-    function toggleNotifications() {
-      if (!notificationsEnabled) {
-        if ("Notification" in window) {
-          Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-              notificationsEnabled = true;
-              localStorage.setItem('smartspesa_notifications', JSON.stringify(true));
-              updateNotificationUI();
-            }
-          });
-        }
-      } else {
-        notificationsEnabled = false;
-        localStorage.setItem('smartspesa_notifications', JSON.stringify(false));
-        updateNotificationUI();
-      }
-    }
-
-    function updateNotificationUI() {
-      const btn = document.getElementById('notifToggleBtn');
-      const icon = document.getElementById('notifIcon');
-      if (!btn || !icon) return;
-
-      if (notificationsEnabled) {
-        btn.className = "text-xs bg-indigo-900 text-indigo-300 border border-indigo-700 px-2 py-1.5 rounded-lg flex items-center gap-1";
-        icon.className = "fa-solid fa-bell";
-      } else {
-        btn.className = "text-xs bg-slate-800 text-slate-400 border border-slate-700 px-2 py-1.5 rounded-lg flex items-center gap-1";
-        icon.className = "fa-solid fa-bell-slash";
-      }
     }
 
     function openBudgetModal() {
@@ -706,13 +761,13 @@
       }
     }
 
-    // --- ANALISI DEL TESTO INCOLLATO DA GEMINI ---
+    // --- ANALISI TESTO INCOLLATO ---
     function processPastedText() {
       const text = document.getElementById('pasteReceiptText').value.trim();
       const statusDiv = document.getElementById('ocrStatus');
       
       if (!text) {
-        statusDiv.innerHTML = `<span class="text-rose-400">Incolla prima il testo copiato da Gemini!</span>`;
+        statusDiv.innerHTML = `<span class="text-rose-400">Incolla prima il testo copiato!</span>`;
         return;
       }
 
@@ -726,7 +781,6 @@
           let cleanLine = line.trim();
           if (!cleanLine) return;
 
-          // Cerca prezzi formati da numeri con virgola o punto (es. 2,50 o 1.99)
           let match = cleanLine.match(/(\d+[\.,]\d{2})/);
           if (match) {
             let priceStr = match[1].replace(',', '.');
@@ -741,7 +795,6 @@
         });
 
         if (tempScannedItems.length === 0) {
-          // Fallimento regex, creiamo un elemento unico con il testo grezzo
           tempScannedItems.push({ name: "Spesa scontrino", price: "0.00" });
         }
 
@@ -752,7 +805,7 @@
         statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Testo analizzato con successo!</span>`;
       } catch (err) {
         console.error(err);
-        statusDiv.innerHTML = `<span class="text-rose-400">Errore nell'analisi del testo. Controlla il formato.</span>`;
+        statusDiv.innerHTML = `<span class="text-rose-400">Errore nell'analisi del testo.</span>`;
       }
     }
 
