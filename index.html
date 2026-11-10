@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v3.2</title>
+  <title>SmartSpesa v3.2.1</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v3.2, Data Odierna e Toggle Notifiche -->
+  <!-- Header con Versione v3.2.1, Data Odierna e Toggle Notifiche -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <div>
@@ -19,7 +19,7 @@
         </h1>
         <div id="currentDateHeader" class="text-[10px] text-slate-400 font-mono mt-0.5"></div>
       </div>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v3.2</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v3.2.1</span>
     </div>
     
     <div class="flex items-center gap-2">
@@ -109,9 +109,9 @@
     
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-camera"></i> Scanner Scontrino & Revisione (v3.2)
+        <i class="fa-solid fa-camera"></i> Scanner Scontrino Sicuro (v3.2.1)
       </h2>
-      <p class="text-xs text-slate-400">Scatta la foto, seleziona l'area ed estrai gli articoli.</p>
+      <p class="text-xs text-slate-400">Scatta la foto o caricala: l'app la ottimizza per evitare blocchi.</p>
       
       <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="loadCropImage(event)">
       <button type="button" onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
@@ -218,7 +218,6 @@
       </div>
       <ul id="archiveList" class="space-y-2"></ul>
 
-      <!-- Sezione Gestione Backup JSON -->
       <div class="border-t border-slate-700 pt-3 space-y-2">
         <div class="text-xs font-semibold text-slate-300 flex items-center gap-1">
           <i class="fa-solid fa-database text-indigo-400"></i> Backup & Ripristino Dati
@@ -268,7 +267,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v3.2
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v3.2.1
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -277,12 +276,11 @@
 
       <div class="space-y-3 text-slate-300 text-xs">
         <div>
-          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">📘 Funzionalità Principali v3.2:</h3>
+          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">📘 Funzionalità Principali v3.2.1:</h3>
           <ul class="list-disc list-inside space-y-1.5 text-slate-400">
-            <li><strong>Backup & Ripristino:</strong> Esporta e importa facilmente tutti i tuoi dati con un file JSON.</li>
-            <li><strong>Scanner Avanzato:</strong> Inquadratura semplice e totale scontrino modificabile a mano.</li>
-            <li><strong>Notifiche Scadenze:</strong> Attiva gli avvisi delle scadenze tramite la campanella nell'header.</li>
-            <li><strong>Privacy Totale:</strong> Dati salvati localmente sul tuo dispositivo.</li>
+            <li><strong>Scanner Anti-Crash:</strong> Compressione automatica delle foto pesanti per evitare il ricaricamento della pagina.</li>
+            <li><strong>Backup & Ripristino:</strong> Gestione file JSON locale.</li>
+            <li><strong>Privacy Totale:</strong> Dati salvati sul tuo dispositivo.</li>
           </ul>
         </div>
       </div>
@@ -371,10 +369,9 @@
       checkExpirationsForNotifications();
     });
 
-    // Funzioni di Backup e Ripristino JSON
     function exportBackup() {
       const backupData = {
-        version: "3.2",
+        version: "3.2.1",
         exportDate: new Date().toISOString(),
         monthlyBudget: monthlyBudget,
         manualAdjustment: manualAdjustment,
@@ -832,36 +829,62 @@
       }
     }
 
+    // 🛑 GESTIONE ANTI-CRASH: Downscaling automatico delle immagini pesanti
     function loadCropImage(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
       reader.onload = function(e) {
-        loadedImage = new Image();
-        loadedImage.onload = function() {
-          cropCanvas = document.getElementById('cropCanvas');
-          if (!cropCanvas) return;
-          ctx = cropCanvas.getContext('2d');
-
-          let maxWidth = 450;
-          let scale = maxWidth / loadedImage.width;
-          cropCanvas.width = maxWidth;
-          cropCanvas.height = loadedImage.height * scale;
-
-          ctx.drawImage(loadedImage, 0, 0, cropCanvas.width, cropCanvas.height);
+        const img = new Image();
+        img.onload = function() {
+          // Ridimensiona preventivamente l'immagine se supera i 1000px per evitare crash di memoria mobile
+          const maxDim = 1000;
+          let w = img.width;
+          let h = img.height;
           
-          startX = cropCanvas.width * 0.01;
-          startY = cropCanvas.height * 0.01;
-          endX = cropCanvas.width * 0.99;
-          endY = cropCanvas.height * 0.99;
-          drawCropBox();
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
 
-          document.getElementById('cropAreaContainer').classList.remove('hidden');
-          document.getElementById('ocrStatus').innerText = "Trascina per ritagliare o premi 'Seleziona Tutto'.";
-        }
-        loadedImage.src = e.target.result;
-      }
+          const resizeCanvas = document.createElement('canvas');
+          resizeCanvas.width = w;
+          resizeCanvas.height = h;
+          const rCtx = resizeCanvas.getContext('2d');
+          rCtx.drawImage(img, 0, 0, w, h);
+
+          loadedImage = new Image();
+          loadedImage.onload = function() {
+            cropCanvas = document.getElementById('cropCanvas');
+            if (!cropCanvas) return;
+            ctx = cropCanvas.getContext('2d');
+
+            let displayWidth = 350;
+            let scale = displayWidth / loadedImage.width;
+            cropCanvas.width = displayWidth;
+            cropCanvas.height = loadedImage.height * scale;
+
+            ctx.drawImage(loadedImage, 0, 0, cropCanvas.width, cropCanvas.height);
+            
+            startX = 0;
+            startY = 0;
+            endX = cropCanvas.width;
+            endY = cropCanvas.height;
+            drawCropBox();
+
+            document.getElementById('cropAreaContainer').classList.remove('hidden');
+            document.getElementById('ocrStatus').innerText = "Immagine caricata in sicurezza. Premi 'Leggi Articoli' o ritaglia.";
+          };
+          loadedImage.src = resizeCanvas.toDataURL('image/jpeg', 0.85);
+        };
+        img.src = e.target.result;
+      };
       reader.readAsDataURL(file);
       event.target.value = '';
     }
@@ -972,7 +995,7 @@
         let scaleY = loadedImage.height / cropCanvas.height;
 
         tCtx.drawImage(loadedImage, x * scaleX, y * scaleY, width * scaleX, height * scaleY, 0, 0, width * 2, height * 2);
-        let croppedDataUrl = tempCanvas.toDataURL('image/jpeg', 0.95);
+        let croppedDataUrl = tempCanvas.toDataURL('image/jpeg', 0.9);
 
         const result = await Tesseract.recognize(
           croppedDataUrl,
@@ -1019,7 +1042,7 @@
         renderScannedItemsReview(calculatedTotal);
         statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Scansione completata! Rivedi e conferma.</span>`;
       } catch (err) {
-        console.error("Errore OCR v3.2:", err);
+        console.error("Errore OCR v3.2.1:", err);
         statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. <button onclick="cancelCrop()" class="underline ml-1">Riprova</button></span>`;
       }
     }
