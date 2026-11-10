@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v3.3.1</title>
+  <title>SmartSpesa v3.4 - Pro OCR</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
-
-  <!-- Header con Versione v3.3.1, Data Odierna e Toggle Notifiche -->
+  <!-- Header con Versione v3.4, Data Odierna e Toggle Notifiche -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <div>
@@ -19,7 +18,7 @@
         </h1>
         <div id="currentDateHeader" class="text-[10px] text-slate-400 font-mono mt-0.5"></div>
       </div>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v3.3.1</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v3.4 OCR+</span>
     </div>
     
     <div class="flex items-center gap-2">
@@ -31,7 +30,6 @@
       </button>
     </div>
   </header>
-
   <!-- WIDGET BUDGET -->
   <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 mb-4 space-y-3">
     <div class="flex justify-between items-center">
@@ -48,13 +46,11 @@
         </button>
       </div>
     </div>
-
     <div class="bg-slate-900 p-4 rounded-xl border border-slate-700/80 text-center space-y-1">
       <div class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">Disponibile Reale</div>
       <div id="budgetRemaining" class="text-3xl font-extrabold text-emerald-400">€0.00</div>
     </div>
   </section>
-
   <!-- Navigazione a Schede (Tab) -->
   <div class="grid grid-cols-3 gap-1 mb-6 bg-slate-800 p-1 rounded-xl border border-slate-700 text-center">
     <button type="button" onclick="switchTab('weekly')" id="tabWeekly" class="py-2 text-[11px] font-semibold rounded-lg bg-indigo-600 text-white transition-all cursor-pointer">
@@ -67,7 +63,6 @@
       <i class="fa-solid fa-store mr-1"></i> Per Supermercato
     </button>
   </div>
-
   <!-- SEZIONE 1: LISTA SETTIMANALE -->
   <div id="viewWeekly" class="space-y-4">
     <div class="bg-slate-800 p-3 rounded-xl shadow-lg border border-slate-700 space-y-2">
@@ -92,7 +87,6 @@
         </div>
       </form>
     </div>
-
     <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 space-y-3">
       <div class="flex justify-between items-center border-b border-slate-700 pb-2">
         <h2 class="text-sm font-semibold text-slate-300">Da Comprare Questa Settimana</h2>
@@ -103,34 +97,58 @@
       <ul id="weeklyList" class="space-y-2"></ul>
     </div>
   </div>
-
-  <!-- SEZIONE 2: SCANNER SCONTRINO & INSERIMENTO MANUALE -->
+  <!-- SEZIONE 2: SCANNER SCONTRINO POTENZIATO & INSERIMENTO MANUALE -->
   <div id="viewArchive" class="space-y-6 hidden">
     
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
-      <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-camera"></i> Scanner Scontrino con Banca Dati v3.3.1
-      </h2>
-      <p class="text-xs text-slate-400">Scatta o carica: l'OCR incrocia i dati con la banca dati nell'archivio.</p>
+      <div class="flex justify-between items-center">
+        <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
+          <i class="fa-solid fa-camera"></i> Scanner Scontrino Pro v3.4
+        </h2>
+        <span class="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded-full">Fuzzy + Filtro Termico</span>
+      </div>
+      <p class="text-xs text-slate-400">Ritaglia solo l'elenco prodotti e i prezzi: il filtro rimuove le ombre, scarta resti/IVA e corregge le abbreviazioni da scontrino.</p>
       
       <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="loadCropImage(event)">
       <button type="button" onclick="document.getElementById('receiptInput').click()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer">
         <i class="fa-solid fa-crop"></i> Seleziona / Scatta foto scontrino
       </button>
-
-      <div id="cropAreaContainer" class="hidden space-y-2 bg-slate-900 p-3 rounded-xl border border-indigo-900">
+      <div id="cropAreaContainer" class="hidden space-y-2.5 bg-slate-900 p-3 rounded-xl border border-indigo-900">
         <div class="flex justify-between items-center px-1">
-          <span class="text-[11px] text-indigo-300 font-medium">Inquadra lo scontrino:</span>
+          <span class="text-[11px] text-indigo-300 font-medium">Inquadra prodotti e prezzi:</span>
           <button type="button" onclick="selectFullImage()" class="text-[10px] bg-indigo-900 hover:bg-indigo-800 text-indigo-200 px-2 py-1 rounded border border-indigo-700 cursor-pointer">
-            <i class="fa-solid fa-expand mr-1"></i> Seleziona Tutto
+            <i class="fa-solid fa-expand mr-1"></i> Tutto
           </button>
+        </div>
+        <!-- Opzioni Pre-elaborazione Ottica -->
+        <div class="grid grid-cols-2 gap-2 bg-slate-950 p-2 rounded-lg border border-slate-800 text-[11px]">
+          <div>
+            <label class="text-slate-400 block mb-0.5">Modalità Filtro:</label>
+            <select id="ocrPreprocessMode" class="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-slate-200 focus:outline-none">
+              <option value="adaptive" selected>Contrasto Forte (Consigliato)</option>
+              <option value="binary">Bianco/Nero Puro (Scontrini sbiaditi)</option>
+              <option value="none">Originale (Nessun filtro)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-slate-400 block mb-0.5">Supermercato Scontrino:</label>
+            <select id="ocrMarketHint" class="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-slate-200 focus:outline-none">
+              <option value="AUTO" selected>Rileva in automatico</option>
+              <option value="Prix">Prix</option>
+              <option value="Lidl">Lidl</option>
+              <option value="Coop">Coop</option>
+              <option value="Conad">Conad</option>
+              <option value="Eurospin">Eurospin</option>
+              <option value="Esselunga">Esselunga</option>
+            </select>
+          </div>
         </div>
         <div class="overflow-hidden rounded-lg flex justify-center bg-black max-h-96 relative">
           <canvas id="cropCanvas" class="max-w-full cursor-crosshair touch-none"></canvas>
         </div>
         <div class="grid grid-cols-2 gap-2 pt-1">
           <button type="button" onclick="processCroppedReceipt()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2 rounded-lg cursor-pointer">
-            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Leggi con Match DB
+            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Analizza Scontrino
           </button>
           <button type="button" onclick="cancelCrop()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold text-xs py-2 rounded-lg cursor-pointer">
             Annulla e Rifai
@@ -139,19 +157,25 @@
       </div>
       
       <div id="ocrStatus" class="text-xs text-indigo-400 text-center font-medium"></div>
-
       <div id="ocrReviewContainer" class="hidden space-y-3 bg-slate-900 p-3 rounded-xl border border-indigo-900">
-        <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Modifica e Salva in Archivio:</h3>
-        <div id="scannedItemsList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+        <div class="flex justify-between items-center">
+          <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Revisione Prodotti Estratti:</h3>
+          <button type="button" onclick="addBlankScannedItem()" class="text-[10px] bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-800 px-2 py-1 rounded cursor-pointer">
+            <i class="fa-solid fa-plus"></i> Aggiungi riga
+          </button>
+        </div>
+        <div id="scannedItemsList" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
         
         <div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex justify-between items-center">
-          <span class="text-xs font-semibold text-slate-300"><i class="fa-solid fa-receipt text-indigo-400 mr-1"></i> Totale Scontrino da Scalare:</span>
+          <div>
+            <span class="text-xs font-semibold text-slate-300 block"><i class="fa-solid fa-receipt text-indigo-400 mr-1"></i> Totale da Scalare dal Budget:</span>
+            <span id="ocrDetectedTotalHint" class="text-[10px] text-slate-400">Somma articoli calcolata</span>
+          </div>
           <div class="flex items-center gap-1">
             <span class="text-emerald-400 font-bold text-sm">€</span>
             <input type="number" step="0.01" id="scannedTotalInput" class="bg-slate-950 border border-emerald-500/80 rounded px-2 py-1 text-emerald-400 font-extrabold w-24 text-right text-sm focus:outline-none">
           </div>
         </div>
-
         <div class="grid grid-cols-2 gap-2">
           <button type="button" onclick="saveAllScannedItems()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2.5 rounded-lg cursor-pointer">
             Salva & Scala Budget
@@ -162,7 +186,6 @@
         </div>
       </div>
     </section>
-
     <!-- Inserimento Manuale Prodotto -->
     <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700">
       <h2 class="text-sm font-semibold mb-3 text-slate-300 flex items-center gap-1.5">
@@ -185,7 +208,6 @@
           <input type="text" id="customMarketInput" placeholder="Scrivi il nome del supermercato..." 
                  class="hidden w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-sm focus:outline-none">
         </div>
-
         <div class="grid grid-cols-2 gap-2">
           <input type="number" step="0.01" id="itemPrice" placeholder="Prezzo (€)" required 
                  class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500">
@@ -197,27 +219,23 @@
             <option value="60">Ogni 60 giorni</option>
           </select>
         </div>
-
         <div>
           <label class="block text-[11px] text-slate-400 mb-1">Data acquisto:</label>
           <input type="date" id="itemDate" required 
                  class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500 text-slate-200">
         </div>
-
         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold text-sm py-2.5 rounded-lg transition-colors cursor-pointer">
           Salva in Archivio
         </button>
       </form>
     </section>
-
     <!-- Storico Archivio Generale & Backup -->
     <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 space-y-3">
       <div class="flex justify-between items-center">
         <h2 class="text-sm font-semibold text-slate-300">Tutti i Prodotti in Archivio</h2>
         <button type="button" onclick="clearDatabase()" class="text-xs text-rose-400 hover:underline cursor-pointer">Svuota tutto</button>
       </div>
-      <ul id="archiveList" class="space-y-2"></ul>
-
+      <ul id="archiveList" class="space-y-2 max-h-80 overflow-y-auto pr-1"></ul>
       <div class="border-t border-slate-700 pt-3 space-y-2">
         <div class="text-xs font-semibold text-slate-300 flex items-center gap-1">
           <i class="fa-solid fa-database text-indigo-400"></i> Backup & Ripristino Dati
@@ -234,7 +252,6 @@
       </div>
     </section>
   </div>
-
   <!-- SEZIONE 3: ARCHIVIO SELEZIONATO PER SUPERMERCATO -->
   <div id="viewMarkets" class="space-y-4 hidden">
     <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 space-y-3">
@@ -257,46 +274,40 @@
         <input type="text" id="customMarketSelectorInput" placeholder="Scrivi nome supermercato e premi invio..." onchange="handleCustomMarketSelect(this.value)"
                class="hidden w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none">
       </div>
-
       <p class="text-[10px] text-slate-400">Le scadenze a 7 giorni vanno subito in lista. Le altre appaiono solo alla scadenza dei giorni impostati.</p>
       
       <div id="marketsContainer" class="space-y-2 pt-1"></div>
     </div>
   </div>
-
   <!-- FINESTRA MODALE INFO -->
   <div id="infoModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v3.3.1
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v3.4 OCR+
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
-
       <div class="space-y-3 text-slate-300 text-xs">
         <div>
-          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">📘 Funzionalità Principali v3.3.1:</h3>
+          <h3 class="font-semibold text-slate-200 uppercase tracking-wider mb-1">📘 Novità v3.4 (Motore OCR Potenziato):</h3>
           <ul class="list-disc list-inside space-y-1.5 text-slate-400">
-            <li><strong>Home Pulita:</strong> La lista settimanale parte vuota; i prodotti della banca dati risiedono nell'archivio/supermercati come dizionario.</li>
-            <li><strong>Spunte Corrette:</strong> Risolto il bug degli indici nelle liste filtrate per supermercato.</li>
-            <li><strong>Scanner & Backup JSON:</strong> Match OCR intelligente e portabilità totale dei dati.</li>
+            <li><strong>Filtro Termico Pre-OCR:</strong> Pulizia automatica delle ombre, aumento del contrasto e binarizzazione per leggere anche scontrini stropicciati o sbiaditi.</li>
+            <li><strong>Dizionario Abbreviazioni & Fuzzy Match:</strong> Traduce le sigle da scontrino (es. <em>LAT PARZ SCR</em>, <em>BISC</em>, <em>DET</em>) e usa la distanza di Levenshtein per trovare il prodotto giusto tra i 300 in banca dati anche con errori di lettura.</li>
+            <li><strong>Filtro Anti-Rumore Fiscale:</strong> Ignora automaticamente righe come <em>TOTALE, CONTANTI, RESTO, IVA, POS</em> e riconosce l'insegna del supermercato.</li>
           </ul>
         </div>
       </div>
-
       <div class="border-t border-slate-700/60 pt-2 text-right">
-        <p class="text-[10px] text-slate-400 font-mono tracking-wider">B_16_</p>
+        <p class="text-[10px] text-slate-400 font-mono tracking-wider">B_16_ // v3.4</p>
       </div>
-
       <button type="button" onclick="toggleInfoModal(false)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-xl text-xs transition-colors cursor-pointer">
         Ho capito, chiudi
       </button>
     </div>
   </div>
-
   <script>
     // 📦 BANCA DATI INIZIALE (SEED) - 50 prodotti comuni per ciascuno dei 6 supermercati principali
     const DEFAULT_SEED_PRODUCTS = [
@@ -326,7 +337,6 @@
       {name:"Birra Lattina 33cl", market:"Prix", frequency:"14"}, {name:"Carta Forno", market:"Prix", frequency:"60"},
       {name:"Sacchetti Pattumiera con Maniglie", market:"Prix", frequency:"30"}, {name:"Sapone Mani Dispenser", market:"Prix", frequency:"30"},
       {name:"Dentifricio", market:"Prix", frequency:"30"}, {name:"Shampoo Delicato", market:"Prix", frequency:"60"},
-
       // --- LIDL (50 articoli) ---
       {name:"Latte Fresco Intero 1L", market:"Lidl", frequency:"7"}, {name:"Latte Parzialmente Scremato 1L", market:"Lidl", frequency:"7"},
       {name:"Caffè Bellarom 250g", market:"Lidl", frequency:"30"}, {name:"Pasta Combino Spaghetti 500g", market:"Lidl", frequency:"14"},
@@ -344,7 +354,7 @@
       {name:"Detersivo Formil Lavatrice", market:"Lidl", frequency:"30"}, {name:"Carta Igienica Floralys", market:"Lidl", frequency:"14"},
       {name:"Carta Cucina W5", market:"Lidl", frequency:"30"}, {name:"Sugo Pronto Basilico", market:"Lidl", frequency:"14"},
       {name:"Cracker Salati Snack Day", market:"Lidl", frequency:"14"}, {name:"Patatine Freeway", market:"Lidl", frequency:"14"},
-      {name:"Bibeta Cola Freeway 1.5L", market:"Lidl", frequency:"7"}, {name:"Birra Argus Lattina", market:"Lidl", frequency:"14"},
+      {name:"Bibita Cola Freeway 1.5L", market:"Lidl", frequency:"7"}, {name:"Birra Argus Lattina", market:"Lidl", frequency:"14"},
       {name:"Carta Forno Cien", market:"Lidl", frequency:"60"}, {name:"Sacchetti Immondizia", market:"Lidl", frequency:"30"},
       {name:"Sapone Liquido Cien", market:"Lidl", frequency:"30"}, {name:"Dentifricio Dentalux", market:"Lidl", frequency:"30"},
       {name:"Shampoo Cien", market:"Lidl", frequency:"60"}, {name:"Parmigiano Reggiano DOP", market:"Lidl", frequency:"14"},
@@ -353,7 +363,6 @@
       {name:"Marmellata Fragole", market:"Lidl", frequency:"30"}, {name:"Ghiaccioli Frutta", market:"Lidl", frequency:"14"},
       {name:"Pizza Margherita Surgelata", market:"Lidl", frequency:"14"}, {name:"Gelato Coni", market:"Lidl", frequency:"14"},
       {name:"Sofficini / Cotolette Pollo", market:"Lidl", frequency:"14"}, {name:"Filetti Merluzzo Surgelati", market:"Lidl", frequency:"30"},
-
       // --- COOP (50 articoli) ---
       {name:"Latte Coop ViviVerde Bio 1L", market:"Coop", frequency:"7"}, {name:"Latte Parzialmente Scremato Coop 1L", market:"Coop", frequency:"7"},
       {name:"Caffè Fior Fiore Coop 250g", market:"Coop", frequency:"30"}, {name:"Pasta Coop Spaghetti 500g", market:"Coop", frequency:"14"},
@@ -370,7 +379,7 @@
       {name:"Detersivo Lavatrice Coop", market:"Coop", frequency:"30"}, {name:"Carta Igienica Coop Compact", market:"Coop", frequency:"14"},
       {name:"Carta Cucina Coop", market:"Coop", frequency:"30"}, {name:"Sugo Pronto Basilico Coop", market:"Coop", frequency:"14"},
       {name:"Cracker Coop", market:"Coop", frequency:"14"}, {name:"Patatine Coop", market:"Coop", frequency:"14"},
-      {name:"Bibeta Cola Coop 1.5L", market:"Coop", frequency:"7"}, {name:"Birra Coop Lattina", market:"Coop", frequency:"14"},
+      {name:"Bibita Cola Coop 1.5L", market:"Coop", frequency:"7"}, {name:"Birra Coop Lattina", market:"Coop", frequency:"14"},
       {name:"Carta Forno Coop", market:"Coop", frequency:"60"}, {name:"Sacchetti Spazzatura Coop", market:"Coop", frequency:"30"},
       {name:"Sapone Liquido Coop", market:"Coop", frequency:"30"}, {name:"Dentifricio Coop", market:"Coop", frequency:"30"},
       {name:"Shampoo Coop", market:"Coop", frequency:"60"}, {name:"Formaggio Grattugiato Coop", market:"Coop", frequency:"14"},
@@ -380,7 +389,6 @@
       {name:"Filetti Merluzzo Coop", market:"Coop", frequency:"30"}, {name:"Passata Bio Coop", market:"Coop", frequency:"14"},
       {name:"Olio di Semi Coop", market:"Coop", frequency:"30"}, {name:"Sale Fino Coop", market:"Coop", frequency:"60"},
       {name:"Aceto di Vino Bianco Coop", market:"Coop", frequency:"60"}, {name:"Maionese Coop", market:"Coop", frequency:"30"},
-
       // --- CONAD (50 articoli) ---
       {name:"Latte Conad Intero 1L", market:"Conad", frequency:"7"}, {name:"Latte Conad Parzialmente Scremato 1L", market:"Conad", frequency:"7"},
       {name:"Caffè Conad 250g", market:"Conad", frequency:"30"}, {name:"Pasta Conad Spaghetti 500g", market:"Conad", frequency:"14"},
@@ -397,7 +405,7 @@
       {name:"Detersivo Lavatrice Conad", market:"Conad", frequency:"30"}, {name:"Carta Igienica Conad", market:"Conad", frequency:"14"},
       {name:"Carta Cucina Conad", market:"Conad", frequency:"30"}, {name:"Sugo Pronto Basilico Conad", market:"Conad", frequency:"14"},
       {name:"Cracker Conad", market:"Conad", frequency:"14"}, {name:"Patatine Conad", market:"Conad", frequency:"14"},
-      {name:"Bibeta Cola Conad 1.5L", market:"Conad", frequency:"7"}, {name:"Birra Conad Lattina", market:"Conad", frequency:"14"},
+      {name:"Bibita Cola Conad 1.5L", market:"Conad", frequency:"7"}, {name:"Birra Conad Lattina", market:"Conad", frequency:"14"},
       {name:"Carta Forno Conad", market:"Conad", frequency:"60"}, {name:"Sacchetti Spazzatura Conad", market:"Conad", frequency:"30"},
       {name:"Sapone Liquido Conad", market:"Conad", frequency:"30"}, {name:"Dentifricio Conad", market:"Conad", frequency:"30"},
       {name:"Shampoo Conad", market:"Conad", frequency:"60"}, {name:"Formaggio Grattugiato Conad", market:"Conad", frequency:"14"},
@@ -406,7 +414,6 @@
       {name:"Pizza Surgelata Conad", market:"Conad", frequency:"14"}, {name:"Gelato Conad", market:"Conad", frequency:"14"},
       {name:"Filetti Merluzzo Conad", market:"Conad", frequency:"30"}, {name:"Olio di Semi Conad", market:"Conad", frequency:"30"},
       {name:"Sale Fino Conad", market:"Conad", frequency:"60"}, {name:"Aceto Conad", market:"Conad", frequency:"60"}, {name:"Maionese Conad", market:"Conad", frequency:"30"},
-
       // --- EUROSPIN (50 articoli) ---
       {name:"Latte Land Intero 1L", market:"Eurospin", frequency:"7"}, {name:"Latte Land Parzialmente Scremato 1L", market:"Eurospin", frequency:"7"},
       {name:"Caffè Don Jerez 250g", market:"Eurospin", frequency:"30"}, {name:"Pasta Tre Mulini Spaghetti 500g", market:"Eurospin", frequency:"14"},
@@ -423,7 +430,7 @@
       {name:"Detersivo Dexal Lavatrice", market:"Eurospin", frequency:"30"}, {name:"Carta Igienica Soft Dream", market:"Eurospin", frequency:"14"},
       {name:"Carta Cucina Soft Dream", market:"Eurospin", frequency:"30"}, {name:"Sugo Pronto Basilico", market:"Eurospin", frequency:"14"},
       {name:"Cracker Dolando", market:"Eurospin", frequency:"14"}, {name:"Patatine Blues", market:"Eurospin", frequency:"14"},
-      {name:"Bibeta Cola Blues 1.5L", market:"Eurospin", frequency:"7"}, {name:"Birra Perlenbacher Lattina", market:"Eurospin", frequency:"14"},
+      {name:"Bibita Cola Blues 1.5L", market:"Eurospin", frequency:"7"}, {name:"Birra Perlenbacher Lattina", market:"Eurospin", frequency:"14"},
       {name:"Carta Forno Dexal", market:"Eurospin", frequency:"60"}, {name:"Sacchetti Spazzatura Dexal", market:"Eurospin", frequency:"30"},
       {name:"Sapone Liquido Amo Essere", market:"Eurospin", frequency:"30"}, {name:"Dentifricio Dentil", market:"Eurospin", frequency:"30"},
       {name:"Shampoo Amo Essere", market:"Eurospin", frequency:"60"}, {name:"Formaggio Grattugiato Land", market:"Eurospin", frequency:"14"},
@@ -432,7 +439,6 @@
       {name:"Pizza Surgelata Tre Mulini", market:"Eurospin", frequency:"14"}, {name:"Gelato Eurospin", market:"Eurospin", frequency:"14"},
       {name:"Filetti Merluzzo Surgelati", market:"Eurospin", frequency:"30"}, {name:"Olio di Semi Eurospin", market:"Eurospin", frequency:"30"},
       {name:"Sale Fino Eurospin", market:"Eurospin", frequency:"60"}, {name:"Aceto Eurospin", market:"Eurospin", frequency:"60"}, {name:"Maionese Eurospin", market:"Eurospin", frequency:"30"},
-
       // --- ESSELUNGA (50 articoli) ---
       {name:"Latte Esselunga Bio 1L", market:"Esselunga", frequency:"7"}, {name:"Latte Parzialmente Scremato Esselunga 1L", market:"Esselunga", frequency:"7"},
       {name:"Caffè Esselunga Qualità Rossa 250g", market:"Esselunga", frequency:"30"}, {name:"Pasta Esselunga Spaghetti 500g", market:"Esselunga", frequency:"14"},
@@ -449,7 +455,7 @@
       {name:"Detersivo Lavatrice Esselunga", market:"Esselunga", frequency:"30"}, {name:"Carta Igienica Esselunga", market:"Esselunga", frequency:"14"},
       {name:"Carta Cucina Esselunga", market:"Esselunga", frequency:"30"}, {name:"Sugo Pronto Basilico Esselunga", market:"Esselunga", frequency:"14"},
       {name:"Cracker Esselunga", market:"Esselunga", frequency:"14"}, {name:"Patatine Esselunga", market:"Esselunga", frequency:"14"},
-      {name:"Bibeta Cola Esselunga 1.5L", market:"Esselunga", frequency:"7"}, {name:"Birra Esselunga Lattina", market:"Esselunga", frequency:"14"},
+      {name:"Bibita Cola Esselunga 1.5L", market:"Esselunga", frequency:"7"}, {name:"Birra Esselunga Lattina", market:"Esselunga", frequency:"14"},
       {name:"Carta Forno Esselunga", market:"Esselunga", frequency:"60"}, {name:"Sacchetti Spazzatura Esselunga", market:"Esselunga", frequency:"30"},
       {name:"Sapone Liquido Esselunga", market:"Esselunga", frequency:"30"}, {name:"Dentifricio Esselunga", market:"Esselunga", frequency:"30"},
       {name:"Shampoo Esselunga", market:"Esselunga", frequency:"60"}, {name:"Formaggio Grattugiato Esselunga", market:"Esselunga", frequency:"14"},
@@ -460,9 +466,25 @@
       {name:"Sale Fino Esselunga", market:"Esselunga", frequency:"60"}, {name:"Aceto Esselunga", market:"Esselunga", frequency:"60"}, {name:"Maionese Esselunga", market:"Esselunga", frequency:"30"}
     ];
 
+    // Dizionario per la normalizzazione del testo OCR
+    const OCR_ABBREVIATIONS = {
+      "LAT": "Latte", "LATT": "Latte", "PARZ": "Parzialmente", "SCR": "Scremato", "SCREM": "Scremato",
+      "CAFF": "Caffè", "CAF": "Caffè", "SPAGH": "Spaghetti", "PAST": "Pasta", "PASS": "Passata",
+      "POM": "Pomodoro", "POMOD": "Pomodoro", "OL": "Olio", "EVO": "Extravergine", "EXTR": "Extravergine",
+      "ZUCCH": "Zucchero", "BISCO": "Biscotti", "BISC": "Biscotti", "YOG": "Yogurt", "MOZZ": "Mozzarella",
+      "PROSC": "Prosciutto", "PARM": "Parmigiano", "REGG": "Reggiano", "DET": "Detersivo", "DETT": "Detersivo",
+      "LAV": "Lavatrice", "CART": "Carta", "IGIEN": "Igienica", "SACCH": "Sacchetti", "SUG": "Sugo"
+    };
+
+    const NOISE_WORDS = [
+      "TOTALE", "TOTAL", "CONTANTI", "RESTO", "IMPORTO", "CARTA", "POS", "TRANSAZIONE",
+      "SUBTOTALE", "SUBTOTAL", "IVA", "EURO", "PAGAMENTO", "BANCOMAT", "PUNTI", "CLIENTE",
+      "SCONTRINO", "FISCALE", "GRAZIE", "ARRIVEDERCI", "REGISTRATORE", "MF", "DATA", "ORA"
+    ];
+
     let products = JSON.parse(localStorage.getItem('smartspesa_products')) || [];
     
-    // Inizializzazione della Banca Dati Seed se l'archivio è vuoto (LA LISTA SETTIMANALE RESTA VUOTA)
+    // Inizializzazione della Banca Dati Seed se l'archivio è vuoto
     if (products.length === 0) {
       products = DEFAULT_SEED_PRODUCTS.map(p => ({
         name: p.name,
@@ -470,7 +492,7 @@
         price: "0.00",
         frequency: p.frequency,
         date: new Date().toISOString().split('T')[0],
-        inList: false, // <-- IMPORTANTE: inList è false così la home parte pulita e vuota
+        inList: false,
         fromReceipt: false,
         createdAt: new Date().getTime(),
         lastBought: new Date().getTime()
@@ -539,10 +561,6 @@
         dateInput.valueAsDate = new Date();
       }
 
-      if (monthlyBudget === 0 && manualAdjustment === 0) {
-        // Budget non forzato se l'utente ha già i dati seed
-      }
-      
       updateBudgetDisplay();
       renderArchive();
       renderMarketsView();
@@ -603,7 +621,7 @@
 
     function exportBackup() {
       const backupData = {
-        version: "3.3.1",
+        version: "3.4",
         exportDate: new Date().toISOString(),
         monthlyBudget: monthlyBudget,
         manualAdjustment: manualAdjustment,
@@ -969,7 +987,6 @@
       
       const now = new Date().getTime();
 
-      // Logica scadenze: attiva in lista solo se esplicitamente spuntato o se frequenza = 7 e scaduto
       products.forEach(item => {
         let freq = parseInt(item.frequency || 14);
         let lastB = item.lastBought || item.createdAt || now;
@@ -1111,7 +1128,7 @@
             drawCropBox();
 
             document.getElementById('cropAreaContainer').classList.remove('hidden');
-            document.getElementById('ocrStatus').innerText = "Immagine caricata. Premi 'Leggi con Match DB' per incrociare i dati.";
+            document.getElementById('ocrStatus').innerText = "Immagine caricata. Premi 'Analizza Scontrino' per incrociare i dati.";
           };
           loadedImage.src = resizeCanvas.toDataURL('image/jpeg', 0.9);
         };
@@ -1159,41 +1176,128 @@
     window.addEventListener('mouseup', () => { isDragging = false; });
     window.addEventListener('touchend', () => { isDragging = false; });
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('load', () => {
-        cropCanvas = document.getElementById('cropCanvas');
-        if (cropCanvas) {
-          cropCanvas.addEventListener('mousedown', (e) => {
-            let pos = getCanvasPos(e);
-            startX = pos.x; startY = pos.y;
-            endX = startX; endY = startY;
-            isDragging = true;
-          });
+    // Pre-elaborazione Ottica del ritaglio dello scontrino per migliorare l'OCR
+    function getPreprocessedCanvas(cropX, cropY, cropW, cropH, mode) {
+      let scaleX = loadedImage.width / cropCanvas.width;
+      let scaleY = loadedImage.height / cropCanvas.height;
 
-          cropCanvas.addEventListener('touchstart', (e) => {
-            let pos = getCanvasPos(e);
-            startX = pos.x; startY = pos.y;
-            endX = startX; endY = startY;
-            isDragging = true;
-            e.preventDefault();
-          }, { passive: false });
+      let srcX = cropX * scaleX;
+      let srcY = cropY * scaleY;
+      let srcW = cropW * scaleX;
+      let srcH = cropH * scaleY;
 
-          cropCanvas.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            let pos = getCanvasPos(e);
-            endX = pos.x; endY = pos.y;
-            drawCropBox();
-          });
+      let tempCanvas = document.createElement('canvas');
+      let scale = 2.5; 
+      tempCanvas.width = srcW * scale;
+      tempCanvas.height = srcH * scale;
+      let tCtx = tempCanvas.getContext('2d');
 
-          cropCanvas.addEventListener('touchmove', (e) => {
-            if (!isDragging) return;
-            let pos = getCanvasPos(e);
-            endX = pos.x; endY = pos.y;
-            drawCropBox();
-            e.preventDefault();
-          }, { passive: false });
+      tCtx.drawImage(loadedImage, srcX, srcY, srcW, srcH, 0, 0, tempCanvas.width, tempCanvas.height);
+
+      if (mode === 'none') return tempCanvas;
+
+      let imgData = tCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+      let data = imgData.data;
+
+      // 1. Grayscale & Contrast boost
+      for (let i = 0; i < data.length; i += 4) {
+        let avg = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        
+        if (mode === 'adaptive') {
+          // Aumento del contrasto dinamico
+          avg = (avg - 128) * 1.6 + 128;
+          avg = Math.min(255, Math.max(0, avg));
+        } else if (mode === 'binary') {
+          // Binarizzazione netta (Otsu-like threshold)
+          avg = avg < 140 ? 0 : 255;
+        }
+
+        data[i] = avg;
+        data[i + 1] = avg;
+        data[i + 2] = avg;
+      }
+
+      tCtx.putImageData(imgData, 0, 0);
+      return tempCanvas;
+    }
+
+    // Calcolo della distanza di Levenshtein per il Fuzzy Matching
+    function levenshteinDistance(a, b) {
+      let matrix = [];
+      for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+      for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          if (b.charAt(i - 1) === a.charAt(j - 1)) {
+            matrix[i][j] = matrix[i - 1][j - 1];
+          } else {
+            matrix[i][j] = Math.min(
+              matrix[i - 1][j - 1] + 1,
+              matrix[i][j - 1] + 1,
+              matrix[i - 1][j] + 1
+            );
+          }
+        }
+      }
+      return matrix[b.length][a.length];
+    }
+
+    // Espansione abbreviazioni dello scontrino
+    function expandAbbreviations(rawText) {
+      let words = rawText.split(/\s+/);
+      let expandedWords = words.map(w => {
+        let cleanW = w.toUpperCase().replace(/[^A-Z]/g, '');
+        return OCR_ABBREVIATIONS[cleanW] || w;
+      });
+      return expandedWords.join(' ');
+    }
+
+    // Fuzzy matching avanzato con il DB
+    function findBestProductMatch(rawName, market) {
+      let expanded = expandAbbreviations(rawName);
+      let cleanRaw = expanded.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+      if (cleanRaw.length < 2) return rawName;
+
+      let targetMarket = market && market !== 'AUTO' ? market : currentActiveMarket;
+      let marketProducts = products.filter(p => p.market.toLowerCase() === targetMarket.toLowerCase());
+      if (marketProducts.length === 0) marketProducts = products;
+
+      let bestMatch = rawName;
+      let lowestDistance = Infinity;
+      let highestScore = 0;
+
+      marketProducts.forEach(p => {
+        let pClean = p.name.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+        
+        // Match per sottostringa/parole chiave
+        let rawTokens = cleanRaw.split(' ');
+        let matchCount = 0;
+        rawTokens.forEach(tok => {
+          if (tok.length > 2 && pClean.includes(tok)) matchCount++;
+        });
+
+        if (matchCount > highestScore) {
+          highestScore = matchCount;
+          bestMatch = p.name;
+        }
+
+        // Match per distanza di Levenshtein
+        let dist = levenshteinDistance(cleanRaw, pClean);
+        if (dist < lowestDistance) {
+          lowestDistance = dist;
+          if (dist <= 3 && matchCount >= 1) {
+            bestMatch = p.name;
+          }
         }
       });
+
+      return (highestScore >= 1 || lowestDistance <= 4) ? bestMatch : expanded;
+    }
+
+    function isNoiseLine(lineText) {
+      let upper = lineText.toUpperCase();
+      return NOISE_WORDS.some(noise => upper.includes(noise));
     }
 
     function cancelCrop() {
@@ -1203,35 +1307,10 @@
       tempScannedItems = [];
     }
 
-    function findBestProductMatch(rawName, market) {
-      let cleanRaw = rawName.toLowerCase().replace(/[^a-z0-9]/g, '');
-      if (cleanRaw.length < 2) return rawName;
-
-      let marketProducts = products.filter(p => p.market.toLowerCase() === market.toLowerCase());
-      if (marketProducts.length === 0) marketProducts = products;
-
-      let bestMatch = rawName;
-      let highestScore = 0;
-
-      marketProducts.forEach(p => {
-        let pClean = p.name.toLowerCase().replace(/[^a-z0-9]/g, '');
-        let score = 0;
-        if (pClean.includes(cleanRaw) || cleanRaw.includes(pClean)) {
-          score = Math.min(pClean.length, cleanRaw.length);
-        }
-        if (score > highestScore) {
-          highestScore = score;
-          bestMatch = p.name;
-        }
-      });
-
-      return highestScore > 2 ? bestMatch : rawName;
-    }
-
     async function processCroppedReceipt() {
       document.getElementById('cropAreaContainer').classList.add('hidden');
       const statusDiv = document.getElementById('ocrStatus');
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Lettura e match con Banca Dati in corso...`;
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Elaborazione ottica e Fuzzy Match in corso...`;
 
       try {
         let x = Math.min(startX, endX);
@@ -1243,16 +1322,12 @@
           x = 0; y = 0; width = cropCanvas.width; height = cropCanvas.height;
         }
 
-        let tempCanvas = document.createElement('canvas');
-        let tCtx = tempCanvas.getContext('2d');
-        tempCanvas.width = width * 2.5;
-        tempCanvas.height = height * 2.5;
+        let mode = document.getElementById('ocrPreprocessMode').value;
+        let marketHint = document.getElementById('ocrMarketHint').value;
+        if (marketHint !== 'AUTO') currentActiveMarket = marketHint;
 
-        let scaleX = loadedImage.width / cropCanvas.width;
-        let scaleY = loadedImage.height / cropCanvas.height;
-
-        tCtx.drawImage(loadedImage, x * scaleX, y * scaleY, width * scaleX, height * scaleY, 0, 0, tempCanvas.width, tempCanvas.height);
-        let croppedDataUrl = tempCanvas.toDataURL('image/jpeg', 0.95);
+        let processedCanvas = getPreprocessedCanvas(x, y, width, height, mode);
+        let croppedDataUrl = processedCanvas.toDataURL('image/jpeg', 0.95);
 
         const result = await Tesseract.recognize(
           croppedDataUrl,
@@ -1260,7 +1335,7 @@
           {
             logger: m => {
               if (m.status === 'recognizing text') {
-                statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Elaborazione: ${Math.round(m.progress * 100)}%`;
+                statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Lettura OCR: ${Math.round(m.progress * 100)}%`;
               }
             }
           }
@@ -1273,12 +1348,16 @@
 
         lines.forEach(line => {
           let cleanLine = line.trim();
-          if (cleanLine.length < 2) return;
+          if (cleanLine.length < 3 || isNoiseLine(cleanLine)) return;
           
           let priceMatch = cleanLine.match(/\b\d+[\.,]\d{2}\b/g);
           if (priceMatch && priceMatch.length > 0) {
             let priceStr = priceMatch[priceMatch.length - 1].replace(',', '.');
             let priceVal = parseFloat(priceStr);
+            
+            // Ignora prezzi improbabili o righe prive di testo prodotto
+            if (isNaN(priceVal) || priceVal <= 0) return;
+
             let rawName = cleanLine.replace(priceMatch[priceMatch.length - 1], '').replace(/[\.,€\*]/g, '').trim();
             if (!rawName || rawName.length < 2) rawName = "Prodotto Scontrino";
             
@@ -1299,9 +1378,9 @@
         }
 
         renderScannedItemsReview(calculatedTotal);
-        statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Scansione con Match completata!</span>`;
+        statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Scansione Pro completata! Verificata con Fuzzy Match.</span>`;
       } catch (err) {
-        console.error("Errore OCR v3.3.1:", err);
+        console.error("Errore OCR v3.4:", err);
         statusDiv.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark"></i> Errore scansione. <button onclick="cancelCrop()" class="underline ml-1">Riprova</button></span>`;
       }
     }
@@ -1310,15 +1389,17 @@
       const reviewContainer = document.getElementById('ocrReviewContainer');
       const listContainer = document.getElementById('scannedItemsList');
       const totalInput = document.getElementById('scannedTotalInput');
+      const totalHint = document.getElementById('ocrDetectedTotalHint');
+      
       listContainer.innerHTML = '';
-
       if (totalInput) totalInput.value = initialTotal.toFixed(2);
+      if (totalHint) totalHint.innerText = `Somma calcolata: €${initialTotal.toFixed(2)}`;
 
       let dynamicMarkets = getDynamicMarketsList();
 
       tempScannedItems.forEach((item, idx) => {
         let div = document.createElement('div');
-        div.className = 'bg-slate-800 p-2.5 rounded-lg border border-slate-700 space-y-2 text-xs';
+        div.className = 'bg-slate-800 p-2.5 rounded-lg border border-slate-700 space-y-2 text-xs relative';
         
         let marketOptionsHtml = '';
         dynamicMarkets.forEach(m => {
@@ -1328,7 +1409,12 @@
 
         div.innerHTML = `
           <div class="grid grid-cols-1 gap-1.5">
-            <input type="text" value="${item.name}" onchange="updateTempItem(${idx}, 'name', this.value)" placeholder="Nome prodotto" class="bg-slate-900 border border-slate-700 rounded p-1.5 text-slate-200 focus:outline-none focus:border-indigo-500">
+            <div class="flex items-center gap-1.5">
+              <input type="text" value="${item.name}" onchange="updateTempItem(${idx}, 'name', this.value)" placeholder="Nome prodotto" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-slate-200 focus:outline-none focus:border-indigo-500">
+              <button type="button" onclick="removeTempItem(${idx})" class="text-slate-500 hover:text-rose-400 p-1 cursor-pointer" title="Rimuovi riga">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
             <div class="grid grid-cols-2 gap-2">
               <div class="flex items-center gap-1">
                 <span class="text-indigo-300 font-bold">€</span>
@@ -1346,9 +1432,37 @@
       reviewContainer.classList.remove('hidden');
     }
 
+    function addBlankScannedItem() {
+      tempScannedItems.push({
+        name: "",
+        price: "0.00",
+        market: currentActiveMarket || "Prix"
+      });
+      recalcTempTotalAndRender();
+    }
+
+    function removeTempItem(idx) {
+      tempScannedItems.splice(idx, 1);
+      recalcTempTotalAndRender();
+    }
+
+    function recalcTempTotalAndRender() {
+      let tot = 0;
+      tempScannedItems.forEach(i => { tot += parseFloat(i.price) || 0; });
+      renderScannedItemsReview(tot);
+    }
+
     function updateTempItem(index, field, value) {
       if (tempScannedItems[index]) {
         tempScannedItems[index][field] = value.trim();
+        if (field === 'price') {
+          let tot = 0;
+          tempScannedItems.forEach(i => { tot += parseFloat(i.price) || 0; });
+          const totalInput = document.getElementById('scannedTotalInput');
+          const totalHint = document.getElementById('ocrDetectedTotalHint');
+          if (totalInput) totalInput.value = tot.toFixed(2);
+          if (totalHint) totalHint.innerText = `Somma calcolata: €${tot.toFixed(2)}`;
+        }
       }
     }
 
