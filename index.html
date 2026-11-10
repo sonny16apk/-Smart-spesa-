@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v4.6 IA</title>
+  <title>SmartSpesa v4.7 IA</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v4.6 e Toggle Notifiche -->
+  <!-- Header con Versione v4.7 e Toggle Notifiche -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <div>
@@ -18,7 +18,7 @@
         </h1>
         <div id="currentDateHeader" class="text-[10px] text-slate-400 font-mono mt-0.5"></div>
       </div>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v4.6 IA</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v4.7 IA</span>
     </div>
     
     <div class="flex items-center gap-2">
@@ -60,7 +60,7 @@
       <i class="fa-solid fa-list-check mr-1"></i> Lista Home
     </button>
     <button type="button" onclick="switchTab('archive')" id="tabArchive" class="py-2 text-[11px] font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer">
-      <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Scanner IA
+      <i class="fa-solid fa-paste mr-1"></i> Importa da IA
     </button>
     <button type="button" onclick="switchTab('markets')" id="tabMarkets" class="py-2 text-[11px] font-semibold rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer">
       <i class="fa-solid fa-store mr-1"></i> Per Supermercato
@@ -103,58 +103,28 @@
     </div>
   </div>
 
-  <!-- SEZIONE 2: SCANNER IA & INSERIMENTO MANUALE -->
+  <!-- SEZIONE 2: IMPORTAZIONE RAPIDA DA GEMINI & INSERIMENTO MANUALE -->
   <div id="viewArchive" class="space-y-6 hidden">
     
-    <!-- CONFIGURAZIONE API KEY GEMINI -->
-    <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 space-y-2">
-      <h2 class="text-xs font-semibold text-indigo-300 flex items-center gap-1.5">
-        <i class="fa-solid fa-key"></i> Chiave API Gemini (IA)
-      </h2>
-      <div class="flex gap-2">
-        <input type="password" id="apiKeyInput" placeholder="Incolla qui la tua API Key..." 
-               class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
-        <button type="button" onclick="saveApiKey()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-4 py-2 rounded-lg cursor-pointer">Salva</button>
-      </div>
-      <div class="text-[10px] text-slate-400">La chiave viene salvata solo nel tuo browser in modo sicuro.</div>
-    </section>
-
-    <!-- SCANNER SCONTRINO CON RITAGLIO & IA -->
+    <!-- IMPORTATORE TESTUALE DA GEMINI (ZERO BLOCCHI) -->
     <section class="bg-indigo-950/40 p-4 rounded-xl shadow-lg border border-indigo-800/60 space-y-3">
       <h2 class="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-        <i class="fa-solid fa-wand-magic-sparkles"></i> Scanner Scontrino con Ritaglio IA
+        <i class="fa-solid fa-paste"></i> Incolla Scontrino da Gemini
       </h2>
-      <p class="text-xs text-slate-400">Scatta o carica la foto, ritaglia solo lo scontrino e l'IA leggerà tutto al centesimo.</p>
+      <p class="text-xs text-slate-400">Fotografa lo scontrino con l'app di Gemini, copia il testo dei prodotti e incollalo qui sotto:</p>
       
-      <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="loadReceiptForCrop(event)">
-      <button type="button" onclick="triggerReceiptScan()" class="w-full bg-indigo-700 hover:bg-indigo-600 font-semibold text-xs py-3 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-md">
-        <i class="fa-solid fa-camera text-sm"></i> Scatta / Carica Foto Scontrino
+      <textarea id="pasteReceiptText" rows="4" placeholder="Incolla qui il testo copiato da Gemini (es. Latte 1.50, Pane 2.00...)" 
+                class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"></textarea>
+      
+      <button type="button" onclick="processPastedText()" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold text-xs py-2.5 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-md">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Analizza Testo Incollato
       </button>
 
-      <!-- SCHERMATA DI RITAGLIO IMMAGINE -->
-      <div id="cropContainer" class="hidden space-y-3 bg-slate-900 p-3 rounded-xl border border-indigo-900">
-        <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Ritaglia lo Scontrino:</h3>
-        <p class="text-[11px] text-slate-400">Trascina o usa i cursori per isolare solo la parte con i prodotti e prezzi.</p>
-        
-        <div class="relative overflow-hidden bg-black rounded-lg border border-slate-700 flex justify-center items-center max-h-72">
-          <canvas id="cropCanvas" class="cursor-crosshair max-w-full object-contain"></canvas>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <button type="button" onclick="confirmCropAndScan()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2.5 rounded-lg cursor-pointer flex items-center justify-center gap-1">
-            <i class="fa-solid fa-check"></i> Conferma e Analizza
-          </button>
-          <button type="button" onclick="cancelCrop()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold text-xs py-2.5 rounded-lg cursor-pointer">
-            Annulla
-          </button>
-        </div>
-      </div>
-      
       <div id="ocrStatus" class="text-xs text-indigo-300 text-center font-medium pt-1"></div>
 
-      <!-- REVISIONE SCANNER SCONTRINO -->
+      <!-- REVISIONE DATI INCOLLATI -->
       <div id="ocrReviewContainer" class="hidden space-y-3 bg-slate-900 p-3 rounded-xl border border-indigo-900">
-        <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Verifica Dati Scontrino:</h3>
+        <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Verifica Prodotti Estratti:</h3>
         
         <div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700">
           <label class="block text-[11px] text-slate-300 font-semibold mb-1">Supermercato Scontrino:</label>
@@ -277,7 +247,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v4.6 IA
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v4.7 IA
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -285,7 +255,7 @@
       </div>
 
       <div class="space-y-3 text-slate-300 text-xs">
-        <p><strong>Versione v4.6:</strong> Introduzione del ritaglio interattivo dell'immagine per inviare solo lo scontrino pulito e velocizzare l'IA.</p>
+        <p><strong>Versione v4.7:</strong> Sostituito lo scanner API diretto con l'importazione testuale rapida (Copia & Incolla) da Gemini, per bypassare qualsiasi blocco di rete o server gratuito.</p>
       </div>
 
       <button type="button" onclick="toggleInfoModal(false)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-xl text-xs transition-colors cursor-pointer">
@@ -299,16 +269,9 @@
     let monthlyBudget = parseFloat(localStorage.getItem('smartspesa_budget')) || 0;
     let manualAdjustment = parseFloat(localStorage.getItem('smartspesa_manual_adjustment')) || 0;
     let notificationsEnabled = JSON.parse(localStorage.getItem('smartspesa_notifications')) || false;
-    let geminiApiKey = localStorage.getItem('smartspesa_gemini_key') || '';
     
     let tempScannedItems = [];
     let currentActiveMarket = "Prix";
-    
-    // Variabili per il ritaglio
-    let cropImg = null;
-    let cropX = 0, cropY = 0, cropW = 0, cropH = 0;
-    let isDragging = false;
-    let startX = 0, startY = 0;
 
     window.addEventListener('DOMContentLoaded', () => {
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -316,38 +279,12 @@
       const dateHeaderEl = document.getElementById('currentDateHeader');
       if (dateHeaderEl) dateHeaderEl.innerText = todayFormatted.charAt(0).toUpperCase() + todayFormatted.slice(1);
 
-      if (geminiApiKey) {
-        document.getElementById('apiKeyInput').value = geminiApiKey;
-      }
-
       updateNotificationUI();
       populateMarketSelectorOptions();
       updateBudgetDisplay();
       renderMarketsView();
       generateWeeklyList();
-      setupCropCanvasEvents();
     });
-
-    function saveApiKey() {
-      const keyVal = document.getElementById('apiKeyInput').value.trim();
-      if (keyVal) {
-        geminiApiKey = keyVal;
-        localStorage.setItem('smartspesa_gemini_key', geminiApiKey);
-        alert("Chiave API salvata con successo!");
-      } else {
-        localStorage.removeItem('smartspesa_gemini_key');
-        geminiApiKey = '';
-        alert("Chiave API rimossa.");
-      }
-    }
-
-    function triggerReceiptScan() {
-      if (!geminiApiKey) {
-        alert("Inserisci prima la tua chiave API di Gemini nel campo qui sopra per usare lo Scanner IA!");
-        return;
-      }
-      document.getElementById('receiptInput').click();
-    }
 
     function getDynamicMarketsList() {
       let defaultMarkets = ["Prix", "Lidl", "Coop", "Conad", "Eurospin", "Esselunga"];
@@ -402,7 +339,7 @@
 
     function exportBackup() {
       const backupData = {
-        version: "4.6",
+        version: "4.7",
         exportDate: new Date().toISOString(),
         monthlyBudget: monthlyBudget,
         manualAdjustment: manualAdjustment,
@@ -769,206 +706,53 @@
       }
     }
 
-    // --- GESTIONE RITAGLIO E IA (V4.6) ---
-    function loadReceiptForCrop(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        cropImg = new Image();
-        cropImg.onload = function() {
-          const canvas = document.getElementById('cropCanvas');
-          const ctx = canvas.getContext('2d');
-          
-          // Ridimensiona canvas per adattarlo alla vista mobile
-          let maxW = 320;
-          let scale = maxW / cropImg.width;
-          canvas.width = maxW;
-          canvas.height = cropImg.height * scale;
-
-          ctx.drawImage(cropImg, 0, 0, canvas.width, canvas.height);
-
-          // Imposta un riquadro di ritaglio iniziale (tutta l'immagine o quasi)
-          cropX = 20; cropY = 20; cropW = canvas.width - 40; cropH = canvas.height - 40;
-          drawCropOverlay();
-
-          document.getElementById('cropContainer').classList.remove('hidden');
-          document.getElementById('ocrStatus').innerText = "Ritaglia l'area dello scontrino e conferma.";
-        }
-        cropImg.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-      event.target.value = '';
-    }
-
-    function setupCropCanvasEvents() {
-      const canvas = document.getElementById('cropCanvas');
-      if (!canvas) return;
-
-      let startXTouch, startYTouch;
-
-      canvas.addEventListener('mousedown', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        startX = e.clientX - rect.left;
-        startY = e.clientY - rect.top;
-        isDragging = true;
-      });
-
-      canvas.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        const rect = canvas.getBoundingClientRect();
-        let currentX = e.clientX - rect.left;
-        let currentY = e.clientY - rect.top;
-
-        cropX = Math.min(startX, currentX);
-        cropY = Math.min(startY, currentY);
-        cropW = Math.abs(currentX - startX);
-        cropH = Math.abs(currentY - startY);
-
-        drawCropOverlay();
-      });
-
-      canvas.addEventListener('mouseup', () => { isDragging = false; });
-      canvas.addEventListener('mouseleave', () => { isDragging = false; });
-
-      // Supporto Touch per Smartphone
-      canvas.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 1) {
-          const rect = canvas.getBoundingClientRect();
-          startX = e.touches[0].clientX - rect.left;
-          startY = e.touches[0].clientY - rect.top;
-          isDragging = true;
-        }
-      });
-
-      canvas.addEventListener('touchmove', (e) => {
-        if (!isDragging || e.touches.length !== 1) return;
-        const rect = canvas.getBoundingClientRect();
-        let currentX = e.touches[0].clientX - rect.left;
-        let currentY = e.touches[0].clientY - rect.top;
-
-        cropX = Math.min(startX, currentX);
-        cropY = Math.min(startY, currentY);
-        cropW = Math.abs(currentX - startX);
-        cropH = Math.abs(currentY - startY);
-
-        drawCropOverlay();
-        e.preventDefault();
-      });
-
-      canvas.addEventListener('touchend', () => { isDragging = false; });
-    }
-
-    function drawCropOverlay() {
-      const canvas = document.getElementById('cropCanvas');
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(cropImg, 0, 0, canvas.width, canvas.height);
-
-      // Disegna un velo scuro fuori dall'area di ritaglio
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Ritaglia l'area selezionata mantenendola luminosa
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(cropX, cropY, cropW, cropH);
-      ctx.clip();
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(cropImg, 0, 0, canvas.width, canvas.height);
-      ctx.restore();
-
-      // Bordo del rettangolo di ritaglio
-      ctx.strokeStyle = '#6366f1';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(cropX, cropY, cropW, cropH);
-    }
-
-    function cancelCrop() {
-      document.getElementById('cropContainer').classList.add('hidden');
-      document.getElementById('ocrStatus').innerText = "";
-    }
-
-    async function confirmCropAndScan() {
-      document.getElementById('cropContainer').classList.add('hidden');
+    // --- ANALISI DEL TESTO INCOLLATO DA GEMINI ---
+    function processPastedText() {
+      const text = document.getElementById('pasteReceiptText').value.trim();
       const statusDiv = document.getElementById('ocrStatus');
-      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Invio ritaglio e analisi IA in corso...`;
+      
+      if (!text) {
+        statusDiv.innerHTML = `<span class="text-rose-400">Incolla prima il testo copiato da Gemini!</span>`;
+        return;
+      }
+
+      statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Estrazione prodotti in corso...`;
 
       try {
-        const canvas = document.getElementById('cropCanvas');
-        const ctx = canvas.getContext('2d');
+        let lines = text.split('\n');
+        tempScannedItems = [];
 
-        // Se il ritaglio è troppo piccolo, usiamo tutta l'immagine
-        if (cropW < 50 || cropH < 50) {
-          cropX = 0; cropY = 0; cropW = canvas.width; cropH = canvas.height;
-        }
+        lines.forEach(line => {
+          let cleanLine = line.trim();
+          if (!cleanLine) return;
 
-        const croppedCanvas = document.createElement('canvas');
-        croppedCanvas.width = cropW;
-        croppedCanvas.height = cropH;
-        const croppedCtx = croppedCanvas.getContext('2d');
-        
-        let scaleX = cropImg.width / canvas.width;
-        let scaleY = cropImg.height / canvas.height;
-
-        croppedCtx.drawImage(
-          cropImg, 
-          cropX * scaleX, cropY * scaleY, cropW * scaleX, cropH * scaleY, 
-          0, 0, cropW, cropH
-        );
-
-        const base64Data = croppedCanvas.toDataURL('image/jpeg', 0.85);
-        const cleanBase64 = base64Data.split(',')[1];
-
-        const promptText = "Estrai da questo scontrino commerciale tutti i prodotti acquistati con il relativo prezzo in euro. Restituisci ESCLUSIVAMENTE un oggetto JSON valido, senza blocchi di codice markdown, nel seguente formato esatto: {\"items\": [{\"name\": \"Nome prodotto\", \"price\": \"0.00\"}]}";
-
-        let response = null;
-        let data = null;
-        let attempts = 3;
-        let success = false;
-
-        while (attempts > 0 && !success) {
-          try {
-            response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${geminiApiKey}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{
-                  parts: [
-                    { text: promptText },
-                    { inline_data: { mime_type: "image/jpeg", data: cleanBase64 } }
-                  ]
-                }]
-              })
-            });
-
-            data = await response.json();
-            if (data.error) {
-              throw new Error(data.error.message);
+          // Cerca prezzi formati da numeri con virgola o punto (es. 2,50 o 1.99)
+          let match = cleanLine.match(/(\d+[\.,]\d{2})/);
+          if (match) {
+            let priceStr = match[1].replace(',', '.');
+            let namePart = cleanLine.replace(match[0], '').replace(/[-–:€]/g, '').trim();
+            if (namePart.length > 1) {
+              tempScannedItems.push({
+                name: namePart.charAt(0).toUpperCase() + namePart.slice(1),
+                price: parseFloat(priceStr).toFixed(2)
+              });
             }
-            success = true;
-          } catch (netErr) {
-            attempts--;
-            if (attempts === 0) throw netErr;
-            statusDiv.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Attesa server, nuovo tentativo (${attempts} rimasti)...`;
-            await new Promise(r => setTimeout(r, 3000));
           }
+        });
+
+        if (tempScannedItems.length === 0) {
+          // Fallimento regex, creiamo un elemento unico con il testo grezzo
+          tempScannedItems.push({ name: "Spesa scontrino", price: "0.00" });
         }
 
-        const rawText = data.candidates[0].content.parts[0].text;
-        const cleanedJsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsed = JSON.parse(cleanedJsonStr);
-
-        tempScannedItems = parsed.items || [];
         let calculatedTotal = 0;
         tempScannedItems.forEach(i => calculatedTotal += parseFloat(i.price) || 0);
 
         renderAIReview(calculatedTotal);
-        statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Scontrino ritagliato e letto con successo!</span>`;
+        statusDiv.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Testo analizzato con successo!</span>`;
       } catch (err) {
         console.error(err);
-        statusDiv.innerHTML = `<span class="text-rose-400">Errore IA: ${err.message || 'Controlla la chiave API o riprova'}</span>`;
+        statusDiv.innerHTML = `<span class="text-rose-400">Errore nell'analisi del testo. Controlla il formato.</span>`;
       }
     }
 
@@ -1004,6 +788,7 @@
     function cancelAIReview() {
       document.getElementById('ocrReviewContainer').classList.add('hidden');
       document.getElementById('ocrStatus').innerText = "";
+      document.getElementById('pasteReceiptText').value = "";
       tempScannedItems = [];
     }
 
@@ -1029,6 +814,7 @@
 
       document.getElementById('ocrReviewContainer').classList.add('hidden');
       document.getElementById('ocrStatus').innerHTML = `<span class="text-emerald-400 font-bold">Prodotti salvati e budget aggiornato!</span>`;
+      document.getElementById('pasteReceiptText').value = "";
       tempScannedItems = [];
       saveAndRender();
       switchTab('markets');
