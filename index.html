@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSpesa v4.1 IA</title>
+  <title>SmartSpesa v4.2 IA</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12 relative">
 
-  <!-- Header con Versione v4.1 e Toggle Notifiche -->
+  <!-- Header con Versione v4.2 e Toggle Notifiche -->
   <header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
     <div class="flex items-center gap-2">
       <div>
@@ -18,7 +18,7 @@
         </h1>
         <div id="currentDateHeader" class="text-[10px] text-slate-400 font-mono mt-0.5"></div>
       </div>
-      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v4.1 IA</span>
+      <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v4.2 IA</span>
     </div>
     
     <div class="flex items-center gap-2">
@@ -31,7 +31,7 @@
     </div>
   </header>
 
-  <!-- WIDGET BUDGET (PARTENZA A €0.00) -->
+  <!-- WIDGET BUDGET -->
   <section class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 mb-4 space-y-3">
     <div class="flex justify-between items-center">
       <div class="flex items-center gap-2">
@@ -67,7 +67,7 @@
     </button>
   </div>
 
-  <!-- SEZIONE 1: LISTA SETTIMANALE (HOME 100% VUOTA ALL'AVVIO) -->
+  <!-- SEZIONE 1: LISTA SETTIMANALE -->
   <div id="viewWeekly" class="space-y-4">
     <div class="bg-slate-800 p-3 rounded-xl shadow-lg border border-slate-700 space-y-2">
       <h2 class="text-xs font-semibold text-slate-300 flex items-center gap-1">
@@ -224,7 +224,7 @@
     </section>
   </div>
 
-  <!-- SEZIONE 3: ARCHIVIO SELEZIONATO PER SUPERMERCATO -->
+  <!-- SEZIONE 3: ARCHIVIO PER SUPERMERCATO -->
   <div id="viewMarkets" class="space-y-4 hidden">
     <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 space-y-3">
       <div class="flex justify-between items-center border-b border-slate-700 pb-2">
@@ -258,7 +258,7 @@
     <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 text-sm max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
         <h2 class="text-base font-bold text-indigo-400 flex items-center gap-2">
-          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v4.1 IA
+          <i class="fa-solid fa-basket-shopping"></i> SmartSpesa v4.2 IA
         </h2>
         <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 hover:text-white text-base p-1 cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
@@ -266,7 +266,7 @@
       </div>
 
       <div class="space-y-3 text-slate-300 text-xs">
-        <p><strong>Versione v4.1:</strong> Scanner scontrini aggiornato con modello IA compatibile al 100% con Google AI Studio (Free Tier).</p>
+        <p><strong>Versione v4.2:</strong> Aggiornato l'endpoint di Google Gemini per garantire la massima compatibilità dello scanner con qualsiasi chiave API attiva.</p>
       </div>
 
       <button type="button" onclick="toggleInfoModal(false)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-xl text-xs transition-colors cursor-pointer">
@@ -376,7 +376,7 @@
 
     function exportBackup() {
       const backupData = {
-        version: "4.1",
+        version: "4.2",
         exportDate: new Date().toISOString(),
         monthlyBudget: monthlyBudget,
         manualAdjustment: manualAdjustment,
@@ -743,7 +743,7 @@
       }
     }
 
-    // GESTIONE IA GEMINI AGGIORNATA
+    // GESTIONE IA GEMINI AGGIORNATA V4.2
     async function processReceiptWithAI(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -757,8 +757,8 @@
 
         const promptText = "Estrai da questo scontrino commerciale tutti i prodotti acquistati con il relativo prezzo in euro. Restituisci ESCLUSIVAMENTE un oggetto JSON valido, senza blocchi di codice markdown, nel seguente formato esatto: {\"items\": [{\"name\": \"Nome prodotto\", \"price\": \"0.00\"}]}";
 
-        // Utilizziamo il modello aggiornato e compatibile con Google AI Studio
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
+        // Utilizziamo gemini-2.5-flash stabilito per Google AI Studio
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
