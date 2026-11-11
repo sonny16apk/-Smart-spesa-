@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartSpesa v5.5</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 max-w-md mx-auto pb-12">
+
+<header class="flex justify-between items-center py-4 border-b border-slate-800 mb-4">
+  <div class="flex items-center gap-2">
+    <div>
+      <h1 class="text-xl font-bold text-indigo-400"><i class="fa-solid fa-basket-shopping"></i> SmartSpesa</h1>
+      <div id="currentDateHeader" class="text-xs text-slate-400 font-mono mt-0.5"></div>
+    </div>
+    <span class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-full font-mono">v5.5</span>
+  </div>
+  <div class="flex items-center gap-2">
+    <button type="button" id="notifToggleBtn" onclick="toggleNotifications()" class="text-sm bg-slate-800 text-slate-400 border border-slate-700 px-2 py-1.5 rounded-lg"><i id="notifIcon" class="fa-solid fa-bell-slash"></i></button>
+    <button type="button" onclick="toggleInfoModal(true)" class="text-sm bg-slate-800 text-indigo-300 border border-slate-700 px-2.5 py-1.5 rounded-lg"><i class="fa-solid fa-circle-info"></i> Info</button>
+  </div>
+</header>
+
+<section class="bg-slate-800 p-4 rounded-xl border border-slate-700 mb-4 space-y-3">
+  <div class="flex justify-between items-center">
+    <div class="flex items-center gap-2">
+      <span class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-wallet text-indigo-400 mr-1"></i> Budget Mensile</span>
+      <span id="budgetTotal" class="text-sm font-mono text-indigo-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">€0.00</span>
+    </div>
+    <div class="flex items-center gap-1.5">
+      <button type="button" onclick="promptAdjustBudget('-')" class="w-7 h-7 bg-slate-900 text-rose-400 border border-slate-700 rounded-lg font-bold text-sm">-</button>
+      <button type="button" onclick="promptAdjustBudget('+')" class="w-7 h-7 bg-slate-900 text-emerald-400 border border-slate-700 rounded-lg font-bold text-sm">+</button>
+      <button type="button" onclick="openBudgetModal()" class="text-sm bg-indigo-950 text-indigo-300 border border-indigo-800 px-2.5 py-1.5 rounded-lg">Modifica</button>
+    </div>
+  </div>
+  <div class="bg-slate-900 p-4 rounded-xl border border-slate-700/80 text-center space-y-1">
+    <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Disponibile Reale</div>
+    <div id="budgetRemaining" class="text-3xl font-extrabold text-emerald-400">€0.00</div>
+    <div id="budgetSpent" class="text-xs text-slate-500"></div>
+  </div>
+</section>
+
+<div class="grid grid-cols-4 gap-1 mb-6 bg-slate-800 p-1 rounded-xl border border-slate-700 text-center">
+  <button type="button" onclick="switchTab('weekly')" id="tabWeekly"><i class="fa-solid fa-list-check text-lg"></i><span>Lista</span></button>
+  <button type="button" onclick="switchTab('archive')" id="tabArchive"><i class="fa-solid fa-paste text-lg"></i><span>Importa</span></button>
+  <button type="button" onclick="switchTab('markets')" id="tabMarkets"><i class="fa-solid fa-store text-lg"></i><span>Negozi</span></button>
+  <button type="button" onclick="switchTab('stats')" id="tabStats"><i class="fa-solid fa-chart-simple text-lg"></i><span>Statistiche</span></button>
+</div>
+
+<!-- LISTA -->
+<div id="viewWeekly" class="space-y-4">
+  <div id="backupReminder" class="hidden bg-amber-950/30 p-3 rounded-xl border border-amber-800/60 space-y-2">
+    <p class="text-sm text-amber-300"><i class="fa-solid fa-triangle-exclamation"></i> <strong>Fai un backup!</strong> <span id="backupReminderText"></span></p>
+    <button type="button" onclick="exportBackup()" class="w-full bg-slate-900 border border-amber-700 text-amber-300 text-sm font-semibold py-2 rounded-lg"><i class="fa-solid fa-download"></i> Esporta backup ora</button>
+  </div>
+  <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3">
+    <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+      <div>
+        <h2 class="text-sm font-semibold text-slate-300">Da Comprare Questa Settimana</h2>
+        <div id="scheduledBannerContainer" class="hidden mt-1">
+          <span class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded-md font-mono inline-flex items-center gap-1"><i class="fa-solid fa-clock"></i> <strong id="scheduledBannerText"></strong></span>
+        </div>
+      </div>
+      <div class="text-sm font-bold text-indigo-300 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-700">Totale: <span id="weeklyTotalSum" class="text-emerald-400 font-extrabold">€0.00</span></div>
+    </div>
+    <ul id="weeklyList" class="space-y-2"></ul>
+  </div>
+
+  <div id="suggestionsCard" class="hidden bg-amber-950/30 p-3 rounded-xl border border-amber-800/60 space-y-2">
+    <h2 class="text-sm font-semibold text-amber-300"><i class="fa-solid fa-rotate"></i> Forse è ora di riacquistare</h2>
+    <ul id="suggestionsList" class="space-y-1.5"></ul>
+  </div>
+
+  <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 space-y-2">
+    <h2 class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-plus text-indigo-400"></i> Aggiungi al volo in lista</h2>
+    <form onsubmit="handleQuickSubmit(event)" class="space-y-2">
+      <div class="grid grid-cols-12 gap-2">
+        <input type="text" id="quickName" placeholder="Prodotto..." required class="col-span-8 bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm">
+        <input type="number" step="0.01" id="quickPrice" placeholder="€ cad." required class="col-span-4 bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm">
+      </div>
+      <div class="flex gap-2">
+        <select id="quickMarket" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm"></select>
+        <input type="number" id="quickQty" min="1" value="1" title="Quantità" class="w-14 bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-center font-bold">
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 font-semibold text-sm px-5 py-2 rounded-lg">Salva</button>
+      </div>
+    </form>
+  </div>
+
+  <details class="bg-slate-800 rounded-xl border border-slate-700">
+    <summary class="p-3 text-sm font-semibold text-slate-300 cursor-pointer"><i class="fa-solid fa-calendar-days text-indigo-400"></i> Pianifica giorno e ora della spesa</summary>
+  <section class="p-3 pt-0 space-y-2">
+    <div class="flex justify-between items-center">
+      <label class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-calendar-days text-indigo-400"></i> Pianifica Giorno & Ora Spesa</label>
+      <button type="button" onclick="clearShoppingSchedule()" class="text-xs text-rose-400 hover:underline">Rimuovi data</button>
+    </div>
+    <input type="datetime-local" id="shoppingDateTimeInput" onchange="updateShoppingSchedule(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-indigo-300 font-mono">
+    <button type="button" onclick="downloadICS()" class="w-full text-xs bg-slate-900 border border-slate-700 text-indigo-300 py-1.5 rounded-lg"><i class="fa-solid fa-calendar-plus"></i> Aggiungi al calendario del telefono (promemoria anche ad app chiusa)</button>
+  </section>
+  </details>
+</div>
+
+<!-- IMPORTA -->
+<div id="viewArchive" class="space-y-6 hidden">
+  <section class="bg-indigo-950/40 p-4 rounded-xl border border-indigo-800/60 space-y-3">
+    <h2 class="text-sm font-semibold text-indigo-300"><i class="fa-solid fa-paste"></i> Incolla Scontrino da IA</h2>
+    <button type="button" onclick="copyGeminiPrompt()" class="w-full bg-slate-900 border border-indigo-700 text-indigo-300 text-sm font-semibold py-2 rounded-lg"><i class="fa-solid fa-copy"></i> 1. Copia istruzioni per Gemini</button>
+    <p class="text-xs text-slate-400">2. Incolla le istruzioni in Gemini e invia la foto dello scontrino. 3. Copia la risposta e incollala qui:</p>
+    <textarea id="pasteReceiptText" rows="4" placeholder="Incolla qui il testo ricevuto..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm"></textarea>
+    <button type="button" onclick="processPastedText()" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold text-sm py-2.5 rounded-lg"><i class="fa-solid fa-wand-magic-sparkles"></i> Analizza Testo Incollato</button>
+    <div id="ocrStatus" class="text-sm text-indigo-300 text-center font-medium"></div>
+
+    <div id="ocrReviewContainer" class="hidden space-y-3 bg-slate-900 p-3 rounded-xl border border-indigo-900">
+      <h3 class="text-sm font-bold text-indigo-300 uppercase tracking-wider">Verifica Prodotti Estratti:</h3>
+      <div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700 space-y-2">
+        <label class="block text-xs text-slate-300 font-semibold">Supermercato Scontrino:</label>
+        <select id="receiptGlobalMarket" onchange="handleReceiptMarketChange(this.value)" class="w-full bg-slate-900 border border-indigo-500 rounded p-2 text-sm font-semibold"></select>
+        <input type="text" id="receiptCustomMarketInput" placeholder="Nome nuovo supermercato..." onchange="handleReceiptCustomMarketSave(this.value)" class="hidden w-full bg-slate-900 border border-indigo-500 rounded p-2 text-sm">
+      </div>
+      <div id="scannedItemsList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+      <div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex justify-between items-center">
+        <span class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-receipt text-indigo-400"></i> Totale Scontrino:</span>
+        <div class="flex items-center gap-1">
+          <span class="text-emerald-400 font-bold text-sm">€</span>
+          <input type="number" step="0.01" id="scannedTotalInput" class="bg-slate-950 border border-emerald-500/80 rounded px-2 py-1 text-emerald-400 font-extrabold w-24 text-right text-sm">
+        </div>
+      </div>
+      <div id="duplicateNote" class="text-xs text-slate-400"></div>
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" onclick="saveAllScannedItems()" class="bg-indigo-600 hover:bg-indigo-500 font-semibold text-sm py-2.5 rounded-lg">Salva & Scala Budget</button>
+        <button type="button" onclick="cancelAIReview()" class="bg-slate-700 text-slate-300 font-semibold text-sm py-2.5 rounded-lg">Annulla</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+    <h2 class="text-sm font-semibold mb-3 text-slate-300"><i class="fa-solid fa-keyboard text-indigo-400"></i> Inserimento Manuale</h2>
+    <form id="itemForm" class="space-y-3" onsubmit="handleFormSubmit(event)">
+      <input type="text" id="itemName" placeholder="Es. Caffè, Latte, Pane..." required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm">
+      <select id="itemMarket" onchange="toggleCustomMarket(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm"></select>
+      <input type="text" id="customMarketInput" placeholder="Nome del supermercato..." class="hidden w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-sm">
+      <div class="grid grid-cols-2 gap-2">
+        <input type="number" step="0.01" id="itemPrice" placeholder="Prezzo (€)" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm">
+        <div class="flex items-center gap-1 bg-slate-900 border border-slate-700 rounded-lg px-2">
+          <input type="number" id="itemFrequency" min="1" value="14" required class="w-full bg-transparent py-2.5 text-sm font-bold text-center">
+          <span class="text-xs text-slate-400 font-semibold">gg</span>
+        </div>
+      </div>
+      <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold text-sm py-2.5 rounded-lg">Salva in Archivio</button>
+    </form>
+  </section>
+
+  <section class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2">
+    <h2 class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-receipt text-indigo-400"></i> Scontrini salvati</h2>
+    <p class="text-xs text-slate-400">Eliminando uno scontrino il budget torna come prima (i prodotti nel catalogo restano).</p>
+    <ul id="receiptsList" class="space-y-2 max-h-64 overflow-y-auto pr-1"></ul>
+  </section>
+
+  <section class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3">
+    <div class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-database text-indigo-400"></i> Backup Dati</div>
+    <div id="backupStatus" class="text-xs text-slate-400"></div>
+    <div class="grid grid-cols-2 gap-2">
+      <button type="button" onclick="exportBackup()" class="bg-slate-900 text-indigo-300 border border-slate-700 text-sm py-2 rounded-lg"><i class="fa-solid fa-download"></i> Esporta JSON</button>
+      <label class="bg-slate-900 text-emerald-300 border border-slate-700 text-sm py-2 rounded-lg cursor-pointer text-center"><i class="fa-solid fa-upload"></i> Importa JSON<input type="file" accept=".json" class="hidden" onchange="importBackup(event)"></label>
+    </div>
+    <div class="pt-2 border-t border-slate-700 text-right"><button type="button" onclick="clearDatabase()" class="text-sm text-rose-400 hover:underline">Svuota tutto l'archivio</button></div>
+  </section>
+</div>
+
+<!-- SUPERMERCATI -->
+<div id="viewMarkets" class="space-y-4 hidden">
+  <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3">
+    <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+      <h2 class="text-sm font-semibold text-slate-300">Archivio per Supermercato</h2>
+      <span class="text-xs text-indigo-400">Gestione Articoli</span>
+    </div>
+    <select id="marketSelector" onchange="handleMarketSelectorChange(this.value)" class="w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-sm font-semibold"></select>
+    <input type="text" id="customMarketSelectorInput" placeholder="Nome supermercato e premi invio..." onchange="handleCustomMarketSelect(this.value)" class="hidden w-full bg-slate-900 border border-indigo-500 rounded-lg p-2.5 text-sm">
+    <button type="button" id="deleteMarketBtn" onclick="deleteCurrentMarket()" class="hidden text-xs text-rose-400 hover:underline"><i class="fa-solid fa-trash mr-1"></i>Elimina questo supermercato</button>
+    <p class="text-xs text-slate-400">Spunta il prodotto per inviarlo alla <strong>Lista Home</strong>.</p>
+    <div id="marketsContainer" class="space-y-2 pt-1"></div>
+  </div>
+</div>
+
+<!-- STATISTICHE -->
+<div id="viewStats" class="space-y-4 hidden">
+  <div class="flex items-center justify-between bg-slate-800 p-3 rounded-xl border border-slate-700">
+    <button type="button" onclick="statsShift(-1)" class="w-11 h-11 bg-slate-900 border border-slate-700 rounded-lg text-indigo-300"><i class="fa-solid fa-chevron-left"></i></button>
+    <div id="statsMonthLabel" class="text-base font-bold text-slate-200"></div>
+    <button type="button" onclick="statsShift(1)" class="w-11 h-11 bg-slate-900 border border-slate-700 rounded-lg text-indigo-300"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
+  <div id="statsContent" class="space-y-4"></div>
+</div>
+
+<!-- INFO -->
+<div id="infoModal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 hidden">
+  <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-5 space-y-4 text-sm max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+      <h2 class="text-base font-bold text-indigo-400">SmartSpesa v5.5</h2>
+      <button type="button" onclick="toggleInfoModal(false)" class="text-slate-400 p-1"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="space-y-3 text-slate-300 text-sm">
+      <div class="bg-indigo-950/50 border border-indigo-800/60 rounded-xl p-3 space-y-1">
+        <p class="font-bold text-indigo-300">💡 Perché è nata SmartSpesa</p>
+        <p>Fare la spesa senza controllo porta a spendere più del previsto e a dimenticare cosa serve davvero. SmartSpesa è nata per rendere tutto semplice: sapere sempre <strong>quanto budget ti resta</strong>, avere una lista chiara di cosa comprare e <strong>dove</strong> conviene, e registrare gli scontrini in pochi secondi.</p>
+        <p>Niente account, niente abbonamenti, niente pubblicità: gratuita, e i tuoi dati restano <strong>solo sul tuo dispositivo</strong>.</p>
+      </div>
+      <details class="bg-slate-900 border border-slate-700 rounded-xl p-3">
+        <summary class="font-bold text-indigo-300">📖 Come importare uno scontrino</summary>
+        <div class="mt-2 pt-2 border-t border-slate-800 space-y-2 text-xs text-slate-400">
+          <p><strong>1.</strong> Scheda "Importa da IA" → "Copia istruzioni per Gemini".</p>
+          <p><strong>2.</strong> In Gemini incolla le istruzioni e invia la foto dello scontrino.</p>
+          <p><strong>3.</strong> Copia la risposta, incollala nell'app e premi Analizza.</p>
+          <p><strong>4.</strong> Controlla, scegli il supermercato e salva: il budget si scala e i prezzi nel catalogo si aggiornano.</p>
+        </div>
+      </details>
+      <p class="text-xs text-slate-400"><strong>Riacquisto:</strong> in Home l'app ti suggerisce i prodotti per cui sono passati i giorni di "frequenza riacquisto".</p>
+      <p class="text-xs text-slate-400"><strong>Statistiche:</strong> vedi quanto hai speso mese per mese e in quale supermercato, calcolato dagli scontrini che salvi.</p>
+      <p class="text-xs text-slate-400"><strong>Quantità:</strong> nel prezzo scrivi quanto costa <em>uno</em>, poi imposta la quantità accanto. In lista puoi cambiarla con + e -, e il totale si aggiorna da solo.</p>
+      <p class="text-xs text-slate-400"><strong>Budget:</strong> il budget si scala solo salvando uno scontrino (o con i tasti + e -). Spuntare un prodotto in lista lo segna come comprato, ma non cambia il budget.</p>
+      <p class="text-xs text-slate-400"><strong>Backup:</strong> i dati sono salvati nel browser. Esporta un backup ogni tanto: se cancelli i dati del browser o cambi telefono, lo puoi reimportare.</p>
+      <p class="text-xs text-slate-400"><strong>Notifiche:</strong> funzionano solo con l'app aperta (il giorno prima e un'ora prima). Per un promemoria sicuro usa "Aggiungi al calendario".</p>
+    </div>
+    <button type="button" onclick="toggleInfoModal(false)" class="w-full bg-indigo-600 font-semibold py-2 rounded-xl text-sm">Chiudi</button>
+  </div>
+</div>
+
+<script>
+const DEFAULT_MARKETS = ["Prix","Lidl","Coop","Conad","Eurospin","Esselunga"];
+const ls = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+let products = ls.get('smartspesa_products', []);
+let receipts = ls.get('smartspesa_receipts', []);
+let customMarkets = ls.get('smartspesa_markets', []);
+let monthlyBudget = parseFloat(ls.get('smartspesa_budget', 0)) || 0;
+let manualAdjustment = parseFloat(ls.get('smartspesa_manual_adjustment', 0)) || 0;
+let notificationsEnabled = ls.get('smartspesa_notifications', false);
+let shoppingDateTime = ls.get('smartspesa_shopping_datetime', '') || '';
+let notified = ls.get('smartspesa_notified', {});
+let lastBackup = ls.get('smartspesa_last_backup', null);
+let firstSeen = ls.get('smartspesa_first_seen', null);
+if (!firstSeen) { firstSeen = new Date().toISOString(); ls.set('smartspesa_first_seen', firstSeen); }
+let tempScannedItems = [], tempReceiptTotal = null, currentActiveMarket = "Prix";
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const todayISO = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+window.addEventListener('DOMContentLoaded', () => {
+  const t = new Date().toLocaleDateString('it-IT', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('currentDateHeader').innerText = cap(t);
+  if (shoppingDateTime) document.getElementById('shoppingDateTimeInput').value = shoppingDateTime;
+  updateNotificationUI(); populateMarketSelectorOptions(); updateBudgetDisplay();
+  renderMarketsView(); generateWeeklyList(); updateScheduledBanner(); renderReceipts(); renderBackupReminder();
+  switchTab('weekly');
+  checkNotifications(); setInterval(checkNotifications, 60000);
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+});
+
+/* ---------- Pianificazione & notifiche ---------- */
+function updateShoppingSchedule(val) {
+  if (!val) return;
+  shoppingDateTime = val; ls.set('smartspesa_shopping_datetime', val);
+  notified = {}; ls.set('smartspesa_notified', notified);
+  updateScheduledBanner(); checkNotifications();
+}
+function clearShoppingSchedule() {
+  shoppingDateTime = ''; localStorage.removeItem('smartspesa_shopping_datetime');
+  document.getElementById('shoppingDateTimeInput').value = '';
+  updateScheduledBanner();
+}
+function updateScheduledBanner() {
+  const c = document.getElementById('scheduledBannerContainer');
+  if (shoppingDateTime) {
+    document.getElementById('scheduledBannerText').innerText = 'Spesa prevista: ' + new Date(shoppingDateTime).toLocaleString('it-IT', { dateStyle:'medium', timeStyle:'short' });
+    c.classList.remove('hidden');
+  } else c.classList.add('hidden');
+}
+function toggleNotifications() {
+  if (!notificationsEnabled) {
+    if (!("Notification" in window)) return alert("Il tuo browser non supporta le notifiche.");
+    Notification.requestPermission().then(p => {
+      if (p === "granted") { notificationsEnabled = true; ls.set('smartspesa_notifications', true); updateNotificationUI(); checkNotifications(); alert("Notifiche attivate (funzionano con l'app aperta)."); }
+      else alert("Permesso notifiche negato dal browser.");
+    });
+  } else { notificationsEnabled = false; ls.set('smartspesa_notifications', false); updateNotificationUI(); }
+}
+function updateNotificationUI() {
+  const btn = document.getElementById('notifToggleBtn'), icon = document.getElementById('notifIcon');
+  btn.className = notificationsEnabled ? "text-sm bg-indigo-900 text-indigo-300 border border-indigo-700 px-2 py-1.5 rounded-lg" : "text-sm bg-slate-800 text-slate-400 border border-slate-700 px-2 py-1.5 rounded-lg";
+  icon.className = notificationsEnabled ? "fa-solid fa-bell" : "fa-solid fa-bell-slash";
+}
+function checkNotifications() {
+  if (!notificationsEnabled || !shoppingDateTime || !("Notification" in window) || Notification.permission !== "granted") return;
+  const diff = new Date(shoppingDateTime).getTime() - Date.now();
+  const rules = [
+    { key: 'day', min: 0, max: 24*3600e3, text: "Domani hai la spesa in programma." },
+    { key: 'hour', min: 0, max: 3600e3, text: "La spesa è tra circa un'ora!" }
+  ];
+  rules.forEach(r => {
+    const id = r.key + '_' + shoppingDateTime;
+    if (diff > r.min && diff <= r.max && !notified[id]) {
+      notified[id] = true; ls.set('smartspesa_notified', notified);
+      try { new Notification("SmartSpesa", { body: r.text }); } catch (e) {}
+    }
+  });
+}
+function downloadICS() {
+  if (!shoppingDateTime) return alert("Prima scegli data e ora della spesa.");
+  const fmt = d => d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0') + 'T' + String(d.getHours()).padStart(2,'0') + String(d.getMinutes()).padStart(2,'0') + '00';
+  const s = new Date(shoppingDateTime), e = new Date(s.getTime() + 3600e3);
+  const ics = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//SmartSpesa//IT","BEGIN:VEVENT","UID:" + Date.now() + "@smartspesa","DTSTAMP:" + fmt(new Date()),
+    "DTSTART:" + fmt(s), "DTEND:" + fmt(e), "SUMMARY:Spesa", "BEGIN:VALARM","TRIGGER:-PT1H","ACTION:DISPLAY","DESCRIPTION:Spesa tra un'ora","END:VALARM",
+    "BEGIN:VALARM","TRIGGER:-P1D","ACTION:DISPLAY","DESCRIPTION:Domani spesa","END:VALARM","END:VEVENT","END:VCALENDAR"].join("\r\n");
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
+  a.download = 'spesa.ics'; document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---------- Supermercati (elenco persistente) ---------- */
+function getMarkets() {
+  const m = [...DEFAULT_MARKETS];
+  [...customMarkets, ...products.map(p => p.market)].forEach(x => { if (x && !m.some(y => y.toLowerCase() === x.toLowerCase())) m.push(x); });
+  return m;
+}
+function registerMarket(name) {
+  const clean = (name || '').trim(); if (!clean) return '';
+  const ex = getMarkets().find(x => x.toLowerCase() === clean.toLowerCase());
+  if (ex) return ex;
+  customMarkets.push(clean); ls.set('smartspesa_markets', customMarkets);
+  return clean;
+}
+function marketOptions(sel, withCustom) {
+  const h = getMarkets().map(m => `<option value="${esc(m)}" ${m === sel ? 'selected' : ''}>${esc(m)}</option>`).join('');
+  return h + (withCustom ? `<option value="CUSTOM">+ Inserisci nuovo supermercato...</option>` : '');
+}
+function populateMarketSelectorOptions() {
+  document.getElementById('marketSelector').innerHTML = marketOptions(currentActiveMarket, true);
+  const r = document.getElementById('receiptGlobalMarket'), rk = r.value;
+  r.innerHTML = marketOptions(rk || currentActiveMarket, true);
+  const q = document.getElementById('quickMarket'), qk = q.value;
+  q.innerHTML = marketOptions(qk, false);
+  const i = document.getElementById('itemMarket'), ik = i.value;
+  i.innerHTML = marketOptions(ik, true);
+  document.getElementById('deleteMarketBtn').classList.toggle('hidden', !customMarkets.includes(currentActiveMarket));
+}
+function deleteCurrentMarket() {
+  const m = currentActiveMarket.toLowerCase();
+  const n = products.filter(p => (p.market || '').toLowerCase() === m).length;
+  if (!confirm(`Eliminare "${currentActiveMarket}"${n ? ` e i suoi ${n} prodotti` : ''}?`)) return;
+  products = products.filter(p => (p.market || '').toLowerCase() !== m);
+  customMarkets = customMarkets.filter(x => x.toLowerCase() !== m); ls.set('smartspesa_markets', customMarkets);
+  currentActiveMarket = "Prix"; saveAndRender();
+}
+function handleReceiptMarketChange(v) {
+  const c = document.getElementById('receiptCustomMarketInput');
+  c.classList.toggle('hidden', v !== 'CUSTOM'); if (v === 'CUSTOM') c.focus(); else c.value = '';
+}
+function handleReceiptCustomMarketSave(v) {
+  const name = registerMarket(v); if (!name) return;
+  populateMarketSelectorOptions();
+  document.getElementById('receiptGlobalMarket').value = name;
+  const c = document.getElementById('receiptCustomMarketInput'); c.classList.add('hidden'); c.value = '';
+}
+function handleMarketSelectorChange(v) {
+  const c = document.getElementById('customMarketSelectorInput');
+  if (v === 'CUSTOM') { c.classList.remove('hidden'); c.focus(); return; }
+  c.classList.add('hidden'); c.value = ''; currentActiveMarket = v;
+  populateMarketSelectorOptions(); renderMarketsView();
+}
+function handleCustomMarketSelect(v) {
+  const name = registerMarket(v); if (!name) return;
+  currentActiveMarket = name; populateMarketSelectorOptions();
+  const c = document.getElementById('customMarketSelectorInput'); c.classList.add('hidden'); c.value = '';
+  renderMarketsView();
+}
+function toggleCustomMarket(v) {
+  const c = document.getElementById('customMarketInput');
+  c.classList.toggle('hidden', v !== 'CUSTOM'); if (v === 'CUSTOM') c.focus(); else c.value = '';
+}
+
+/* ---------- Backup ---------- */
+function exportBackup() {
+  const data = { version:"5.2", exportDate:new Date().toISOString(), monthlyBudget, manualAdjustment, shoppingDateTime, markets: customMarkets, products, receipts };
+  const a = document.createElement('a');
+  a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+  a.download = `smartspesa_backup_${todayISO()}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  lastBackup = new Date().toISOString(); ls.set('smartspesa_last_backup', lastBackup); renderBackupReminder();
+}
+function importBackup(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const d = JSON.parse(e.target.result);
+      if (d && Array.isArray(d.products) && confirm("Ripristinare il backup? I dati attuali verranno sostituiti.")) {
+        products = d.products;
+        receipts = Array.isArray(d.receipts) ? d.receipts : [];
+        customMarkets = [];
+        (Array.isArray(d.markets) ? d.markets : []).forEach(registerMarket);
+        if (typeof d.monthlyBudget === 'number') monthlyBudget = d.monthlyBudget;
+        if (typeof d.manualAdjustment === 'number') manualAdjustment = d.manualAdjustment;
+        shoppingDateTime = d.shoppingDateTime || '';
+        document.getElementById('shoppingDateTimeInput').value = shoppingDateTime;
+        ls.set('smartspesa_budget', monthlyBudget); ls.set('smartspesa_manual_adjustment', manualAdjustment);
+        ls.set('smartspesa_shopping_datetime', shoppingDateTime); ls.set('smartspesa_receipts', receipts);
+        updateScheduledBanner(); saveAndRender(); alert("Backup importato!");
+      }
+    } catch (err) { alert("File JSON non valido."); }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+/* ---------- Budget ---------- */
+function openBudgetModal() {
+  const v = prompt("Budget Mensile Totale (€):", monthlyBudget > 0 ? monthlyBudget : "0");
+  if (v === null) return;
+  const n = parseFloat(v.replace(',', '.'));
+  if (!isNaN(n) && n >= 0) { monthlyBudget = n; ls.set('smartspesa_budget', n); updateBudgetDisplay(); }
+}
+function promptAdjustBudget(op) {
+  const v = prompt(op === '+' ? "Importo da AGGIUNGERE (€):" : "Importo da SCALARE (€):", "10");
+  if (v === null) return;
+  const n = parseFloat(v.replace(',', '.'));
+  if (!isNaN(n) && n > 0) { manualAdjustment += (op === '+' ? n : -n); ls.set('smartspesa_manual_adjustment', manualAdjustment); updateBudgetDisplay(); }
+}
+function calculateSpentTotal() {
+  const now = new Date(), m = now.getMonth(), y = now.getFullYear();
+  const inMonth = ds => { const d = new Date(ds); return d.getMonth() === m && d.getFullYear() === y; };
+  let total = -manualAdjustment;
+  receipts.forEach(r => { if (r.date && inMonth(r.date)) total += parseFloat(r.total) || 0; });
+  products.forEach(p => { if (p.fromReceipt && p.date && inMonth(p.date)) total += parseFloat(p.price) || 0; });
+  return total;
+}
+function updateBudgetDisplay() {
+  const spent = calculateSpentTotal(), rem = monthlyBudget - spent;
+  document.getElementById('budgetTotal').innerText = `€${monthlyBudget.toFixed(2)}`;
+  const el = document.getElementById('budgetRemaining');
+  el.innerText = `€${rem.toFixed(2)}`;
+  el.className = "text-3xl font-extrabold " + (rem >= 0 ? "text-emerald-400" : "text-rose-400");
+  document.getElementById('budgetSpent').innerText = `Speso questo mese: €${spent.toFixed(2)}`;
+}
+
+/* ---------- Tab ---------- */
+function switchTab(tab) {
+  const base = 'py-2 text-xs font-semibold rounded-lg flex flex-col items-center gap-0.5 ';
+  const on = base + 'bg-indigo-600 text-white', off = base + 'text-slate-400';
+  ['weekly','archive','markets','stats'].forEach(t => {
+    const T = cap(t);
+    document.getElementById('view' + T).classList.toggle('hidden', t !== tab);
+    document.getElementById('tab' + T).className = t === tab ? on : off;
+  });
+  if (tab === 'weekly') generateWeeklyList();
+  if (tab === 'stats') renderStats();
+  if (tab === 'markets') { populateMarketSelectorOptions(); renderMarketsView(); }
+}
+function toggleInfoModal(show) { document.getElementById('infoModal').classList.toggle('hidden', !show); }
+
+function saveAndRender() {
+  ls.set('smartspesa_products', products);
+  populateMarketSelectorOptions(); renderMarketsView(); generateWeeklyList(); updateBudgetDisplay(); renderReceipts(); renderBackupReminder();
+  if (!document.getElementById('viewStats').classList.contains('hidden')) renderStats();
+}
+
+/* ---------- Prodotti ---------- */
+function handleQuickSubmit(e) {
+  e.preventDefault();
+  const name = document.getElementById('quickName').value.trim();
+  const price = document.getElementById('quickPrice').value;
+  const market = document.getElementById('quickMarket').value;
+  const qty = Math.max(1, parseInt(document.getElementById('quickQty').value) || 1);
+  if (!name || !price) return;
+  products.unshift({ name, market, price: parseFloat(price).toFixed(2), frequency:"14", qty, date:todayISO(), inList:true, fromReceipt:false, createdAt:Date.now(), lastBought:Date.now() });
+  saveAndRender();
+  document.getElementById('quickName').value = ''; document.getElementById('quickPrice').value = ''; document.getElementById('quickQty').value = 1;
+  switchTab('weekly');
+}
+function handleFormSubmit(e) {
+  e.preventDefault();
+  const name = document.getElementById('itemName').value.trim();
+  const sel = document.getElementById('itemMarket').value;
+  const price = document.getElementById('itemPrice').value;
+  const freq = document.getElementById('itemFrequency').value || "14";
+  const market = sel === 'CUSTOM' ? (registerMarket(document.getElementById('customMarketInput').value) || 'Altro') : sel;
+  if (!name || !price) return;
+  registerMarket(market);
+  products.unshift({ name, market, price: parseFloat(price).toFixed(2), frequency: String(freq), date:todayISO(), inList:false, fromReceipt:false, createdAt:Date.now(), lastBought:Date.now() });
+  currentActiveMarket = market;
+  saveAndRender();
+  document.getElementById('itemForm').reset(); document.getElementById('itemFrequency').value = "14";
+  document.getElementById('customMarketInput').classList.add('hidden');
+  switchTab('markets');
+}
+function renderMarketsView() {
+  const c = document.getElementById('marketsContainer');
+  const list = products.map((it, i) => ({ ...it, i })).filter(it => (it.market || 'Prix').toLowerCase() === currentActiveMarket.toLowerCase());
+  if (!list.length) { c.innerHTML = `<div class="text-sm text-slate-500 text-center py-6">Nessun prodotto nell'archivio di "${esc(currentActiveMarket)}".</div>`; return; }
+  c.innerHTML = '<ul class="space-y-2.5">' + list.map(it => `
+    <li class="bg-slate-900 p-3 rounded-lg border border-slate-700 space-y-2">
+      <div class="flex justify-between items-center text-sm">
+        <div class="flex items-center gap-2">
+          <input type="checkbox" ${it.inList ? 'checked' : ''} onchange="toggleItemInList(${it.i}, this.checked)" class="w-4 h-4 accent-indigo-600">
+          <input type="text" value="${esc(it.name)}" onchange="updateMarketItemName(${it.i}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 font-medium w-32">
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-indigo-300 font-bold">€</span>
+          <input type="number" step="0.01" value="${(parseFloat(it.price) || 0).toFixed(2)}" onchange="updateMarketItemPrice(${it.i}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-1.5 py-1 font-bold w-16 text-right">
+          <button type="button" onclick="removeProduct(${it.i})" class="text-slate-500 hover:text-rose-400 p-1"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+      <div class="flex items-center justify-between text-xs text-slate-400 pt-1 border-t border-slate-800/60">
+        <span><i class="fa-solid fa-rotate text-indigo-400"></i> Frequenza riacquisto:</span>
+        <div class="flex items-center gap-1">
+          <input type="number" min="1" value="${esc(it.frequency || 14)}" onchange="updateMarketItemFrequency(${it.i}, this.value)" class="bg-slate-950 border border-slate-700 rounded px-1.5 py-0.5 w-12 text-center font-bold">
+          <span class="font-semibold">giorni</span>
+        </div>
+      </div>
+    </li>`).join('') + '</ul>';
+}
+function updateMarketItemFrequency(i, v) { const n = parseInt(v); if (products[i] && n > 0) { products[i].frequency = String(n); saveAndRender(); } }
+function toggleItemInList(i, c) { if (products[i]) { products[i].inList = c; if (!c) products[i].qty = 1; saveAndRender(); } }
+function updateMarketItemName(i, v) { if (products[i] && v.trim()) { products[i].name = v.trim(); saveAndRender(); } }
+function updateMarketItemPrice(i, v) { const n = parseFloat(v); if (!isNaN(n) && products[i]) { products[i].price = n.toFixed(2); saveAndRender(); } }
+function removeProduct(i) { products.splice(i, 1); saveAndRender(); }
+function clearDatabase() {
+  if (confirm("Vuoi cancellare tutto l'archivio (prodotti, scontrini e supermercati aggiunti)?")) {
+    products = []; receipts = []; customMarkets = []; currentActiveMarket = "Prix";
+    ls.set('smartspesa_receipts', receipts); ls.set('smartspesa_markets', customMarkets); saveAndRender();
+  }
+}
+let statsMonth = todayISO().slice(0, 7);
+const monthLabel = k => { const [y, m] = k.split('-').map(Number); return cap(new Date(y, m - 1, 1).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })); };
+const shiftMonth = (k, d) => { const [y, m] = k.split('-').map(Number); const t = new Date(y, m - 1 + d, 1); return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0'); };
+const monthReceipts = k => receipts.filter(r => (r.date || '').startsWith(k));
+const monthTotal = k => monthReceipts(k).reduce((s, r) => s + (parseFloat(r.total) || 0), 0);
+function statsShift(d) { statsMonth = shiftMonth(statsMonth, d); renderStats(); }
+function renderStats() {
+  document.getElementById('statsMonthLabel').innerText = monthLabel(statsMonth);
+  const box = document.getElementById('statsContent');
+  if (!receipts.length) { box.innerHTML = '<div class="bg-slate-800 p-6 rounded-xl border border-slate-700 text-center text-sm text-slate-400">Qui vedrai quanto spendi mese per mese. Salva il tuo primo scontrino dalla scheda <strong>Importa</strong> per iniziare.</div>'; return; }
+  const isNow = statsMonth === todayISO().slice(0, 7);
+  const rs = monthReceipts(statsMonth), cur = monthTotal(statsMonth), prev = monthTotal(shiftMonth(statsMonth, -1));
+  const spent = isNow ? calculateSpentTotal() : cur;
+  let html = `<div class="bg-slate-800 p-5 rounded-xl border border-slate-700 text-center space-y-2">
+    <div class="text-sm text-slate-400 uppercase tracking-wider font-semibold">Speso</div>
+    <div class="text-4xl font-extrabold text-indigo-300">€${spent.toFixed(2)}</div>`;
+  if (isNow && monthlyBudget > 0) {
+    const pct = Math.max(0, Math.min(100, spent / monthlyBudget * 100));
+    const col = spent > monthlyBudget ? 'bg-rose-500' : pct >= 80 ? 'bg-amber-400' : 'bg-emerald-500';
+    html += `<div class="h-3 bg-slate-900 rounded-full overflow-hidden"><div class="h-3 ${col}" style="width:${pct}%"></div></div>
+      <div class="text-sm text-slate-400">${Math.round(spent / monthlyBudget * 100)}% del budget di €${monthlyBudget.toFixed(2)}</div>`;
+  }
+  if (prev > 0 && rs.length) {
+    const diff = cur - prev;
+    html += `<div class="text-sm font-medium ${diff <= 0 ? 'text-emerald-400' : 'text-rose-400'}">${diff <= 0 ? '▼' : '▲'} €${Math.abs(diff).toFixed(2)} ${diff <= 0 ? 'in meno' : 'in più'} rispetto a ${monthLabel(shiftMonth(statsMonth, -1))}</div>`;
+  }
+  html += `<div class="text-sm text-slate-500">${rs.length} ${rs.length === 1 ? 'scontrino' : 'scontrini'}${rs.length ? ' · media €' + (cur / rs.length).toFixed(2) : ''}</div></div>`;
+  const byM = {};
+  rs.forEach(r => { const m = r.market || 'Altro'; byM[m] = (byM[m] || 0) + (parseFloat(r.total) || 0); });
+  const ent = Object.entries(byM).sort((a, b) => b[1] - a[1]);
+  if (ent.length) {
+    const max = ent[0][1] || 1, tot = ent.reduce((s, e) => s + e[1], 0) || 1;
+    html += `<div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3"><h3 class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-store text-indigo-400"></i> Dove hai speso</h3>` +
+      ent.map(([m, v]) => `<div class="space-y-1"><div class="flex justify-between text-sm"><span class="text-slate-200 font-medium">${esc(m)}</span><span class="text-indigo-300 font-bold">€${v.toFixed(2)} <span class="text-slate-500 font-normal">${Math.round(v / tot * 100)}%</span></span></div><div class="h-2.5 bg-slate-900 rounded-full overflow-hidden"><div class="h-2.5 bg-indigo-500 rounded-full" style="width:${v / max * 100}%"></div></div></div>`).join('') + '</div>';
+  }
+  const keys = [-5, -4, -3, -2, -1, 0].map(d => shiftMonth(statsMonth, d)), vals = keys.map(monthTotal), vmax = Math.max(...vals, 1);
+  html += `<div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3"><h3 class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-chart-simple text-indigo-400"></i> Ultimi 6 mesi</h3><div class="flex items-end justify-between gap-2">` +
+    keys.map((k, i) => {
+      const [y, m] = k.split('-').map(Number), sel = k === statsMonth;
+      const lab = new Date(y, m - 1, 1).toLocaleDateString('it-IT', { month: 'short' });
+      const h = vals[i] ? Math.max(4, Math.round(vals[i] / vmax * 100)) : 0;
+      return `<div class="flex-1 flex flex-col items-center justify-end gap-1"><span class="text-xs text-slate-400">${vals[i] ? Math.round(vals[i]) : ''}</span><div class="w-full rounded-t ${sel ? 'bg-indigo-500' : 'bg-slate-600'}" style="height:${h}px"></div><span class="text-xs ${sel ? 'text-indigo-300 font-bold' : 'text-slate-500'}">${lab}</span></div>`;
+    }).join('') + '</div></div>';
+  box.innerHTML = html;
+}
+const qtyOf = it => Math.max(1, parseInt(it.qty) || 1);
+function changeQty(i, d) { if (products[i]) { products[i].qty = Math.max(1, qtyOf(products[i]) + d); saveAndRender(); } }
+function renderReceipts() {
+  const ul = document.getElementById('receiptsList');
+  if (!receipts.length) { ul.innerHTML = '<li class="text-sm text-slate-500 text-center py-3">Nessuno scontrino salvato.</li>'; return; }
+  ul.innerHTML = receipts.map((r, i) => ({ r, i })).reverse().map(({ r, i }) => `
+    <li class="flex justify-between items-center bg-slate-900 px-3 py-2 rounded-lg border border-slate-700 text-sm">
+      <div><div class="font-medium text-slate-200">${esc(r.market || '—')} · €${(parseFloat(r.total) || 0).toFixed(2)}</div>
+        <div class="text-slate-500">${esc(r.date || '')}${r.items ? ' · ' + esc(r.items) + ' prodotti' : ''}</div></div>
+      <button type="button" onclick="deleteReceipt(${i})" class="text-slate-500 hover:text-rose-400 p-2"><i class="fa-solid fa-trash"></i></button>
+    </li>`).join('');
+}
+function deleteReceipt(i) {
+  const r = receipts[i]; if (!r) return;
+  if (!confirm(`Eliminare lo scontrino di ${r.market} da €${(parseFloat(r.total) || 0).toFixed(2)}? Il budget verrà ricalcolato.`)) return;
+  receipts.splice(i, 1); ls.set('smartspesa_receipts', receipts);
+  saveAndRender();
+}
+function renderBackupReminder() {
+  const days = Math.floor((Date.now() - new Date(lastBackup || firstSeen).getTime()) / 864e5);
+  const hasData = products.length > 0 || receipts.length > 0;
+  document.getElementById('backupReminder').classList.toggle('hidden', !(hasData && days >= 14));
+  document.getElementById('backupReminderText').innerText = lastBackup ? `Ultimo backup: ${days} giorni fa.` : 'Non ne hai ancora fatto nessuno.';
+  document.getElementById('backupStatus').innerText = lastBackup ? `Ultimo backup: ${new Date(lastBackup).toLocaleDateString('it-IT')}` : 'Nessun backup ancora esportato.';
+}
+function renderSuggestions() {
+  const card = document.getElementById('suggestionsCard'), ul = document.getElementById('suggestionsList');
+  const now = new Date(); now.setHours(0,0,0,0);
+  const due = products.map((p, i) => ({ ...p, i })).filter(p => {
+    if (p.inList || !p.date) return false;
+    const days = Math.floor((now - new Date(p.date + 'T00:00:00')) / 864e5);
+    p.overdue = days - (parseInt(p.frequency) || 14);
+    return p.overdue >= 0;
+  }).sort((a, b) => b.overdue - a.overdue).slice(0, 5);
+  card.classList.toggle('hidden', !due.length);
+  ul.innerHTML = due.map(p => `
+    <li class="flex justify-between items-center bg-slate-900 px-3 py-2 rounded-lg border border-slate-700 text-sm">
+      <div><span class="font-medium text-slate-200">${esc(p.name)}</span><span class="text-slate-500"> · ${esc(p.market)} · ${p.overdue === 0 ? 'scade oggi' : 'in ritardo di ' + p.overdue + ' gg'}</span></div>
+      <button type="button" onclick="toggleItemInList(${p.i}, true)" class="text-indigo-300 font-semibold px-2 py-1"><i class="fa-solid fa-plus"></i> Lista</button>
+    </li>`).join('');
+}
+function generateWeeklyList() {
+  renderSuggestions();
+  const ul = document.getElementById('weeklyList');
+  const active = products.map((it, i) => ({ ...it, i })).filter(it => it.inList === true);
+  document.getElementById('weeklyTotalSum').innerText = '€' + active.reduce((s, it) => s + (parseFloat(it.price) || 0) * qtyOf(it), 0).toFixed(2);
+  if (!active.length) { ul.innerHTML = `<li class="text-sm text-slate-500 text-center py-6">La lista è vuota. Spunta i prodotti da "Per Supermercato" o aggiungili al volo!</li>`; return; }
+  ul.innerHTML = active.map(it => `
+    <li class="flex justify-between items-center bg-slate-900 p-3 rounded-lg border border-slate-700 text-sm">
+      <div class="flex items-center gap-3">
+        <input type="checkbox" onchange="markAsBought(${it.i})" class="w-4 h-4 accent-indigo-600">
+        <div><div class="font-medium text-slate-200">${esc(it.name)}</div><div class="text-sm text-slate-400"><i class="fa-solid fa-store mr-1"></i>${esc(it.market)}</div></div>
+      </div>
+      <div class="flex flex-col items-end gap-1">
+        <span class="font-bold text-indigo-300">€${((parseFloat(it.price) || 0) * qtyOf(it)).toFixed(2)}</span>
+        ${qtyOf(it) > 1 ? `<span class="text-xs text-slate-500">€${(parseFloat(it.price) || 0).toFixed(2)} cad.</span>` : ''}
+        <div class="flex items-center gap-1 text-sm">
+          <button type="button" onclick="changeQty(${it.i}, -1)" class="w-9 h-9 bg-slate-950 border border-slate-700 rounded text-rose-400 font-bold">-</button>
+          <span class="w-7 text-center font-bold text-slate-200">${qtyOf(it)}</span>
+          <button type="button" onclick="changeQty(${it.i}, 1)" class="w-9 h-9 bg-slate-950 border border-slate-700 rounded text-emerald-400 font-bold">+</button>
+        </div>
+      </div>
+    </li>`).join('');
+}
+function markAsBought(i) {
+  if (products[i]) { products[i].lastBought = Date.now(); products[i].date = todayISO(); products[i].inList = false; products[i].qty = 1; saveAndRender(); }
+}
+
+/* ---------- Import scontrino da IA ---------- */
+function copyGeminiPrompt() {
+  const p = "Leggi lo scontrino nella foto. Rispondi SOLO con una riga per prodotto, nel formato esatto:\nNome prodotto - 1,50\nSe un prodotto ha quantità maggiore di 1, scrivi il prezzo totale della riga. Non aggiungere spiegazioni, simboli o numeri di riga. Ultima riga:\nTOTALE - 00,00";
+  const done = () => { document.getElementById('ocrStatus').innerHTML = '<span class="text-emerald-400 font-bold">Istruzioni copiate! Incollale in Gemini.</span>'; };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(p).then(done).catch(() => prompt("Copia queste istruzioni:", p));
+  else prompt("Copia queste istruzioni:", p);
+}
+function parseReceiptText(text) {
+  const items = []; let total = null;
+  const price = '(\\d{1,4}(?:[.,]\\d{2}))';
+  const strict = new RegExp('^(.*?)[\\s\\-–:]*€?\\s*' + price + '\\s*(?:€|eur|euro)?\\s*[A-Za-z]?$', 'i');
+  const skip = /(subtotale|resto|contanti|carta|bancomat|pagamento|iva|sconto|punti|arrotond)/i;
+  text.split('\n').forEach(raw => {
+    let line = raw.replace(/^[\s*•·\-\d.)]+(?=[A-Za-zÀ-ÿ])/, '').replace(/\*\*/g, '').trim();
+    if (!line) return;
+    const m = line.match(strict); if (!m) return;
+    let name = m[1].replace(/[€:–\-\s]+$/, '').trim();
+    const val = parseFloat(m[2].replace(',', '.'));
+    if (/^(totale|total|importo|da pagare)/i.test(name)) { total = val; return; }
+    if (skip.test(name) || name.length < 2 || isNaN(val)) return;
+    items.push({ name: cap(name), price: val.toFixed(2) });
+  });
+  return { items, total };
+}
+function processPastedText() {
+  const text = document.getElementById('pasteReceiptText').value.trim();
+  const status = document.getElementById('ocrStatus');
+  if (!text) { status.innerHTML = '<span class="text-rose-400">Incolla prima il testo copiato!</span>'; return; }
+  const r = parseReceiptText(text);
+  tempScannedItems = r.items; tempReceiptTotal = r.total;
+  if (!tempScannedItems.length) { status.innerHTML = '<span class="text-rose-400">Non ho trovato prodotti. Controlla che ogni riga sia "Nome - 1,50".</span>'; return; }
+  const sum = tempScannedItems.reduce((s, i) => s + parseFloat(i.price), 0);
+  renderAIReview(r.total !== null ? r.total : sum);
+  status.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> ${tempScannedItems.length} prodotti trovati</span>`;
+}
+function renderAIReview(total) {
+  document.getElementById('scannedTotalInput').value = total.toFixed(2);
+  populateMarketSelectorOptions();
+  const list = document.getElementById('scannedItemsList');
+  list.innerHTML = tempScannedItems.map((it, i) => `
+    <div class="bg-slate-800 p-2.5 rounded-lg border border-slate-700 text-sm">
+      <div class="grid grid-cols-12 gap-2 items-center">
+        <input type="text" value="${esc(it.name)}" onchange="updateTempItem(${i}, 'name', this.value)" class="col-span-7 bg-slate-900 border border-slate-700 rounded p-1.5">
+        <div class="col-span-4 flex items-center gap-1"><span class="text-indigo-300 font-bold">€</span>
+          <input type="number" step="0.01" value="${esc(it.price)}" onchange="updateTempItem(${i}, 'price', this.value)" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-right"></div>
+        <button type="button" onclick="removeTempItem(${i})" class="col-span-1 text-slate-500 hover:text-rose-400"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    </div>`).join('');
+  document.getElementById('duplicateNote').innerText = "I prodotti già presenti nello stesso supermercato verranno aggiornati (prezzo e data), non duplicati.";
+  document.getElementById('ocrReviewContainer').classList.remove('hidden');
+}
+function updateTempItem(i, f, v) { if (tempScannedItems[i]) tempScannedItems[i][f] = v.trim(); }
+function removeTempItem(i) {
+  tempScannedItems.splice(i, 1);
+  const sum = tempScannedItems.reduce((s, it) => s + (parseFloat(it.price) || 0), 0);
+  renderAIReview(tempReceiptTotal !== null ? parseFloat(document.getElementById('scannedTotalInput').value) || sum : sum);
+}
+function cancelAIReview() {
+  document.getElementById('ocrReviewContainer').classList.add('hidden');
+  document.getElementById('ocrStatus').innerText = '';
+  document.getElementById('pasteReceiptText').value = '';
+  tempScannedItems = []; tempReceiptTotal = null;
+}
+function saveAllScannedItems() {
+  let market = document.getElementById('receiptGlobalMarket').value;
+  if (market === 'CUSTOM') market = document.getElementById('receiptCustomMarketInput').value;
+  market = registerMarket(market) || 'Altro'; registerMarket(market);
+  const total = parseFloat(document.getElementById('scannedTotalInput').value) || 0;
+  let updated = 0, added = 0;
+  tempScannedItems.forEach(it => {
+    const price = parseFloat(it.price);
+    if (!it.name || isNaN(price)) return;
+    const existing = products.find(p => p.name.toLowerCase() === it.name.toLowerCase() && (p.market || '').toLowerCase() === market.toLowerCase());
+    if (existing) { existing.price = price.toFixed(2); existing.date = todayISO(); existing.lastBought = Date.now(); updated++; }
+    else { products.unshift({ name: it.name, market, price: price.toFixed(2), frequency:"14", date:todayISO(), inList:false, fromReceipt:false, createdAt:Date.now(), lastBought:Date.now() }); added++; }
+  });
+  receipts.push({ date: todayISO(), market, total: total.toFixed(2), items: tempScannedItems.length });
+  ls.set('smartspesa_receipts', receipts);
+  currentActiveMarket = market;
+  cancelAIReview();
+  document.getElementById('ocrStatus').innerHTML = `<span class="text-emerald-400 font-bold">Scontrino salvato: ${added} nuovi, ${updated} aggiornati. Budget scalato di €${total.toFixed(2)}.</span>`;
+  saveAndRender(); switchTab('markets');
+}
+</script>
+</body>
+</html>
